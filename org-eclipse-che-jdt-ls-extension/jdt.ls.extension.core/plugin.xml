@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.5"?>
+<plugin>
+   <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
+      <delegateCommandHandler class="org.eclipse.che.jdt.ls.extension.core.internal.CheDelegateCommandHandler">
+            <command id="org.eclipse.che.jdt.ls.extension.samplecommand"/>
+       </delegateCommandHandler>
+   </extension>
+</plugin>
