@@ -1,0 +1,306 @@
+/*
+ * Copyright (c) 2012-2017 Red Hat, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Red Hat, Inc. - initial API and implementation
+ */
+package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IImportDeclaration;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IRegion;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchParticipant;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.SearchRequestor;
+import org.eclipse.jdt.ls.core.internal.JDTUtils;
+
+/** Class which finds test classes and test methods for java test frameworks. */
+public class JavaTestFinder {
+  /**
+   * Finds test method which is related to the cursor position.
+   *
+   * @param compilationUnit compilation unit of class
+   * @param cursorOffset cursor position
+   * @return declaration of test method. (Example: full.qualified.name.of.Class#methodName)
+   */
+  public List<String> findTestMethodDeclaration(
+      ICompilationUnit compilationUnit, int cursorOffset) {
+    IType primaryType = compilationUnit.findPrimaryType();
+    String qualifiedName = primaryType.getFullyQualifiedName();
+    try {
+      IJavaElement element = compilationUnit.getElementAt(cursorOffset);
+      if (element instanceof IMethod) {
+        IMethod method = (IMethod) element;
+        qualifiedName = qualifiedName + '#' + method.getElementName();
+      }
+    } catch (JavaModelException e) {
+      return emptyList();
+    }
+    return singletonList(qualifiedName);
+  }
+
+  /**
+   * Finds test class declaration.
+   *
+   * @param compilationUnit compilation unit of class
+   * @return declaration of test class which should be ran.
+   */
+  public List<String> findTestClassDeclaration(ICompilationUnit compilationUnit) {
+    if (compilationUnit == null) {
+      return emptyList();
+    }
+    IType primaryType = compilationUnit.findPrimaryType();
+    return singletonList(primaryType.getFullyQualifiedName());
+  }
+
+  /**
+   * Finds test classes in package.
+   *
+   * @param packageUri URI of package folder
+   * @param testMethodAnnotation java annotation which describes test method in the test framework
+   * @param testClassAnnotation java annotation which describes test class in the test framework
+   * @return list of test classes which should be ran.
+   */
+  public List<String> findTestClassesInPackage(
+      String packageUri, String testMethodAnnotation, String testClassAnnotation) {
+    IPackageFragment packageFragment = null;
+
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(packageUri));
+    IContainer container = containers[0];
+
+    if (container == null || !container.exists()) {
+      return emptyList();
+    }
+
+    IProject project = container.getProject();
+    IJavaProject javaProject = JavaCore.create(project);
+
+    try {
+      packageFragment =
+          javaProject.findPackageFragment(JDTUtils.findFile(packageUri).getFullPath());
+    } catch (JavaModelException e) {
+      return emptyList();
+    }
+    return packageFragment == null
+        ? emptyList()
+        : findClassesInContainer(packageFragment, testMethodAnnotation, testClassAnnotation);
+  }
+
+  /**
+   * Finds test classes in project.
+   *
+   * @param projectUri URI of java project
+   * @param testMethodAnnotation java annotation which describes test method in the test framework
+   * @param testClassAnnotation java annotation which describes test class in the test framework
+   * @return list of test classes which should be ran.
+   */
+  public List<String> findTestClassesInProject(
+      String projectUri, String testMethodAnnotation, String testClassAnnotation) {
+
+    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(projectUri));
+
+    if (containers.length == 0) {
+      return emptyList();
+    }
+
+    IContainer container = containers[0];
+    IProject project = container.getProject();
+    if (!project.exists()) {
+      return emptyList();
+    }
+
+    IJavaProject javaProject = JavaCore.create(project);
+
+    return findClassesInContainer(javaProject, testMethodAnnotation, testClassAnnotation);
+  }
+
+  /**
+   * Checks if a method is test method.
+   *
+   * @param method method which should be checked
+   * @param compilationUnit parent of the method
+   * @param testAnnotation java annotation which describes test method in the test framework
+   * @return {@code true} if the method is test method
+   */
+  public boolean isTest(IMethod method, ICompilationUnit compilationUnit, String testAnnotation) {
+    try {
+      IAnnotation[] annotations = method.getAnnotations();
+      IAnnotation test = null;
+      for (IAnnotation annotation : annotations) {
+        String annotationElementName = annotation.getElementName();
+        if ("Test".equals(annotationElementName)) {
+          test = annotation;
+          break;
+        }
+        if (testAnnotation.equals(annotationElementName)) {
+          return true;
+        }
+      }
+      return test != null && isImportOfTestAnnotationExist(compilationUnit, testAnnotation);
+    } catch (JavaModelException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Gets fqns of the classes.
+   *
+   * @param classes list of classes
+   * @return list of fqns
+   */
+  public List<String> getFqnsOfClasses(List<String> classes) {
+    if (classes == null) {
+      return emptyList();
+    }
+    List<String> result = new LinkedList<>();
+    for (String classPath : classes) {
+      ICompilationUnit compilationUnit = JDTUtils.resolveCompilationUnit(classPath);
+      if (compilationUnit != null) {
+        IType primaryType = compilationUnit.findPrimaryType();
+        result.add(primaryType.getFullyQualifiedName());
+      }
+    }
+
+    return result;
+  }
+
+  private boolean isImportOfTestAnnotationExist(
+      ICompilationUnit compilationUnit, String testAnnotation) {
+    try {
+      IImportDeclaration[] imports = compilationUnit.getImports();
+      for (IImportDeclaration importDeclaration : imports) {
+        String elementName = importDeclaration.getElementName();
+        if (testAnnotation.equals(elementName)) {
+          return true;
+        }
+        if (importDeclaration.isOnDemand()
+            && testAnnotation.startsWith(
+                elementName.substring(0, elementName.length() - 3))) { // remove .*
+          return true;
+        }
+      }
+    } catch (JavaModelException e) {
+      return false;
+    }
+    return false;
+  }
+
+  private List<String> findClassesInContainer(
+      IJavaElement container, String testMethodAnnotation, String testClassAnnotation) {
+    List<String> result = new LinkedList<>();
+    try {
+      IRegion region = getRegion(container);
+      ITypeHierarchy hierarchy = JavaCore.newTypeHierarchy(region, null, null);
+      IType[] allClasses = hierarchy.getAllClasses();
+
+      // search for all types with references to RunWith and Test and all subclasses
+      HashSet<IType> candidates = new HashSet<>(allClasses.length);
+      SearchRequestor requestor = new AnnotationSearchRequestor(hierarchy, candidates);
+
+      IJavaSearchScope scope =
+          SearchEngine.createJavaSearchScope(allClasses, IJavaSearchScope.SOURCES);
+      int matchRule = SearchPattern.R_CASE_SENSITIVE;
+
+      SearchPattern testPattern =
+          SearchPattern.createPattern(
+              testMethodAnnotation,
+              IJavaSearchConstants.ANNOTATION_TYPE,
+              IJavaSearchConstants.ANNOTATION_TYPE_REFERENCE,
+              matchRule);
+
+      SearchPattern runWithPattern =
+          isNullOrEmpty(testClassAnnotation)
+              ? testPattern
+              : SearchPattern.createPattern(
+                  testClassAnnotation,
+                  IJavaSearchConstants.ANNOTATION_TYPE,
+                  IJavaSearchConstants.ANNOTATION_TYPE_REFERENCE,
+                  matchRule);
+
+      SearchPattern annotationsPattern = SearchPattern.createOrPattern(runWithPattern, testPattern);
+      SearchParticipant[] searchParticipants =
+          new SearchParticipant[] {SearchEngine.getDefaultSearchParticipant()};
+      new SearchEngine().search(annotationsPattern, searchParticipants, scope, requestor, null);
+
+      // find all classes in the region
+      for (IType candidate : candidates) {
+        if (isAccessibleClass(candidate)
+            && !Flags.isAbstract(candidate.getFlags())
+            && region.contains(candidate)) {
+          result.add(candidate.getFullyQualifiedName());
+        }
+      }
+    } catch (Exception e) {
+      emptyList();
+    }
+
+    return result;
+  }
+
+  private IRegion getRegion(IJavaElement element) throws JavaModelException {
+    IRegion result = JavaCore.newRegion();
+    if (element.getElementType() == IJavaElement.JAVA_PROJECT) {
+      // for projects only add the contained source folders
+      IPackageFragmentRoot[] packageFragmentRoots =
+          ((IJavaProject) element).getPackageFragmentRoots();
+      for (IPackageFragmentRoot packageFragmentRoot : packageFragmentRoots) {
+        if (!packageFragmentRoot.isArchive()) {
+          result.add(packageFragmentRoot);
+        }
+      }
+    } else {
+      result.add(element);
+    }
+    return result;
+  }
+
+  private static boolean isAccessibleClass(IType type) throws JavaModelException {
+    int flags = type.getFlags();
+    if (Flags.isInterface(flags)) {
+      return false;
+    }
+    IJavaElement parent = type.getParent();
+    while (true) {
+      if (parent instanceof ICompilationUnit || parent instanceof IClassFile) {
+        return true;
+      }
+      if (!(parent instanceof IType) || !Flags.isStatic(flags) || !Flags.isPublic(flags)) {
+        return false;
+      }
+      flags = ((IType) parent).getFlags();
+      parent = parent.getParent();
+    }
+  }
+}

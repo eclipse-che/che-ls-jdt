@@ -3,7 +3,10 @@
 <plugin>
    <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
       <delegateCommandHandler class="org.eclipse.che.jdt.ls.extension.core.internal.CheDelegateCommandHandler">
-            <command id="org.eclipse.che.jdt.ls.extension.samplecommand"/>
+            <command id="che.jdt.ls.extension.testdetect"/>
+            <command id="che.jdt.ls.extension.testfind"/>
+            <command id="che.jdt.ls.extension.resolveclasspath"/>
+            <command id="che.jdt.ls.extension.outputdir"/>
        </delegateCommandHandler>
    </extension>
 </plugin>
