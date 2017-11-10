@@ -33,8 +33,8 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    importProjects("eclipse/hello");
-    project = WorkspaceHelper.getProject("hello");
+    importProjects("eclipse/testproject");
+    project = WorkspaceHelper.getProject("testproject");
 
     handler = new TestDetectionHandler();
   }
@@ -43,7 +43,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   public void shouldReturnEmptyListIfCompilationUnitCanNotBeResolved() throws Exception {
     String testAnnotation = "org.junit.Test";
     double cursorOffset = -1.0;
-    String fileURI = createFileUri("src/NoCompilationUnit.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/Wrong.java");
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
@@ -56,7 +56,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   public void shouldDetect3TestMethods() throws Exception {
     String testAnnotation = "org.junit.Test";
     double cursorOffset = -1.0;
-    String fileURI = createFileUri("src/AppOneTest.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
@@ -65,7 +65,8 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
     assertEquals(3, result.size());
 
     // check methods' names
-    List<String> testNames = asList("first", "second", "third");
+    List<String> testNames =
+        asList("shouldSuccessOfAppOne", "shouldFailOfAppOne", "shouldBeIgnoredOfAppOne");
     assertThat(
         testNames,
         CoreMatchers.hasItems(
@@ -75,8 +76,8 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldDetectOnlyFirstTestMethods() throws Exception {
     String testAnnotation = "org.junit.Test";
-    double cursorOffset = 255.0;
-    String fileURI = createFileUri("src/AppOneTest.java");
+    double cursorOffset = 700.0;
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
@@ -86,10 +87,10 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
     TestPosition testPosition = result.get(0);
 
-    assertEquals("first", testPosition.getTestName());
-    assertEquals(252, testPosition.getTestNameStartOffset());
-    assertEquals(5, testPosition.getTestNameLength());
-    assertEquals(37, testPosition.getTestBodyLength());
+    assertEquals("shouldSuccessOfAppOne", testPosition.getTestName());
+    assertEquals(697, testPosition.getTestNameStartOffset());
+    assertEquals(21, testPosition.getTestNameLength());
+    assertEquals(104, testPosition.getTestBodyLength());
   }
 
   private String createFileUri(String file) {

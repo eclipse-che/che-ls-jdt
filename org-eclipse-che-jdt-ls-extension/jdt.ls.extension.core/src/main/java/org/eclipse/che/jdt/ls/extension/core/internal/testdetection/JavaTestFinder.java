@@ -10,7 +10,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -241,7 +240,7 @@ public class JavaTestFinder {
               matchRule);
 
       SearchPattern runWithPattern =
-          isNullOrEmpty(testClassAnnotation)
+          testClassAnnotation == null || testClassAnnotation.isEmpty()
               ? testPattern
               : SearchPattern.createPattern(
                   testClassAnnotation,

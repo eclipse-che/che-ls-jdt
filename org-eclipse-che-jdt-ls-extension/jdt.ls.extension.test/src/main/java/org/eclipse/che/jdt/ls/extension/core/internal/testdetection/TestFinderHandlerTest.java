@@ -32,8 +32,8 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    importProjects("eclipse/hello");
-    project = WorkspaceHelper.getProject("hello");
+    importProjects("eclipse/testproject");
+    project = WorkspaceHelper.getProject("testproject");
 
     handler = new TestFinderHandler();
   }
@@ -44,8 +44,8 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/AppOneTest.java");
-    double cursorOffset = 255.0;
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
+    double cursorOffset = 700.0;
 
     List<Object> arguments =
         asList(
@@ -67,8 +67,8 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/AppOneTest.java");
-    double cursorOffset = 255.0;
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
+    double cursorOffset = 700.0;
 
     List<Object> arguments =
         asList(
@@ -82,7 +82,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = handler.findTests(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertEquals("AppOneTest#first", result.get(0));
+    assertEquals("org.eclipse.che.examples.AppOneTest#shouldSuccessOfAppOne", result.get(0));
   }
 
   @Test
@@ -91,7 +91,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/AppOneTest.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
     double cursorOffset = -1.0;
 
     List<Object> arguments =
@@ -106,7 +106,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = handler.findTests(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertEquals("AppOneTest", result.get(0));
+    assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
   }
 
   @Test
@@ -115,7 +115,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/AppOneTest.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
@@ -123,7 +123,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = handler.findTests(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertEquals("AppOneTest", result.get(0));
+    assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
   }
 
   @Test
@@ -132,7 +132,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/sample/AppAnotherTest.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
@@ -140,14 +140,11 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = handler.findTests(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
-    assertEquals("sample.AppAnotherTest", result.get(0));
+    assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
   }
 
   @Test
   public void testClassesShouldBeFoundInTheProject() throws Exception {
-    importProjects("eclipse/testproject");
-    project = WorkspaceHelper.getProject("testproject");
-
     String contextType = "PROJECT";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
