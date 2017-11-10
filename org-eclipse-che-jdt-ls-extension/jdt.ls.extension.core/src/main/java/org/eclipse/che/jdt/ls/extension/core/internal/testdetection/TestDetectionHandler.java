@@ -32,7 +32,7 @@ public class TestDetectionHandler {
    * @param arguments a list contains file URI, fqn of test method annotation and cursor offset
    * @return test positions @see {@link TestPosition}
    */
-  public Object detectTests(List<Object> arguments) {
+  public List<TestPosition> detectTests(List<Object> arguments) {
     String fileUri = (String) arguments.get(0);
     String testAnnotation = (String) arguments.get(1);
     int cursorOffset = ((Double) arguments.get(2)).intValue();

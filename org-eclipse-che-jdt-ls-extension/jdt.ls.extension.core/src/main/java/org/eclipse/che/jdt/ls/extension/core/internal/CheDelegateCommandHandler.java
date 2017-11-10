@@ -12,21 +12,24 @@ package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
-import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinderHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 
+/**
+ * Implementation of {@link IDelegateCommandHandler} which handles custom commands. For each
+ * supported command should be registered its id into plugin.xml.
+ */
 public class CheDelegateCommandHandler implements IDelegateCommandHandler {
 
-  private static final String TEST_DETECT_COMMAND_ID = "che.jdt.ls.extension.testdetect";
+  public static final String TEST_DETECT_COMMAND_ID = "che.jdt.ls.extension.testdetect";
 
-  private static final String TEST_FIND_COMMAND_ID = "che.jdt.ls.extension.testfind";
+  public static final String TEST_FIND_COMMAND_ID = "che.jdt.ls.extension.testfind";
 
-  private static final String RESOLVE_CLASSPATH_COMMAND_ID =
-      "che.jdt.ls.extension.resolveclasspath";
+  public static final String RESOLVE_CLASSPATH_COMMAND_ID = "che.jdt.ls.extension.resolveclasspath";
 
-  private static final String GET_OUTPUT_DIR_ID = "che.jdt.ls.extension.outputdir";
+  public static final String GET_OUTPUT_DIR_ID = "che.jdt.ls.extension.outputdir";
 
   @Override
   public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor progress)
@@ -35,7 +38,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
       TestDetectionHandler testDetectionHandler = new TestDetectionHandler();
       return testDetectionHandler.detectTests(arguments);
     } else if (TEST_FIND_COMMAND_ID.equals(commandId)) {
-      JavaTestFinderHandler testFinderHandler = new JavaTestFinderHandler();
+      TestFinderHandler testFinderHandler = new TestFinderHandler();
       return testFinderHandler.findTests(arguments);
     } else if (RESOLVE_CLASSPATH_COMMAND_ID.equals(commandId)) {
       ResolveClassPathsHandler resolveClasspathsHandler = new ResolveClassPathsHandler();

@@ -16,7 +16,7 @@ import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
 import java.util.List;
 
 /** Class for finding test methods in the different areas. */
-public class JavaTestFinderHandler {
+public class TestFinderHandler {
   private static final String FILE_CONTEXT_TYPE = "FILE";
   private static final String FOLDER_CONTEXT_TYPE = "FOLDER";
   private static final String SET_CONTEXT_TYPE = "SET";
@@ -53,9 +53,9 @@ public class JavaTestFinderHandler {
    * contex type is SET 4: list of classes (List<String>)
    *
    * @param arguments list of arguments
-   * @return test methods' declaration
+   * @return test methods' declarations
    */
-  public Object findTests(List<Object> arguments) {
+  public List<String> findTests(List<Object> arguments) {
     readArguments(arguments);
     JavaTestFinder finder = new JavaTestFinder();
 
