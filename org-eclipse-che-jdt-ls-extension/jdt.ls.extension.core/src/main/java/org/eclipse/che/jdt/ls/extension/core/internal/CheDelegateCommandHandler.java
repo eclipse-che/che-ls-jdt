@@ -23,30 +23,29 @@ import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
  */
 public class CheDelegateCommandHandler implements IDelegateCommandHandler {
 
-  public static final String TEST_DETECT_COMMAND_ID = "che.jdt.ls.extension.testdetect";
+  private static final String TEST_DETECT = "che.jdt.ls.extension.testdetect";
 
-  public static final String TEST_FIND_COMMAND_ID = "che.jdt.ls.extension.testfind";
+  private static final String TEST_FIND = "che.jdt.ls.extension.testfind";
 
-  public static final String RESOLVE_CLASSPATH_COMMAND_ID = "che.jdt.ls.extension.resolveclasspath";
+  private static final String RESOLVE_CLASSPATH = "che.jdt.ls.extension.resolveclasspath";
 
-  public static final String GET_OUTPUT_DIR_ID = "che.jdt.ls.extension.outputdir";
+  private static final String GET_OUTPUT_DIR = "che.jdt.ls.extension.outputdir";
 
   @Override
   public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor progress)
       throws Exception {
-    if (TEST_DETECT_COMMAND_ID.equals(commandId)) {
-      TestDetectionHandler testDetectionHandler = new TestDetectionHandler();
-      return testDetectionHandler.detectTests(arguments);
-    } else if (TEST_FIND_COMMAND_ID.equals(commandId)) {
-      TestFinderHandler testFinderHandler = new TestFinderHandler();
-      return testFinderHandler.findTests(arguments);
-    } else if (RESOLVE_CLASSPATH_COMMAND_ID.equals(commandId)) {
-      ResolveClassPathsHandler resolveClasspathsHandler = new ResolveClassPathsHandler();
-      return resolveClasspathsHandler.resolveClasspaths(arguments);
-    } else if (GET_OUTPUT_DIR_ID.equals(commandId)) {
-      ResolveClassPathsHandler resolveClasspathsHandler = new ResolveClassPathsHandler();
-      return resolveClasspathsHandler.getOutputDirectory(arguments);
+    switch (commandId) {
+      case TEST_DETECT:
+        return TestDetectionHandler.detectTests(arguments);
+      case TEST_FIND:
+        return TestFinderHandler.findTests(arguments);
+      case RESOLVE_CLASSPATH:
+        return ResolveClassPathsHandler.resolveClasspaths(arguments);
+      case GET_OUTPUT_DIR:
+        return ResolveClassPathsHandler.getOutputDirectory(arguments);
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Unsupported command '%s'!", commandId));
     }
-    throw new UnsupportedOperationException(String.format("Unsupported command '%s'!", commandId));
   }
 }

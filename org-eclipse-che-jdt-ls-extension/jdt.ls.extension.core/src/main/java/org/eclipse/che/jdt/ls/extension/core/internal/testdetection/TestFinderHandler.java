@@ -23,13 +23,13 @@ public class TestFinderHandler {
   private static final String PROJECT_CONTEXT_TYPE = "PROJECT";
   private static final String CURSOR_POSITION_CONTEXT_TYPE = "CURSOR_POSITION";
 
-  private String fileUri;
-  private String projectUri;
-  private String testMethodAnnotation;
-  private String testClassAnnotation;
-  private String contextType;
-  private List<String> classes;
-  private int cursorOffset;
+  private static String fileUri;
+  private static String projectUri;
+  private static String testMethodAnnotation;
+  private static String testClassAnnotation;
+  private static String contextType;
+  private static List<String> classes;
+  private static int cursorOffset;
 
   /**
    * Finds tests in some area. The area is defined by first parameter of arguments - it is context
@@ -55,7 +55,7 @@ public class TestFinderHandler {
    * @param arguments list of arguments
    * @return test methods' declarations
    */
-  public List<String> findTests(List<Object> arguments) {
+  public static List<String> findTests(List<Object> arguments) {
     readArguments(arguments);
     JavaTestFinder finder = new JavaTestFinder();
 
@@ -65,7 +65,7 @@ public class TestFinderHandler {
       case FOLDER_CONTEXT_TYPE:
         return finder.findTestClassesInPackage(fileUri, testMethodAnnotation, testClassAnnotation);
       case SET_CONTEXT_TYPE:
-        return finder.getFqnsOfClasses(classes);
+        return finder.getFqns(classes);
       case PROJECT_CONTEXT_TYPE:
         return finder.findTestClassesInProject(
             projectUri, testMethodAnnotation, testClassAnnotation);
@@ -76,7 +76,7 @@ public class TestFinderHandler {
     return emptyList();
   }
 
-  private void readArguments(List<Object> arguments) {
+  private static void readArguments(List<Object> arguments) {
     contextType = (String) arguments.get(0);
     projectUri = (String) arguments.get(1);
     testMethodAnnotation = (String) arguments.get(2);

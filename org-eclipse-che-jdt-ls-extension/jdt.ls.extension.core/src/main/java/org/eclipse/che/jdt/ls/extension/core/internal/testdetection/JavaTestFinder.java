@@ -179,7 +179,7 @@ public class JavaTestFinder {
    * @param classes list of classes
    * @return list of fqns
    */
-  public List<String> getFqnsOfClasses(List<String> classes) {
+  public List<String> getFqns(List<String> classes) {
     if (classes == null) {
       return emptyList();
     }

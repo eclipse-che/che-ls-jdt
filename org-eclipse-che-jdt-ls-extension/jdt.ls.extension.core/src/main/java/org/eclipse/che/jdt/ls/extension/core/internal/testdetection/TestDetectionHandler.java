@@ -32,7 +32,7 @@ public class TestDetectionHandler {
    * @param arguments a list contains file URI, fqn of test method annotation and cursor offset
    * @return test positions @see {@link TestPosition}
    */
-  public List<TestPosition> detectTests(List<Object> arguments) {
+  public static List<TestPosition> detectTests(List<Object> arguments) {
     String fileUri = (String) arguments.get(0);
     String testAnnotation = (String) arguments.get(1);
     int cursorOffset = ((Double) arguments.get(2)).intValue();
@@ -63,7 +63,7 @@ public class TestDetectionHandler {
     return result;
   }
 
-  private void addAllTestsMethod(
+  private static void addAllTestsMethod(
       List<TestPosition> result, ICompilationUnit compilationUnit, String testAnnotation)
       throws JavaModelException {
     for (IType type : compilationUnit.getAllTypes()) {
@@ -82,7 +82,8 @@ public class TestDetectionHandler {
    * @param method method declaration
    * @return {@code true} if the method is test method otherwise returns {@code false}
    */
-  private boolean isTestMethod(IMethod method, ICompilationUnit unit, String testAnnotation) {
+  private static boolean isTestMethod(
+      IMethod method, ICompilationUnit unit, String testAnnotation) {
     JavaTestFinder javaTestFinder = new JavaTestFinder();
     try {
       int flags = method.getFlags();
@@ -99,7 +100,7 @@ public class TestDetectionHandler {
     }
   }
 
-  private TestPosition createTestPosition(IMethod method) throws JavaModelException {
+  private static TestPosition createTestPosition(IMethod method) throws JavaModelException {
     ISourceRange nameRange = method.getNameRange();
     ISourceRange sourceRange = method.getSourceRange();
 

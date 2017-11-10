@@ -38,7 +38,7 @@ public class ResolveClassPathsHandler {
    * @param arguments a list contains project URI
    * @return the class paths entries
    */
-  public Set<String> resolveClasspaths(List<Object> arguments) {
+  public static Set<String> resolveClasspaths(List<Object> arguments) {
     String projectUri = (String) arguments.get(0);
 
     IJavaProject javaProject = getJavaProject(projectUri);
@@ -56,7 +56,7 @@ public class ResolveClassPathsHandler {
    * @param arguments a list contains project URI
    * @return output location, might returns empty string if something happens
    */
-  public String getOutputDirectory(List<Object> arguments) {
+  public static String getOutputDirectory(List<Object> arguments) {
     String projectUri = (String) arguments.get(0);
 
     IJavaProject javaProject = getJavaProject(projectUri);
@@ -80,7 +80,7 @@ public class ResolveClassPathsHandler {
     }
   }
 
-  private IJavaProject getJavaProject(String projectUri) {
+  private static IJavaProject getJavaProject(String projectUri) {
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(projectUri));
 
@@ -103,7 +103,7 @@ public class ResolveClassPathsHandler {
    * @param javaProject java project
    * @return set of resources which are included to the classpath
    */
-  private Set<String> getProjectClassPath(IJavaProject javaProject) {
+  private static Set<String> getProjectClassPath(IJavaProject javaProject) {
     try {
       IClasspathEntry[] resolvedClasspath = javaProject.getResolvedClasspath(false);
       Set<String> result = new HashSet<>();
@@ -133,6 +133,9 @@ public class ResolveClassPathsHandler {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
             IContainer[] containers =
                 root.findContainersForLocationURI(JDTUtils.toURI(projectPath.toOSString()));
+            if (containers.length == 0) {
+              break;
+            }
             IContainer container = containers[0];
             if (!container.exists()) {
               break;
