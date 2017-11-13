@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
@@ -33,11 +34,21 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    importProjects("eclipse/testproject");
+    List<IProject> iProjects = importProjects("eclipse/testproject");
+    for (IProject project : iProjects) {
+      JavaLanguageServerPlugin.logInfo(
+          "*******************************************Imported project location: "
+              + project.getLocation());
+    }
     project = WorkspaceHelper.getProject("testproject");
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************project exist: " + project.exists());
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************project location " + project.getLocation());
   }
 
   @Test
+  @Ignore
   public void shouldReturnEmptyListIfContextTypeIsWrong() throws Exception {
     String contextType = "WRONG_CONTEXT_TYPE";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -61,6 +72,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
+  @Ignore
   public void firstTestMethodShouldBeFoundByCursorPosition() throws Exception {
     String contextType = "CURSOR_POSITION";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -85,6 +97,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
+  @Ignore
   public void classDeclarationShouldBeFoundByCursorPositionIfItIsNotMethodBody() throws Exception {
     String contextType = "CURSOR_POSITION";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -110,7 +123,8 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFile() throws Exception {
-    JavaLanguageServerPlugin.logInfo("Test started!!!!!!");
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************Test started!!!!!!");
     String contextType = "FILE";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
@@ -128,6 +142,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
+  @Ignore
   public void classDeclarationShouldBeFoundIfContextTypeIsFileWithPackage() throws Exception {
     String contextType = "FOLDER";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -147,6 +162,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
+  @Ignore
   public void testClassesShouldBeFoundInTheProject() throws Exception {
     String contextType = "PROJECT";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
