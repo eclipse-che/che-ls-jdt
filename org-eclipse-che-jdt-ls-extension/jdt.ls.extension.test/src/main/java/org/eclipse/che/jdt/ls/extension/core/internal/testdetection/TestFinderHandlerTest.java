@@ -43,7 +43,8 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     }
     project = WorkspaceHelper.getProject("testproject");
     IProjectDescription description = project.getDescription();
-    description.setNatureIds(new String[] {"org.eclipse.jdt.core.javanature"});
+    description.setNatureIds(
+        new String[] {"org.eclipse.jdt.core.javanature", "org.eclipse.m2e.core.maven2Nature"});
     project.setDescription(description, monitor);
     JavaLanguageServerPlugin.logInfo(
         "*******************************************project exist: " + project.exists());
@@ -146,6 +147,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
+    JavaLanguageServerPlugin.logInfo("Test result --> " + result.get(0));
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
     JavaLanguageServerPlugin.logInfo("Test finished!!!!!!");
   }
