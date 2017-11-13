@@ -126,7 +126,12 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     JavaLanguageServerPlugin.logInfo(
         "*******************************************Test started!!!!!!");
     String contextType = "FILE";
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
+    URI rawLocationURI = project.getRawLocationURI();
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************Raw location URI --> " + rawLocationURI);
+    String projectUri = getResourceUriAsString(rawLocationURI);
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************Project URI --> " + projectUri);
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
@@ -188,6 +193,9 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @SuppressWarnings("restriction")
   private String getResourceUriAsString(URI uri) {
-    return ResourceUtils.fixURI(uri);
+    String fileUri = ResourceUtils.fixURI(uri);
+    JavaLanguageServerPlugin.logInfo(
+        "*******************************************Resolved File URI --> " + fileUri);
+    return fileUri;
   }
 }
