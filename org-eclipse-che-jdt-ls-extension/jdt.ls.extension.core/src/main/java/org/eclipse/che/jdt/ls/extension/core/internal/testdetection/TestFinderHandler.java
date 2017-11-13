@@ -137,6 +137,13 @@ public class TestFinderHandler {
         JavaLanguageServerPlugin.logInfo(
             "*******************************************Project of Resource -> " + project);
         boolean javaProject = ProjectUtils.isJavaProject(project);
+        boolean mavenProject = ProjectUtils.isMavenProject(project);
+
+        JavaLanguageServerPlugin.logInfo(
+            "*******************************************is java project = " + javaProject);
+        JavaLanguageServerPlugin.logInfo(
+            "*******************************************is maven project = " + mavenProject);
+
         if (!javaProject) {
           JavaLanguageServerPlugin.logInfo(
               "*******************************************is not java project");
