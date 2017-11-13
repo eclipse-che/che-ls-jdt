@@ -38,7 +38,7 @@ public class TestDetectionHandler {
     int cursorOffset = ((Double) arguments.get(2)).intValue();
 
     ICompilationUnit unit = JDTUtils.resolveCompilationUnit(fileUri);
-    if (unit == null) {
+    if (unit == null || !unit.exists()) {
       return Collections.emptyList();
     }
 

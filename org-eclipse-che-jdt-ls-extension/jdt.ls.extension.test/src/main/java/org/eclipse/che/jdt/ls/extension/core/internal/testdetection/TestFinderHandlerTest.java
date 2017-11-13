@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,6 +110,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFile() throws Exception {
+    JavaLanguageServerPlugin.logInfo("Test started!!!!!!");
     String contextType = "FILE";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
@@ -122,23 +124,26 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
+    JavaLanguageServerPlugin.logInfo("Test finished!!!!!!");
   }
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFileWithPackage() throws Exception {
-    String contextType = "FILE";
+    String contextType = "FOLDER";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
-    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
+    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples");
 
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
 
     List<String> result = find(arguments);
     assertNotNull(result);
-    assertEquals(1, result.size());
-    assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
+    assertEquals(2, result.size());
+    List<String> espected =
+        asList("org.eclipse.che.examples.AppOneTest", "org.eclipse.che.examples.AppAnotherTest");
+    assertThat(espected, hasItems(result.get(0), result.get(1)));
   }
 
   @Test

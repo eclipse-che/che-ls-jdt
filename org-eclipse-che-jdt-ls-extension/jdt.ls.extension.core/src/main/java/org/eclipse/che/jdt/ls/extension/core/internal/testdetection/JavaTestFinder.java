@@ -42,6 +42,7 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
 /** Class which finds test classes and test methods for java test frameworks. */
 public class JavaTestFinder {
@@ -78,10 +79,13 @@ public class JavaTestFinder {
    * @return declaration of test class which should be ran.
    */
   public List<String> findTestClassDeclaration(ICompilationUnit compilationUnit) {
+    JavaLanguageServerPlugin.logInfo("Compilation unit calculated = " + compilationUnit);
     if (compilationUnit == null) {
       return emptyList();
     }
     IType primaryType = compilationUnit.findPrimaryType();
+    JavaLanguageServerPlugin.logInfo(
+        "Primary type of compilation unit calculated = " + primaryType);
     return singletonList(primaryType.getFullyQualifiedName());
   }
 

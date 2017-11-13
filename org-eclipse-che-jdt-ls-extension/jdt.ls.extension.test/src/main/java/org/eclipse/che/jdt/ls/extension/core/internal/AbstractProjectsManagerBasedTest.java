@@ -49,6 +49,7 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.ls.core.internal.DocumentAdapter;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaClientConnection.JavaLanguageClient;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ProjectUtils;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
@@ -116,6 +117,7 @@ public abstract class AbstractProjectsManagerBasedTest {
             return DocumentAdapter.Null;
           }
         });
+    WorkspaceHelper.initWorkspace();
   }
 
   protected IJavaProject newEmptyProject() throws Exception {
@@ -152,20 +154,30 @@ public abstract class AbstractProjectsManagerBasedTest {
   }
 
   protected List<IProject> importProjects(Collection<String> paths) throws Exception {
+    JavaLanguageServerPlugin.logInfo(
+        "***Project importer started *** path of project = " + paths.iterator().next());
     final List<IPath> roots = new ArrayList<>();
     for (String path : paths) {
       File file = copyFiles(path, true);
+      JavaLanguageServerPlugin.logInfo(
+          "***Project was created *** project = " + file.getAbsolutePath());
       roots.add(Path.fromOSString(file.getAbsolutePath()));
     }
     IWorkspaceRunnable runnable =
         new IWorkspaceRunnable() {
           @Override
           public void run(IProgressMonitor monitor) throws CoreException {
+            JavaLanguageServerPlugin.logInfo("***Project initialization is started ***");
             projectsManager.initializeProjects(roots, monitor);
+            JavaLanguageServerPlugin.logInfo("***Project initialization is finished ***");
           }
         };
     JavaCore.run(runnable, null, monitor);
+    JavaLanguageServerPlugin.logInfo("***waitForBackgroundJobs is started***");
     waitForBackgroundJobs();
+    JavaLanguageServerPlugin.logInfo("***waitForBackgroundJobs is finished***");
+    JavaLanguageServerPlugin.logInfo(
+        "***NEW PROJECT -->  *** " + WorkspaceHelper.getAllProjects().get(0).getLocation());
     return WorkspaceHelper.getAllProjects();
   }
 
