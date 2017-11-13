@@ -54,6 +54,9 @@ public class JavaTestFinder {
    */
   public List<String> findTestMethodDeclaration(
       ICompilationUnit compilationUnit, int cursorOffset) {
+    if (compilationUnit == null) {
+      return emptyList();
+    }
     IType primaryType = compilationUnit.findPrimaryType();
     String qualifiedName = primaryType.getFullyQualifiedName();
     try {

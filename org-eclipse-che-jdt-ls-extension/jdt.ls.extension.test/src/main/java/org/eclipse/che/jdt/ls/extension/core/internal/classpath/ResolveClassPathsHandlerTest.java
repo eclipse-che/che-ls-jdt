@@ -11,6 +11,8 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.classpath;
 
 import static java.util.Arrays.asList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler.getOutputDirectory;
+import static org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler.resolveClasspaths;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,14 +29,11 @@ import org.junit.Test;
 
 public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTest {
   private IProject project;
-  private ResolveClassPathsHandler handler;
 
   @Before
   public void setup() throws Exception {
     importProjects("eclipse/testproject");
     project = WorkspaceHelper.getProject("testproject");
-
-    handler = new ResolveClassPathsHandler();
   }
 
   @Test
@@ -42,7 +41,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
     List<Object> arguments = asList(projectUri);
-    Set<String> result = handler.resolveClasspaths(arguments);
+    Set<String> result = resolveClasspaths(arguments);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -53,7 +52,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
     List<Object> arguments = asList(projectUri);
-    String result = handler.getOutputDirectory(arguments);
+    String result = getOutputDirectory(arguments);
 
     assertTrue(result.endsWith("testproject/target/classes"));
   }

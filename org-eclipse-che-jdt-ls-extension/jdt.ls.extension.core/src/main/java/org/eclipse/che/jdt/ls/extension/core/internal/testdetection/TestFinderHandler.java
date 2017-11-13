@@ -55,7 +55,7 @@ public class TestFinderHandler {
    * @param arguments list of arguments
    * @return test methods' declarations
    */
-  public static List<String> findTests(List<Object> arguments) {
+  public static List<String> find(List<Object> arguments) {
     readArguments(arguments);
     JavaTestFinder finder = new JavaTestFinder();
 

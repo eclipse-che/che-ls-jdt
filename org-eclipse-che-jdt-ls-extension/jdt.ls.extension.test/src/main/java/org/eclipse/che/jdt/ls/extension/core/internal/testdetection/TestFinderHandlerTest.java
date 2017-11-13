@@ -11,6 +11,7 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import static java.util.Arrays.asList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler.find;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -28,14 +29,11 @@ import org.junit.Test;
 
 public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   private IProject project;
-  private TestFinderHandler handler;
 
   @Before
   public void setup() throws Exception {
     importProjects("eclipse/testproject");
     project = WorkspaceHelper.getProject("testproject");
-
-    handler = new TestFinderHandler();
   }
 
   @Test
@@ -56,7 +54,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
             fileURI,
             cursorOffset);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -79,7 +77,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
             fileURI,
             cursorOffset);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest#shouldSuccessOfAppOne", result.get(0));
@@ -103,7 +101,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
             fileURI,
             cursorOffset);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
@@ -120,7 +118,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
@@ -137,7 +135,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
@@ -153,7 +151,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<Object> arguments =
         asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation);
 
-    List<String> result = handler.findTests(arguments);
+    List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(2, result.size());
 

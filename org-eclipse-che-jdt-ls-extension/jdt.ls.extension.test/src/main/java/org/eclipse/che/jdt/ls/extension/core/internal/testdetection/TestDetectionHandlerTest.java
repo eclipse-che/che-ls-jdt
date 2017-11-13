@@ -29,14 +29,11 @@ import org.junit.Test;
 public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
   private IProject project;
-  private TestDetectionHandler handler;
 
   @Before
   public void setup() throws Exception {
     importProjects("eclipse/testproject");
     project = WorkspaceHelper.getProject("testproject");
-
-    handler = new TestDetectionHandler();
   }
 
   @Test
@@ -47,7 +44,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = handler.detectTests(arguments);
+    List<TestPosition> result = TestDetectionHandler.detect(arguments);
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -60,7 +57,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = handler.detectTests(arguments);
+    List<TestPosition> result = TestDetectionHandler.detect(arguments);
     assertNotNull(result);
     assertEquals(3, result.size());
 
@@ -81,7 +78,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
     List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = handler.detectTests(arguments);
+    List<TestPosition> result = TestDetectionHandler.detect(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
 

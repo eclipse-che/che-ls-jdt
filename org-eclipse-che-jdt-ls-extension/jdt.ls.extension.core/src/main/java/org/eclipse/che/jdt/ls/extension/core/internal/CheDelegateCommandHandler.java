@@ -36,9 +36,9 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
       throws Exception {
     switch (commandId) {
       case TEST_DETECT:
-        return TestDetectionHandler.detectTests(arguments);
+        return TestDetectionHandler.detect(arguments);
       case TEST_FIND:
-        return TestFinderHandler.findTests(arguments);
+        return TestFinderHandler.find(arguments);
       case RESOLVE_CLASSPATH:
         return ResolveClassPathsHandler.resolveClasspaths(arguments);
       case GET_OUTPUT_DIR:
