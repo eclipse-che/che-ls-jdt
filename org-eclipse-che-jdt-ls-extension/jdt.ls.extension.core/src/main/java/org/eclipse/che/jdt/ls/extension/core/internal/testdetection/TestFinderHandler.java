@@ -133,7 +133,13 @@ public class TestFinderHandler {
       JavaLanguageServerPlugin.logInfo(
           "*******************************************Resource -> " + resource);
       if (resource != null) {
-        if (!ProjectUtils.isJavaProject(resource.getProject())) {
+        IProject project = resource.getProject();
+        JavaLanguageServerPlugin.logInfo(
+            "*******************************************Project of Resource -> " + project);
+        boolean javaProject = ProjectUtils.isJavaProject(project);
+        if (!javaProject) {
+          JavaLanguageServerPlugin.logInfo(
+              "*******************************************is not java project");
           return null;
         }
 
