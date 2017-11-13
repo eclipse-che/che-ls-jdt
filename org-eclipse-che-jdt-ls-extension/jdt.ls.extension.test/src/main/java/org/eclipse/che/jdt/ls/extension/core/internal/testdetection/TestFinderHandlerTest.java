@@ -23,6 +23,8 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
@@ -41,6 +43,9 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
               + project.getLocation());
     }
     project = WorkspaceHelper.getProject("testproject");
+    IProjectDescription description = project.getDescription();
+    description.setNatureIds(new String[] {"org.eclipse.jdt.core.javanature"});
+    project.setDescription(description, monitor);
     JavaLanguageServerPlugin.logInfo(
         "*******************************************project exist: " + project.exists());
     JavaLanguageServerPlugin.logInfo(
