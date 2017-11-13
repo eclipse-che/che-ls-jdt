@@ -32,7 +32,7 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    importProjects("eclipse/testproject");
+    importProjects("maven/testproject");
     project = WorkspaceHelper.getProject("testproject");
   }
 
