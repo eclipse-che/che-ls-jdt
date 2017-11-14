@@ -11,29 +11,9 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import static java.util.Collections.emptyList;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.createFolders;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.findFile;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.getPackageName;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.toURI;
 
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.eclipse.jdt.ls.core.internal.ProjectUtils;
 
 /** Class for finding test methods in the different areas. */
 public class TestFinderHandler {
@@ -81,15 +61,6 @@ public class TestFinderHandler {
 
     switch (contextType) {
       case FILE_CONTEXT_TYPE:
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************File URI string --> " + fileUri);
-        URI uri = toURI(fileUri);
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************File URI --> " + uri);
-        ICompilationUnit iCompilationUnit = resolveCompilationUnitInner(uri);
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************Inner compilation unit -> "
-                + iCompilationUnit);
         return finder.findTestClassDeclaration(resolveCompilationUnit(fileUri));
       case FOLDER_CONTEXT_TYPE:
         return finder.findTestClassesInPackage(fileUri, testMethodAnnotation, testClassAnnotation);
@@ -124,89 +95,6 @@ public class TestFinderHandler {
       case SET_CONTEXT_TYPE:
         classes = (List<String>) arguments.get(4);
         break;
-    }
-  }
-
-  private static ICompilationUnit resolveCompilationUnitInner(URI uri) {
-    if (uri != null && !"jdt".equals(uri.getScheme()) && uri.isAbsolute()) {
-      IFile resource = findFile(uri);
-      JavaLanguageServerPlugin.logInfo(
-          "*******************************************Resource -> " + resource);
-      if (resource != null) {
-        IProject project = resource.getProject();
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************Project of Resource -> " + project);
-        boolean javaProject = ProjectUtils.isJavaProject(project);
-        boolean mavenProject = ProjectUtils.isMavenProject(project);
-
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************is java project = " + javaProject);
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************is maven project = " + mavenProject);
-
-        if (!javaProject) {
-          JavaLanguageServerPlugin.logInfo(
-              "*******************************************is not java project");
-          return null;
-        }
-
-        IJavaElement element = JavaCore.create(resource);
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************Element -> " + element);
-        if (element instanceof ICompilationUnit) {
-          return (ICompilationUnit) element;
-        }
-      }
-
-      return resource == null ? getFakeCompilationUnit(uri, new NullProgressMonitor()) : null;
-    } else {
-      JavaLanguageServerPlugin.logInfo(
-          "*******************************************Return NULL -> ");
-      return null;
-    }
-  }
-
-  private static ICompilationUnit getFakeCompilationUnit(URI uri, IProgressMonitor monitor) {
-    if (uri != null && "file".equals(uri.getScheme()) && uri.getPath().endsWith(".java")) {
-      Path path = Paths.get(uri);
-      if (!Files.isReadable(path)) {
-        JavaLanguageServerPlugin.logInfo(
-            "*******************************************Return NULL2 -> ");
-        return null;
-      } else {
-        IProject project = JavaLanguageServerPlugin.getProjectsManager().getDefaultProject();
-        if (project != null && project.isAccessible()) {
-          IJavaProject javaProject = JavaCore.create(project);
-          String packageName = getPackageName(javaProject, uri);
-          String fileName = path.getName(path.getNameCount() - 1).toString();
-          String packagePath = packageName.replace(".", "/");
-          IPath filePath =
-              (new org.eclipse.core.runtime.Path("src")).append(packagePath).append(fileName);
-          IFile file = project.getFile(filePath);
-          if (!file.isLinked()) {
-            try {
-              createFolders(file.getParent(), monitor);
-              file.createLink(uri, 256, monitor);
-            } catch (CoreException var12) {
-              String errMsg =
-                  "Failed to create linked resource from " + uri + " to " + project.getName();
-              JavaLanguageServerPlugin.logException(errMsg, var12);
-            }
-          }
-
-          JavaLanguageServerPlugin.logInfo(
-              "*******************************************file.isLinked() -> " + file.isLinked());
-          return file.isLinked() ? (ICompilationUnit) JavaCore.create(file, javaProject) : null;
-        } else {
-          JavaLanguageServerPlugin.logInfo(
-              "*******************************************Return NULL3 -> ");
-          return null;
-        }
-      }
-    } else {
-      JavaLanguageServerPlugin.logInfo(
-          "*******************************************Return NULL4 -> ");
-      return null;
     }
   }
 }

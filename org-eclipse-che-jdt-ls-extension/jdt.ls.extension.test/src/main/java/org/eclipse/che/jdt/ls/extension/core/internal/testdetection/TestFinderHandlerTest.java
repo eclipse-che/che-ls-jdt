@@ -23,10 +23,8 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
@@ -34,21 +32,11 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    List<IProject> iProjects = importProjects("maven/testproject");
-    for (IProject project : iProjects) {
-      JavaLanguageServerPlugin.logInfo(
-          "*******************************************Imported project location: "
-              + project.getLocation());
-    }
+    importProjects("maven/testproject");
     project = WorkspaceHelper.getProject("testproject");
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************project exist: " + project.exists());
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************project location " + project.getLocation());
   }
 
   @Test
-  @Ignore
   public void shouldReturnEmptyListIfContextTypeIsWrong() throws Exception {
     String contextType = "WRONG_CONTEXT_TYPE";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -72,7 +60,6 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  @Ignore
   public void firstTestMethodShouldBeFoundByCursorPosition() throws Exception {
     String contextType = "CURSOR_POSITION";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -97,7 +84,6 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  @Ignore
   public void classDeclarationShouldBeFoundByCursorPositionIfItIsNotMethodBody() throws Exception {
     String contextType = "CURSOR_POSITION";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -123,15 +109,9 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFile() throws Exception {
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************Test started!!!!!!");
     String contextType = "FILE";
     URI rawLocationURI = project.getRawLocationURI();
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************Raw location URI --> " + rawLocationURI);
     String projectUri = getResourceUriAsString(rawLocationURI);
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************Project URI --> " + projectUri);
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
@@ -142,13 +122,10 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
     List<String> result = find(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
-    JavaLanguageServerPlugin.logInfo("Test result --> " + result.get(0));
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
-    JavaLanguageServerPlugin.logInfo("Test finished!!!!!!");
   }
 
   @Test
-  @Ignore
   public void classDeclarationShouldBeFoundIfContextTypeIsFileWithPackage() throws Exception {
     String contextType = "FOLDER";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -168,7 +145,6 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  @Ignore
   public void testClassesShouldBeFoundInTheProject() throws Exception {
     String contextType = "PROJECT";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
@@ -195,8 +171,6 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   @SuppressWarnings("restriction")
   private String getResourceUriAsString(URI uri) {
     String fileUri = ResourceUtils.fixURI(uri);
-    JavaLanguageServerPlugin.logInfo(
-        "*******************************************Resolved File URI --> " + fileUri);
     return fileUri;
   }
 }
