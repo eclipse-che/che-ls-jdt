@@ -88,11 +88,11 @@ public class TestDetectionHandler {
     try {
       int flags = method.getFlags();
       // 'V' is void signature
-      return !(method.isConstructor()
-              || !Flags.isPublic(flags)
-              || Flags.isAbstract(flags)
-              || Flags.isStatic(flags)
-              || !"V".equals(method.getReturnType()))
+      return !method.isConstructor()
+          && Flags.isPublic(flags)
+          && !Flags.isAbstract(flags)
+          && !Flags.isStatic(flags)
+          && "V".equals(method.getReturnType())
           && javaTestFinder.isTest(method, unit, testAnnotation);
 
     } catch (JavaModelException ignored) {

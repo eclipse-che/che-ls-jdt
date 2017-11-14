@@ -11,21 +11,16 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.classpath;
 
 import static java.util.Collections.emptySet;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.ls.core.internal.JDTUtils;
 
 /**
  * Class for resolving class path and getting location of the output directory for a java project.
@@ -80,23 +75,6 @@ public class ResolveClassPathsHandler {
     }
   }
 
-  private static IJavaProject getJavaProject(String projectUri) {
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(projectUri));
-
-    if (containers.length == 0) {
-      return null;
-    }
-
-    IContainer container = containers[0];
-    IProject project = container.getProject();
-    if (!project.exists()) {
-      return null;
-    }
-
-    return JavaCore.create(project);
-  }
-
   /**
    * Builds classpath for the java project.
    *
@@ -130,17 +108,10 @@ public class ResolveClassPathsHandler {
 
           case IClasspathEntry.CPE_PROJECT:
             IPath projectPath = classpathEntry.getPath();
-            IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-            IContainer[] containers =
-                root.findContainersForLocationURI(JDTUtils.toURI(projectPath.toOSString()));
-            if (containers.length == 0) {
+            IJavaProject project = getJavaProject(projectPath.toOSString());
+            if (project == null) {
               break;
             }
-            IContainer container = containers[0];
-            if (!container.exists()) {
-              break;
-            }
-            IJavaProject project = JavaCore.create(container.getProject());
             result.addAll(getProjectClassPath(project));
             break;
         }

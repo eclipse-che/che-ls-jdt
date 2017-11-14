@@ -11,11 +11,14 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import java.util.Collection;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchRequestor;
 
@@ -34,23 +37,53 @@ public class AnnotationSearchRequestor extends SearchRequestor {
   public void acceptSearchMatch(SearchMatch match) {
     if (match.getAccuracy() == SearchMatch.A_ACCURATE && !match.isInsideDocComment()) {
       Object element = match.getElement();
-      if (element instanceof IType || element instanceof IMethod) {
-        IMember member = (IMember) element;
-        IType type =
-            member.getElementType() == IJavaElement.TYPE
-                ? (IType) member
-                : member.getDeclaringType();
-        addTypeAndSubtypes(type);
+      if (element instanceof IType) {
+        addTypeAndSubtypes((IType) element);
+      } else if (element instanceof IMethod) {
+        addTypeAndSubtypes(((IMethod) element).getDeclaringType());
       }
     }
   }
 
   private void addTypeAndSubtypes(IType type) {
+    if (!isAccessibleType(type)) {
+      return;
+    }
+
     if (fResult.add(type)) {
       IType[] subclasses = fHierarchy.getSubclasses(type);
       for (IType subclass : subclasses) {
         addTypeAndSubtypes(subclass);
       }
+    }
+  }
+
+  private boolean isAccessibleType(IType type) {
+    try {
+      if (isAccessibleClass(type) && !Flags.isAbstract(type.getFlags())) {
+        return true;
+      }
+    } catch (JavaModelException e) {
+      return false;
+    }
+    return false;
+  }
+
+  private static boolean isAccessibleClass(IType type) throws JavaModelException {
+    int flags = type.getFlags();
+    if (Flags.isInterface(flags)) {
+      return false;
+    }
+    IJavaElement parent = type.getParent();
+    while (true) {
+      if (parent instanceof ICompilationUnit || parent instanceof IClassFile) {
+        return true;
+      }
+      if (!(parent instanceof IType) || !Flags.isStatic(flags) || !Flags.isPublic(flags)) {
+        return false;
+      }
+      flags = ((IType) parent).getFlags();
+      parent = parent.getParent();
     }
   }
 }

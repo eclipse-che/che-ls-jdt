@@ -12,17 +12,13 @@ package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
+import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IAnnotation;
-import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaElement;
@@ -95,18 +91,12 @@ public class JavaTestFinder {
    */
   public List<String> findTestClassesInPackage(
       String packageUri, String testMethodAnnotation, String testClassAnnotation) {
-    IPackageFragment packageFragment = null;
+    IPackageFragment packageFragment;
 
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(packageUri));
-    IContainer container = containers[0];
-
-    if (container == null || !container.exists()) {
-      return emptyList();
+    IJavaProject javaProject = getJavaProject(packageUri);
+    if (javaProject == null) {
+      return null;
     }
-
-    IProject project = container.getProject();
-    IJavaProject javaProject = JavaCore.create(project);
 
     try {
       packageFragment =
@@ -130,20 +120,11 @@ public class JavaTestFinder {
   public List<String> findTestClassesInProject(
       String projectUri, String testMethodAnnotation, String testClassAnnotation) {
 
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(projectUri));
+    IJavaProject javaProject = getJavaProject(projectUri);
 
-    if (containers.length == 0) {
+    if (javaProject == null) {
       return emptyList();
     }
-
-    IContainer container = containers[0];
-    IProject project = container.getProject();
-    if (!project.exists()) {
-      return emptyList();
-    }
-
-    IJavaProject javaProject = JavaCore.create(project);
 
     return findClassesInContainer(javaProject, testMethodAnnotation, testClassAnnotation);
   }
@@ -188,7 +169,7 @@ public class JavaTestFinder {
     }
     List<String> result = new LinkedList<>();
     for (String classPath : classes) {
-      ICompilationUnit compilationUnit = JDTUtils.resolveCompilationUnit(classPath);
+      ICompilationUnit compilationUnit = resolveCompilationUnit(classPath);
       if (compilationUnit != null) {
         IType primaryType = compilationUnit.findPrimaryType();
         result.add(primaryType.getFullyQualifiedName());
@@ -209,7 +190,7 @@ public class JavaTestFinder {
         }
         if (importDeclaration.isOnDemand()
             && testAnnotation.startsWith(
-                elementName.substring(0, elementName.length() - 3))) { // remove .*
+                elementName.substring(0, elementName.length() - 2))) { // remove .*
           return true;
         }
       }
@@ -256,13 +237,8 @@ public class JavaTestFinder {
           new SearchParticipant[] {SearchEngine.getDefaultSearchParticipant()};
       new SearchEngine().search(annotationsPattern, searchParticipants, scope, requestor, null);
 
-      // find all classes in the region
       for (IType candidate : candidates) {
-        if (isAccessibleClass(candidate)
-            && !Flags.isAbstract(candidate.getFlags())
-            && region.contains(candidate)) {
-          result.add(candidate.getFullyQualifiedName());
-        }
+        result.add(candidate.getFullyQualifiedName());
       }
     } catch (Exception e) {
       emptyList();
@@ -286,23 +262,5 @@ public class JavaTestFinder {
       result.add(element);
     }
     return result;
-  }
-
-  private static boolean isAccessibleClass(IType type) throws JavaModelException {
-    int flags = type.getFlags();
-    if (Flags.isInterface(flags)) {
-      return false;
-    }
-    IJavaElement parent = type.getParent();
-    while (true) {
-      if (parent instanceof ICompilationUnit || parent instanceof IClassFile) {
-        return true;
-      }
-      if (!(parent instanceof IType) || !Flags.isStatic(flags) || !Flags.isPublic(flags)) {
-        return false;
-      }
-      flags = ((IType) parent).getFlags();
-      parent = parent.getParent();
-    }
   }
 }
