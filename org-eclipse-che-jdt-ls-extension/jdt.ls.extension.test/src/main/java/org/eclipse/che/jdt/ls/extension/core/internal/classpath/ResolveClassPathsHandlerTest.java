@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
@@ -41,7 +40,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
     List<Object> arguments = asList(projectUri);
-    Set<String> result = resolveClasspaths(arguments);
+    List<String> result = resolveClasspaths(arguments);
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
