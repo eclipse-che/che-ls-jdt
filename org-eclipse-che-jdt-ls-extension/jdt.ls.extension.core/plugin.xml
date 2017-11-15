@@ -11,6 +11,7 @@
             <command id="che.jdt.ls.extension.findTestByFile"/>
             <command id="che.jdt.ls.extension.resolveclasspath"/>
             <command id="che.jdt.ls.extension.outputdir"/>
+            <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
        </delegateCommandHandler>
    </extension>
 </plugin>

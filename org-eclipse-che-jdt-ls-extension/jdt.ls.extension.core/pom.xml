@@ -22,4 +22,17 @@
     <artifactId>jdt.ls.extension.core</artifactId>
     <packaging>eclipse-plugin</packaging>
     <name>Che Ls Jdt :: Extension :: Core</name>
+    <build>
+    	<plugins>
+    		<plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/org/eclipse/jdt/ls/core/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+    	</plugins>
+    </build>
 </project>
