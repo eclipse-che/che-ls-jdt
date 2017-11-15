@@ -11,12 +11,11 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import static java.util.Arrays.asList;
-import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler.find;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
@@ -37,47 +36,13 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  public void shouldReturnEmptyListIfContextTypeIsWrong() throws Exception {
-    String contextType = "WRONG_CONTEXT_TYPE";
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
-    String testMethodAnnotation = "org.junit.Test";
-    String testClassAnnotation = "";
-    String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
-    double cursorOffset = 700.0;
-
-    List<Object> arguments =
-        asList(
-            contextType,
-            projectUri,
-            testMethodAnnotation,
-            testClassAnnotation,
-            fileURI,
-            cursorOffset);
-
-    List<String> result = find(arguments);
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
-  }
-
-  @Test
   public void firstTestMethodShouldBeFoundByCursorPosition() throws Exception {
-    String contextType = "CURSOR_POSITION";
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
-    String testMethodAnnotation = "org.junit.Test";
-    String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
     double cursorOffset = 700.0;
 
-    List<Object> arguments =
-        asList(
-            contextType,
-            projectUri,
-            testMethodAnnotation,
-            testClassAnnotation,
-            fileURI,
-            cursorOffset);
+    List<Object> arguments = asList(fileURI, cursorOffset);
 
-    List<String> result = find(arguments);
+    List<String> result = TestFinderHandler.getTestByCursorPosition(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest#shouldSuccessOfAppOne", result.get(0));
@@ -85,23 +50,12 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundByCursorPositionIfItIsNotMethodBody() throws Exception {
-    String contextType = "CURSOR_POSITION";
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
-    String testMethodAnnotation = "org.junit.Test";
-    String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
     double cursorOffset = -1.0;
 
-    List<Object> arguments =
-        asList(
-            contextType,
-            projectUri,
-            testMethodAnnotation,
-            testClassAnnotation,
-            fileURI,
-            cursorOffset);
+    List<Object> arguments = asList(fileURI, cursorOffset);
 
-    List<String> result = find(arguments);
+    List<String> result = TestFinderHandler.getTestByCursorPosition(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
@@ -109,17 +63,11 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFile() throws Exception {
-    String contextType = "FILE";
-    URI rawLocationURI = project.getRawLocationURI();
-    String projectUri = getResourceUriAsString(rawLocationURI);
-    String testMethodAnnotation = "org.junit.Test";
-    String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
-    List<Object> arguments =
-        asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
+    List<Object> arguments = singletonList(fileURI);
 
-    List<String> result = find(arguments);
+    List<String> result = TestFinderHandler.getClass(arguments);
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));
@@ -127,16 +75,13 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void classDeclarationShouldBeFoundIfContextTypeIsFileWithPackage() throws Exception {
-    String contextType = "FOLDER";
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples");
 
-    List<Object> arguments =
-        asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation, fileURI);
+    List<Object> arguments = asList(fileURI, testMethodAnnotation, testClassAnnotation);
 
-    List<String> result = find(arguments);
+    List<String> result = TestFinderHandler.getClassesFromFolder(arguments);
     assertNotNull(result);
     assertEquals(2, result.size());
     List<String> espected =
@@ -146,15 +91,13 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void testClassesShouldBeFoundInTheProject() throws Exception {
-    String contextType = "PROJECT";
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
     String testMethodAnnotation = "org.junit.Test";
     String testClassAnnotation = "";
 
-    List<Object> arguments =
-        asList(contextType, projectUri, testMethodAnnotation, testClassAnnotation);
+    List<Object> arguments = asList(projectUri, testMethodAnnotation, testClassAnnotation);
 
-    List<String> result = find(arguments);
+    List<String> result = TestFinderHandler.getClassesFromProject(arguments);
     assertNotNull(result);
     assertEquals(2, result.size());
 
@@ -170,7 +113,6 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @SuppressWarnings("restriction")
   private String getResourceUriAsString(URI uri) {
-    String fileUri = ResourceUtils.fixURI(uri);
-    return fileUri;
+    return ResourceUtils.fixURI(uri);
   }
 }

@@ -48,7 +48,7 @@ public class JavaTestFinder {
    * @param cursorOffset cursor position
    * @return declaration of test method. (Example: full.qualified.name.of.Class#methodName)
    */
-  public List<String> findTestMethodDeclaration(
+  public static List<String> findTestMethodDeclaration(
       ICompilationUnit compilationUnit, int cursorOffset) {
     if (compilationUnit == null) {
       return emptyList();
@@ -73,7 +73,7 @@ public class JavaTestFinder {
    * @param compilationUnit compilation unit of class
    * @return declaration of test class which should be ran.
    */
-  public List<String> findTestClassDeclaration(ICompilationUnit compilationUnit) {
+  public static List<String> findTestClassDeclaration(ICompilationUnit compilationUnit) {
     if (compilationUnit == null) {
       return emptyList();
     }
@@ -89,7 +89,7 @@ public class JavaTestFinder {
    * @param testClassAnnotation java annotation which describes test class in the test framework
    * @return list of test classes which should be ran.
    */
-  public List<String> findTestClassesInPackage(
+  public static List<String> findTestClassesInPackage(
       String packageUri, String testMethodAnnotation, String testClassAnnotation) {
     IPackageFragment packageFragment;
 
@@ -117,7 +117,7 @@ public class JavaTestFinder {
    * @param testClassAnnotation java annotation which describes test class in the test framework
    * @return list of test classes which should be ran.
    */
-  public List<String> findTestClassesInProject(
+  public static List<String> findTestClassesInProject(
       String projectUri, String testMethodAnnotation, String testClassAnnotation) {
 
     IJavaProject javaProject = getJavaProject(projectUri);
@@ -137,7 +137,8 @@ public class JavaTestFinder {
    * @param testAnnotation java annotation which describes test method in the test framework
    * @return {@code true} if the method is test method
    */
-  public boolean isTest(IMethod method, ICompilationUnit compilationUnit, String testAnnotation) {
+  public static boolean isTest(
+      IMethod method, ICompilationUnit compilationUnit, String testAnnotation) {
     try {
       IAnnotation[] annotations = method.getAnnotations();
       IAnnotation test = null;
@@ -163,7 +164,7 @@ public class JavaTestFinder {
    * @param classes list of classes
    * @return list of fqns
    */
-  public List<String> getFqns(List<String> classes) {
+  public static List<String> getFqns(List<String> classes) {
     if (classes == null) {
       return emptyList();
     }
@@ -179,7 +180,7 @@ public class JavaTestFinder {
     return result;
   }
 
-  private boolean isImportOfTestAnnotationExist(
+  private static boolean isImportOfTestAnnotationExist(
       ICompilationUnit compilationUnit, String testAnnotation) {
     try {
       IImportDeclaration[] imports = compilationUnit.getImports();
@@ -200,7 +201,7 @@ public class JavaTestFinder {
     return false;
   }
 
-  private List<String> findClassesInContainer(
+  private static List<String> findClassesInContainer(
       IJavaElement container, String testMethodAnnotation, String testClassAnnotation) {
     List<String> result = new LinkedList<>();
     try {
@@ -247,7 +248,7 @@ public class JavaTestFinder {
     return result;
   }
 
-  private IRegion getRegion(IJavaElement element) throws JavaModelException {
+  private static IRegion getRegion(IJavaElement element) throws JavaModelException {
     IRegion result = JavaCore.newRegion();
     if (element.getElementType() == IJavaElement.JAVA_PROJECT) {
       // for projects only add the contained source folders

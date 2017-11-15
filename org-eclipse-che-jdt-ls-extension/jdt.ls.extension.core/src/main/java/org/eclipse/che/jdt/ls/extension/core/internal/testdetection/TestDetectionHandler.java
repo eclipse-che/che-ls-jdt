@@ -84,7 +84,6 @@ public class TestDetectionHandler {
    */
   private static boolean isTestMethod(
       IMethod method, ICompilationUnit unit, String testAnnotation) {
-    JavaTestFinder javaTestFinder = new JavaTestFinder();
     try {
       int flags = method.getFlags();
       // 'V' is void signature
@@ -93,7 +92,7 @@ public class TestDetectionHandler {
           && !Flags.isAbstract(flags)
           && !Flags.isStatic(flags)
           && "V".equals(method.getReturnType())
-          && javaTestFinder.isTest(method, unit, testAnnotation);
+          && JavaTestFinder.isTest(method, unit, testAnnotation);
 
     } catch (JavaModelException ignored) {
       return false;

@@ -10,91 +10,78 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
-import static java.util.Collections.emptyList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassDeclaration;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassesInPackage;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassesInProject;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestMethodDeclaration;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
 
 import java.util.List;
+import org.eclipse.jdt.core.ICompilationUnit;
 
 /** Class for finding test methods in the different areas. */
 public class TestFinderHandler {
-  private static final String FILE_CONTEXT_TYPE = "FILE";
-  private static final String FOLDER_CONTEXT_TYPE = "FOLDER";
-  private static final String SET_CONTEXT_TYPE = "SET";
-  private static final String PROJECT_CONTEXT_TYPE = "PROJECT";
-  private static final String CURSOR_POSITION_CONTEXT_TYPE = "CURSOR_POSITION";
-
-  private static String fileUri;
-  private static String projectUri;
-  private static String testMethodAnnotation;
-  private static String testClassAnnotation;
-  private static String contextType;
-  private static List<String> classes;
-  private static int cursorOffset;
-
   /**
-   * Finds tests in some area. The area is defined by first parameter of arguments - it is context
-   * type.
+   * Returns test class declaration by file uri.
    *
-   * <p>The context type can be:
-   *
-   * <ul>
-   *   <li>FILE - find tests in the file
-   *   <li>FOLDER - find tests in the folder/package
-   *   <li>SET - find tests in custom set of classes
-   *   <li>PROJECT - find tests in the project
-   *   <li>CURSOR_POSITION - find class in cursor position
-   * </ul>
-   *
-   * The values of arguments are:
-   *
-   * <p>0: context type (String) 1: project URI (String) 2: fqn of test method annotation (String)
-   * 3: fqn of test class annotation (String). If context type is CURSOR_POSITION 4: file URI
-   * (String) 5: cursor offset (double) If context type is FILE or FOLDER 4: file URI (String) If
-   * contex type is SET 4: list of classes (List<String>)
-   *
-   * @param arguments list of arguments
-   * @return test methods' declarations
+   * @param arguments contain value of file URI
+   * @return fqn of test class
    */
-  public static List<String> find(List<Object> arguments) {
-    readArguments(arguments);
-    JavaTestFinder finder = new JavaTestFinder();
-
-    switch (contextType) {
-      case FILE_CONTEXT_TYPE:
-        return finder.findTestClassDeclaration(resolveCompilationUnit(fileUri));
-      case FOLDER_CONTEXT_TYPE:
-        return finder.findTestClassesInPackage(fileUri, testMethodAnnotation, testClassAnnotation);
-      case SET_CONTEXT_TYPE:
-        return finder.getFqns(classes);
-      case PROJECT_CONTEXT_TYPE:
-        return finder.findTestClassesInProject(
-            projectUri, testMethodAnnotation, testClassAnnotation);
-      case CURSOR_POSITION_CONTEXT_TYPE:
-        return finder.findTestMethodDeclaration(resolveCompilationUnit(fileUri), cursorOffset);
-    }
-
-    return emptyList();
+  public static List<String> getClass(List<Object> arguments) {
+    String uriString = (String) arguments.get(0);
+    ICompilationUnit unit = resolveCompilationUnit(uriString);
+    return findTestClassDeclaration(unit);
   }
 
-  private static void readArguments(List<Object> arguments) {
-    contextType = (String) arguments.get(0);
-    projectUri = (String) arguments.get(1);
-    testMethodAnnotation = (String) arguments.get(2);
-    testClassAnnotation = (String) arguments.get(3);
-    switch (contextType) {
-      case CURSOR_POSITION_CONTEXT_TYPE:
-        fileUri = (String) arguments.get(4);
-        cursorOffset = ((Double) arguments.get(5)).intValue();
-        break;
-      case FILE_CONTEXT_TYPE:
-        fileUri = (String) arguments.get(4);
-        break;
-      case FOLDER_CONTEXT_TYPE:
-        fileUri = (String) arguments.get(4);
-        break;
-      case SET_CONTEXT_TYPE:
-        classes = (List<String>) arguments.get(4);
-        break;
-    }
+  /**
+   * Returns test classes from the folder.
+   *
+   * @param arguments contain folder URI, fqn of test method annotation and fqn of test class
+   *     annotation
+   * @return fqns of test classes
+   */
+  public static List<String> getClassesFromFolder(List<Object> arguments) {
+    String folderUri = (String) arguments.get(0);
+    String testMethodAnnotation = (String) arguments.get(1);
+    String testClassAnnotation = (String) arguments.get(2);
+    return findTestClassesInPackage(folderUri, testMethodAnnotation, testClassAnnotation);
+  }
+
+  /**
+   * Returns test classes from the project.
+   *
+   * @param arguments contain project URI, fqn of test method annotation and fqn of test class
+   *     annotation
+   * @return fqns of test classes
+   */
+  public static List<String> getClassesFromProject(List<Object> arguments) {
+    String projectUri = (String) arguments.get(0);
+    String testMethodAnnotation = (String) arguments.get(1);
+    String testClassAnnotation = (String) arguments.get(2);
+    return findTestClassesInProject(projectUri, testMethodAnnotation, testClassAnnotation);
+  }
+
+  /**
+   * Returns test method declaration by cursor position.
+   *
+   * @param arguments contain file URI, cursor offset annotation
+   * @return returns method declaration if it is a test otherwise returns empty list
+   */
+  public static List<String> getTestByCursorPosition(List<Object> arguments) {
+    String fileUri = (String) arguments.get(0);
+    int cursorOffset = ((Double) arguments.get(1)).intValue();
+    ICompilationUnit unit = resolveCompilationUnit(fileUri);
+    return findTestMethodDeclaration(unit, cursorOffset);
+  }
+
+  /**
+   * Returns classes's fqns.
+   *
+   * @param arguments contain list of classes
+   * @return returns fqns
+   */
+  public static List<String> getClassesFromSet(List<Object> arguments) {
+    List<String> classes = (List<String>) arguments.get(1);
+    return JavaTestFinder.getFqns(classes);
   }
 }

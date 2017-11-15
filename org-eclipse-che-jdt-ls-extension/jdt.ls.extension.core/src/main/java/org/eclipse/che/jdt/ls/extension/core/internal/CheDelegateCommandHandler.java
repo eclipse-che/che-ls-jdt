@@ -22,10 +22,17 @@ import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
  * supported command should be registered its id into plugin.xml.
  */
 public class CheDelegateCommandHandler implements IDelegateCommandHandler {
-
   private static final String TEST_DETECT = "che.jdt.ls.extension.testdetect";
 
-  private static final String TEST_FIND = "che.jdt.ls.extension.testfind";
+  private static final String FIND_TEST_BY_CURSOR = "che.jdt.ls.extension.findTestByCursor";
+
+  private static final String FIND_TESTS_FROM_PROJECT = "che.jdt.ls.extension.findTestFromProject";
+
+  private static final String FIND_TESTS_FROM_FOLDER = "che.jdt.ls.extension.findTestFromFolder";
+
+  private static final String FIND_TESTS_FROM_ENTRY = "che.jdt.ls.extension.findTestFromEntry";
+
+  private static final String FIND_TESTS_BY_FILE = "che.jdt.ls.extension.findTestByFile";
 
   private static final String RESOLVE_CLASSPATH = "che.jdt.ls.extension.resolveclasspath";
 
@@ -37,8 +44,16 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     switch (commandId) {
       case TEST_DETECT:
         return TestDetectionHandler.detect(arguments);
-      case TEST_FIND:
-        return TestFinderHandler.find(arguments);
+      case FIND_TEST_BY_CURSOR:
+        return TestFinderHandler.getTestByCursorPosition(arguments);
+      case FIND_TESTS_FROM_PROJECT:
+        return TestFinderHandler.getClassesFromProject(arguments);
+      case FIND_TESTS_FROM_FOLDER:
+        return TestFinderHandler.getClassesFromFolder(arguments);
+      case FIND_TESTS_FROM_ENTRY:
+        return TestFinderHandler.getClassesFromSet(arguments);
+      case FIND_TESTS_BY_FILE:
+        return TestFinderHandler.getClass(arguments);
       case RESOLVE_CLASSPATH:
         return ResolveClassPathsHandler.resolveClasspaths(arguments);
       case GET_OUTPUT_DIR:
