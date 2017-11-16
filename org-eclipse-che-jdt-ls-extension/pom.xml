@@ -56,6 +56,11 @@
             <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
             <layout>p2</layout>
         </repository>
+		<repository>
+            <id>org.mockito.mockito-all</id>
+            <url>http://download.eclipse.org/scout/releases/4.0/testing</url>
+            <layout>p2</layout>
+        </repository>
     </repositories>
     <build>
         <pluginManagement>
@@ -108,10 +113,10 @@
                     <artifactId>tycho-surefire-plugin</artifactId>
                     <version>${tycho.version}</version>
                     <configuration>
-                        <useUIHarness>true</useUIHarness>
+                        <useUIHarness>false</useUIHarness>
                         <argLine>${tycho.test.jvmArgs}</argLine>
                         <!-- kill test JVM if tests take more than 1 minute (60 seconds) to finish -->
-                        <forkedProcessTimeoutInSeconds>60</forkedProcessTimeoutInSeconds>
+                        <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     </configuration>
                 </plugin>
             </plugins>
