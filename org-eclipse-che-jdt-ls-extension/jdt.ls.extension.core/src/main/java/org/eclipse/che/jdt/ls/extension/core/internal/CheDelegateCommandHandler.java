@@ -10,7 +10,11 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
+import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
@@ -37,6 +41,14 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
   private static final String RESOLVE_CLASSPATH = "che.jdt.ls.extension.resolveclasspath";
 
   private static final String GET_OUTPUT_DIR = "che.jdt.ls.extension.outputdir";
+  private static final Map<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>
+      commands;
+
+  static {
+    commands = new HashMap<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>();
+    commands.put(Commands.FILE_STRUCTURE_COMMAND, FileStructureCommand::execute);
+    commands.put(Commands.HELLO_WORLD_COMMAND, (params, progress) -> "Hello World");
+  }
 
   @Override
   public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor progress)
@@ -58,9 +70,12 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
         return ResolveClassPathsHandler.resolveClasspaths(arguments);
       case GET_OUTPUT_DIR:
         return ResolveClassPathsHandler.getOutputDirectory(arguments);
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unsupported command '%s'!", commandId));
     }
+
+    BiFunction<List<Object>, IProgressMonitor, ? extends Object> command = commands.get(commandId);
+    if (command != null) {
+      return command.apply(arguments, progress);
+    }
+    throw new UnsupportedOperationException(String.format("Unsupported command '%s'!", commandId));
   }
 }
