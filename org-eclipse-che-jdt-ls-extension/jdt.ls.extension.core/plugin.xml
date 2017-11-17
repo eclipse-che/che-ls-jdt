@@ -3,14 +3,14 @@
 <plugin>
    <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
       <delegateCommandHandler class="org.eclipse.che.jdt.ls.extension.core.internal.CheDelegateCommandHandler">
-            <command id="che.jdt.ls.extension.testdetect"/>
+            <command id="che.jdt.ls.extension.detectTest"/>
             <command id="che.jdt.ls.extension.findTestByCursor"/>
             <command id="che.jdt.ls.extension.findTestFromProject"/>
             <command id="che.jdt.ls.extension.findTestFromFolder"/>
             <command id="che.jdt.ls.extension.findTestFromEntry"/>
-            <command id="che.jdt.ls.extension.findTestByFile"/>
-            <command id="che.jdt.ls.extension.resolveclasspath"/>
-            <command id="che.jdt.ls.extension.outputdir"/>
+            <command id="che.jdt.ls.extension.findTestInFile"/>
+            <command id="che.jdt.ls.extension.resolveClasspath"/>
+            <command id="che.jdt.ls.extension.outputDir"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
        </delegateCommandHandler>
    </extension>

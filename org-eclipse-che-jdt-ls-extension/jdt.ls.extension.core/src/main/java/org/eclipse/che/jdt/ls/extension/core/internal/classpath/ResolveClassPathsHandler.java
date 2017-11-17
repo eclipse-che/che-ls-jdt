@@ -29,6 +29,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -42,10 +44,15 @@ public class ResolveClassPathsHandler {
    * Resolves class path for a java project.
    *
    * @param arguments a list contains project URI
+   * @param pm a progress monitor
    * @return the class paths entries
    */
-  public static List<String> resolveClasspaths(List<Object> arguments) {
+  public static List<String> resolveClasspaths(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
 
     IJavaProject javaProject = getJavaProject(projectUri);
 
@@ -60,10 +67,15 @@ public class ResolveClassPathsHandler {
    * Gets output location for a java project.
    *
    * @param arguments a list contains project URI
+   * @param pm a progress monitor
    * @return output location, might returns empty string if something happens
    */
-  public static String getOutputDirectory(List<Object> arguments) {
+  public static String getOutputDirectory(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
 
     IJavaProject javaProject = getJavaProject(projectUri);
 
