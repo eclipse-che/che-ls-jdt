@@ -73,6 +73,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
     commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
+    commands.put(Commands.REFERENCES_COMMAND, ReferencesCommand::execute);
   }
 
   @Override
