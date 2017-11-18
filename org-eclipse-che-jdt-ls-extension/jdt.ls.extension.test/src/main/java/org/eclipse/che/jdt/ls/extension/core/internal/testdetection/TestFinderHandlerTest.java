@@ -13,6 +13,7 @@ package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler.getClassFqn;
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler.getClassesFromFolder;
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler.getTestByCursorPosition;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -80,8 +81,7 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
         new TestFindParameters(
             fileURI, TEST_METHOD_ANNOTATION, TEST_CLASS_ANNOTATION, 0, emptyList());
 
-    List<String> result =
-        TestFinderHandler.getClassFqn(singletonList(params), new NullProgressMonitor());
+    List<String> result = getClassFqn(singletonList(params), new NullProgressMonitor());
     assertNotNull(result);
     assertEquals(1, result.size());
     assertEquals("org.eclipse.che.examples.AppOneTest", result.get(0));

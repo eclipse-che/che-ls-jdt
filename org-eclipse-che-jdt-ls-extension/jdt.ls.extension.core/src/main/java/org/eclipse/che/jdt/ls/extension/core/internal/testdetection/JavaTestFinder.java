@@ -71,14 +71,17 @@ public class JavaTestFinder {
    * Finds test class declaration.
    *
    * @param compilationUnit compilation unit of class
+   * @param methodAnnotation java annotation which describes test method in the test framework
+   * @param classAnnotation java annotation which describes test class in the test framework
    * @return declaration of test class which should be ran.
    */
-  public static List<String> findTestClassDeclaration(ICompilationUnit compilationUnit) {
+  public static List<String> findTestClassDeclaration(
+      ICompilationUnit compilationUnit, String methodAnnotation, String classAnnotation) {
     if (compilationUnit == null) {
       return emptyList();
     }
     IType primaryType = compilationUnit.findPrimaryType();
-    return singletonList(primaryType.getFullyQualifiedName());
+    return findClassesInContainer(primaryType, methodAnnotation, classAnnotation);
   }
 
   /**

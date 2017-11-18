@@ -48,13 +48,15 @@ public class TestFinderHandler {
         gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
 
     String uriString = parameters.getSourceUri();
+    String methodAnnotation = parameters.getTestMethodAnnotation();
+    String classAnnotation = parameters.getTestClassAnnotation();
 
     if (pm.isCanceled()) {
       throw new OperationCanceledException();
     }
 
     ICompilationUnit unit = resolveCompilationUnit(uriString);
-    return findTestClassDeclaration(unit);
+    return findTestClassDeclaration(unit, methodAnnotation, classAnnotation);
   }
 
   /**
