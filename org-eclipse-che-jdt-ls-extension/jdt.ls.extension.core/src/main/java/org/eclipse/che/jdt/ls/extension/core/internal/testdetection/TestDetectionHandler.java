@@ -57,10 +57,6 @@ public class TestDetectionHandler {
     String testAnnotation = parameters.getTestAnnotation();
     int cursorOffset = parameters.getCursorOffset();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
-
     ICompilationUnit unit = JDTUtils.resolveCompilationUnit(fileUri);
     if (unit == null || !unit.exists()) {
       return Collections.emptyList();
@@ -70,7 +66,7 @@ public class TestDetectionHandler {
 
     try {
       if (cursorOffset == -1) {
-        addAllTestsMethod(result, unit, testAnnotation);
+        addAllTestsMethod(result, unit, testAnnotation, pm);
       } else {
         IJavaElement elementAt = unit.getElementAt(cursorOffset);
         if (elementAt != null && elementAt.getElementType() == IJavaElement.METHOD) {
@@ -78,7 +74,7 @@ public class TestDetectionHandler {
             result.add(createTestPosition((IMethod) elementAt));
           }
         } else {
-          addAllTestsMethod(result, unit, testAnnotation);
+          addAllTestsMethod(result, unit, testAnnotation, pm);
         }
       }
     } catch (Exception e) {
@@ -88,9 +84,17 @@ public class TestDetectionHandler {
   }
 
   private static void addAllTestsMethod(
-      List<TestPosition> result, ICompilationUnit compilationUnit, String testAnnotation)
+      List<TestPosition> result,
+      ICompilationUnit compilationUnit,
+      String testAnnotation,
+      IProgressMonitor pm)
       throws JavaModelException {
     for (IType type : compilationUnit.getAllTypes()) {
+
+      if (pm.isCanceled()) {
+        throw new OperationCanceledException();
+      }
+
       for (IMethod method : type.getMethods()) {
         if (isTestMethod(method, compilationUnit, testAnnotation)) {
           result.add(createTestPosition(method));

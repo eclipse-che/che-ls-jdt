@@ -50,17 +50,13 @@ public class ResolveClassPathsHandler {
   public static List<String> resolveClasspaths(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
-
     IJavaProject javaProject = getJavaProject(projectUri);
 
     if (javaProject == null) {
       return emptyList();
     }
 
-    return getProjectClassPath(javaProject);
+    return getProjectClassPath(javaProject, pm);
   }
 
   /**
@@ -98,11 +94,14 @@ public class ResolveClassPathsHandler {
    * @param javaProject java project
    * @return set of resources which are included to the classpath
    */
-  private static List<String> getProjectClassPath(IJavaProject javaProject) {
+  private static List<String> getProjectClassPath(IJavaProject javaProject, IProgressMonitor pm) {
     try {
       IClasspathEntry[] resolvedClasspath = javaProject.getResolvedClasspath(false);
       List<String> result = new LinkedList<>();
       for (IClasspathEntry classpathEntry : resolvedClasspath) {
+        if (pm.isCanceled()) {
+          throw new OperationCanceledException();
+        }
         switch (classpathEntry.getEntryKind()) {
           case IClasspathEntry.CPE_LIBRARY:
             IPath path = classpathEntry.getPath();
@@ -124,7 +123,7 @@ public class ResolveClassPathsHandler {
             if (project == null) {
               break;
             }
-            result.addAll(getProjectClassPath(project));
+            result.addAll(getProjectClassPath(project, pm));
             break;
         }
       }
