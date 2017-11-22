@@ -29,6 +29,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -42,9 +44,10 @@ public class ResolveClassPathsHandler {
    * Resolves class path for a java project.
    *
    * @param arguments a list contains project URI
+   * @param pm a progress monitor
    * @return the class paths entries
    */
-  public static List<String> resolveClasspaths(List<Object> arguments) {
+  public static List<String> resolveClasspaths(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
 
     IJavaProject javaProject = getJavaProject(projectUri);
@@ -53,17 +56,22 @@ public class ResolveClassPathsHandler {
       return emptyList();
     }
 
-    return getProjectClassPath(javaProject);
+    return getProjectClassPath(javaProject, pm);
   }
 
   /**
    * Gets output location for a java project.
    *
    * @param arguments a list contains project URI
+   * @param pm a progress monitor
    * @return output location, might returns empty string if something happens
    */
-  public static String getOutputDirectory(List<Object> arguments) {
+  public static String getOutputDirectory(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
 
     IJavaProject javaProject = getJavaProject(projectUri);
 
@@ -86,11 +94,14 @@ public class ResolveClassPathsHandler {
    * @param javaProject java project
    * @return set of resources which are included to the classpath
    */
-  private static List<String> getProjectClassPath(IJavaProject javaProject) {
+  private static List<String> getProjectClassPath(IJavaProject javaProject, IProgressMonitor pm) {
     try {
       IClasspathEntry[] resolvedClasspath = javaProject.getResolvedClasspath(false);
       List<String> result = new LinkedList<>();
       for (IClasspathEntry classpathEntry : resolvedClasspath) {
+        if (pm.isCanceled()) {
+          throw new OperationCanceledException();
+        }
         switch (classpathEntry.getEntryKind()) {
           case IClasspathEntry.CPE_LIBRARY:
             IPath path = classpathEntry.getPath();
@@ -112,7 +123,7 @@ public class ResolveClassPathsHandler {
             if (project == null) {
               break;
             }
-            result.addAll(getProjectClassPath(project));
+            result.addAll(getProjectClassPath(project, pm));
             break;
         }
       }

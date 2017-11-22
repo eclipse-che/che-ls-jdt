@@ -26,52 +26,27 @@ import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
  * supported command should be registered its id into plugin.xml.
  */
 public class CheDelegateCommandHandler implements IDelegateCommandHandler {
-  private static final String TEST_DETECT = "che.jdt.ls.extension.testdetect";
-
-  private static final String FIND_TEST_BY_CURSOR = "che.jdt.ls.extension.findTestByCursor";
-
-  private static final String FIND_TESTS_FROM_PROJECT = "che.jdt.ls.extension.findTestFromProject";
-
-  private static final String FIND_TESTS_FROM_FOLDER = "che.jdt.ls.extension.findTestFromFolder";
-
-  private static final String FIND_TESTS_FROM_ENTRY = "che.jdt.ls.extension.findTestFromEntry";
-
-  private static final String FIND_TESTS_BY_FILE = "che.jdt.ls.extension.findTestByFile";
-
-  private static final String RESOLVE_CLASSPATH = "che.jdt.ls.extension.resolveclasspath";
-
-  private static final String GET_OUTPUT_DIR = "che.jdt.ls.extension.outputdir";
   private static final Map<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>
       commands;
 
   static {
     commands = new HashMap<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>();
-    commands.put(Commands.FILE_STRUCTURE_COMMAND, FileStructureCommand::execute);
     commands.put(Commands.HELLO_WORLD_COMMAND, (params, progress) -> "Hello World");
+    commands.put(Commands.FILE_STRUCTURE_COMMAND, FileStructureCommand::execute);
+    commands.put(Commands.TEST_DETECT_COMMAND, TestDetectionHandler::detect);
+    commands.put(Commands.FIND_TEST_BY_CURSOR_COMMAND, TestFinderHandler::getTestByCursorPosition);
+    commands.put(
+        Commands.FIND_TESTS_FROM_PROJECT_COMMAND, TestFinderHandler::getClassesFromProject);
+    commands.put(Commands.FIND_TESTS_FROM_FOLDER_COMMAND, TestFinderHandler::getClassesFromFolder);
+    commands.put(Commands.FIND_TESTS_FROM_ENTRY_COMMAND, TestFinderHandler::getClassesFromSet);
+    commands.put(Commands.FIND_TESTS_IN_FILE_COMMAND, TestFinderHandler::getClassFqn);
+    commands.put(Commands.RESOLVE_CLASSPATH_COMMAND, ResolveClassPathsHandler::resolveClasspaths);
+    commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
   }
 
   @Override
   public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor progress)
       throws Exception {
-    switch (commandId) {
-      case TEST_DETECT:
-        return TestDetectionHandler.detect(arguments);
-      case FIND_TEST_BY_CURSOR:
-        return TestFinderHandler.getTestByCursorPosition(arguments);
-      case FIND_TESTS_FROM_PROJECT:
-        return TestFinderHandler.getClassesFromProject(arguments);
-      case FIND_TESTS_FROM_FOLDER:
-        return TestFinderHandler.getClassesFromFolder(arguments);
-      case FIND_TESTS_FROM_ENTRY:
-        return TestFinderHandler.getClassesFromSet(arguments);
-      case FIND_TESTS_BY_FILE:
-        return TestFinderHandler.getClass(arguments);
-      case RESOLVE_CLASSPATH:
-        return ResolveClassPathsHandler.resolveClasspaths(arguments);
-      case GET_OUTPUT_DIR:
-        return ResolveClassPathsHandler.getOutputDirectory(arguments);
-    }
-
     BiFunction<List<Object>, IProgressMonitor, ? extends Object> command = commands.get(commandId);
     if (command != null) {
       return command.apply(arguments, progress);

@@ -11,6 +11,8 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler.detect;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -18,9 +20,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.dto.TestPosition;
+import org.eclipse.che.jdt.ls.extension.api.dto.TestPositionParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -39,12 +44,13 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldReturnEmptyListIfCompilationUnitCanNotBeResolved() throws Exception {
     String testAnnotation = "org.junit.Test";
-    double cursorOffset = -1.0;
+    int cursorOffset = -1;
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/Wrong.java");
 
-    List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
+    TestPositionParameters arguments =
+        new TestPositionParameters(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = TestDetectionHandler.detect(arguments);
+    List<TestPosition> result = detect(singletonList(arguments), new NullProgressMonitor());
     assertNotNull(result);
     assertTrue(result.isEmpty());
   }
@@ -52,12 +58,14 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldDetect3TestMethods() throws Exception {
     String testAnnotation = "org.junit.Test";
-    double cursorOffset = -1.0;
+    int cursorOffset = -1;
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
-    List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
+    TestPositionParameters arguments =
+        new TestPositionParameters(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = TestDetectionHandler.detect(arguments);
+    List<TestPosition> result =
+        TestDetectionHandler.detect(singletonList(arguments), new NullProgressMonitor());
     assertNotNull(result);
     assertEquals(3, result.size());
 
@@ -73,12 +81,14 @@ public class TestDetectionHandlerTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldDetectOnlyFirstTestMethods() throws Exception {
     String testAnnotation = "org.junit.Test";
-    double cursorOffset = 700.0;
+    int cursorOffset = 700;
     String fileURI = createFileUri("src/test/java/org/eclipse/che/examples/AppOneTest.java");
 
-    List<Object> arguments = asList(fileURI, testAnnotation, cursorOffset);
+    TestPositionParameters arguments =
+        new TestPositionParameters(fileURI, testAnnotation, cursorOffset);
 
-    List<TestPosition> result = TestDetectionHandler.detect(arguments);
+    List<TestPosition> result =
+        TestDetectionHandler.detect(singletonList(arguments), new NullProgressMonitor());
     assertNotNull(result);
     assertEquals(1, result.size());
 

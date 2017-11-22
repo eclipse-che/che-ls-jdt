@@ -8,7 +8,7 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
+package org.eclipse.che.jdt.ls.extension.api.dto;
 
 /** Describes test position in document */
 public class TestPosition {

@@ -16,21 +16,47 @@ import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaT
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestMethodDeclaration;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.dto.TestFindParameters;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** Class for finding test methods in the different areas. */
 public class TestFinderHandler {
+  private static final Gson gson =
+      new GsonBuilder()
+          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
+          .create();
+
   /**
    * Returns test class declaration by file uri.
    *
    * @param arguments contain value of file URI
+   * @param pm a progress monitor
    * @return fqn of test class
    */
-  public static List<String> getClass(List<Object> arguments) {
-    String uriString = (String) arguments.get(0);
+  public static List<String> getClassFqn(List<Object> arguments, IProgressMonitor pm) {
+    TestFindParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
+
+    String uriString = parameters.getSourceUri();
+    String methodAnnotation = parameters.getTestMethodAnnotation();
+    String classAnnotation = parameters.getTestClassAnnotation();
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
     ICompilationUnit unit = resolveCompilationUnit(uriString);
-    return findTestClassDeclaration(unit);
+    return findTestClassDeclaration(unit, methodAnnotation, classAnnotation);
   }
 
   /**
@@ -38,12 +64,21 @@ public class TestFinderHandler {
    *
    * @param arguments contain folder URI, fqn of test method annotation and fqn of test class
    *     annotation
+   * @param pm a progress monitor
    * @return fqns of test classes
    */
-  public static List<String> getClassesFromFolder(List<Object> arguments) {
-    String folderUri = (String) arguments.get(0);
-    String testMethodAnnotation = (String) arguments.get(1);
-    String testClassAnnotation = (String) arguments.get(2);
+  public static List<String> getClassesFromFolder(List<Object> arguments, IProgressMonitor pm) {
+    TestFindParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
+
+    String folderUri = parameters.getSourceUri();
+    String testMethodAnnotation = parameters.getTestMethodAnnotation();
+    String testClassAnnotation = parameters.getTestClassAnnotation();
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
     return findTestClassesInPackage(folderUri, testMethodAnnotation, testClassAnnotation);
   }
 
@@ -52,12 +87,21 @@ public class TestFinderHandler {
    *
    * @param arguments contain project URI, fqn of test method annotation and fqn of test class
    *     annotation
+   * @param pm a progress monitor
    * @return fqns of test classes
    */
-  public static List<String> getClassesFromProject(List<Object> arguments) {
-    String projectUri = (String) arguments.get(0);
-    String testMethodAnnotation = (String) arguments.get(1);
-    String testClassAnnotation = (String) arguments.get(2);
+  public static List<String> getClassesFromProject(List<Object> arguments, IProgressMonitor pm) {
+    TestFindParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
+
+    String projectUri = parameters.getSourceUri();
+    String testMethodAnnotation = parameters.getTestMethodAnnotation();
+    String testClassAnnotation = parameters.getTestClassAnnotation();
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
     return findTestClassesInProject(projectUri, testMethodAnnotation, testClassAnnotation);
   }
 
@@ -65,11 +109,20 @@ public class TestFinderHandler {
    * Returns test method declaration by cursor position.
    *
    * @param arguments contain file URI, cursor offset annotation
+   * @param pm a progress monitor
    * @return returns method declaration if it is a test otherwise returns empty list
    */
-  public static List<String> getTestByCursorPosition(List<Object> arguments) {
-    String fileUri = (String) arguments.get(0);
-    int cursorOffset = ((Double) arguments.get(1)).intValue();
+  public static List<String> getTestByCursorPosition(List<Object> arguments, IProgressMonitor pm) {
+    TestFindParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
+
+    String fileUri = parameters.getSourceUri();
+    int cursorOffset = parameters.getCursorOffset();
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
     ICompilationUnit unit = resolveCompilationUnit(fileUri);
     return findTestMethodDeclaration(unit, cursorOffset);
   }
@@ -78,10 +131,19 @@ public class TestFinderHandler {
    * Returns classes's fqns.
    *
    * @param arguments contain list of classes
+   * @param pm a progress monitor
    * @return returns fqns
    */
-  public static List<String> getClassesFromSet(List<Object> arguments) {
-    List<String> classes = (List<String>) arguments.get(1);
+  public static List<String> getClassesFromSet(List<Object> arguments, IProgressMonitor pm) {
+    TestFindParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestFindParameters.class);
+
+    List<String> classes = parameters.getEntryClasses();
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
     return JavaTestFinder.getFqns(classes);
   }
 }

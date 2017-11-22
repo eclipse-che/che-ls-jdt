@@ -10,9 +10,15 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.dto.TestPosition;
+import org.eclipse.che.jdt.ls.extension.api.dto.TestPositionParameters;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -22,20 +28,34 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** Handler for test detection events. */
 public class TestDetectionHandler {
+
+  private static final Gson gson =
+      new GsonBuilder()
+          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
+          .create();
 
   /**
    * Detects if the java class has tests.
    *
    * @param arguments a list contains file URI, fqn of test method annotation and cursor offset
+   * @param pm a progress monitor
    * @return test positions @see {@link TestPosition}
    */
-  public static List<TestPosition> detect(List<Object> arguments) {
-    String fileUri = (String) arguments.get(0);
-    String testAnnotation = (String) arguments.get(1);
-    int cursorOffset = ((Double) arguments.get(2)).intValue();
+  public static List<TestPosition> detect(List<Object> arguments, IProgressMonitor pm) {
+    TestPositionParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), TestPositionParameters.class);
+
+    String fileUri = parameters.getFileUri();
+    String testAnnotation = parameters.getTestAnnotation();
+    int cursorOffset = parameters.getCursorOffset();
 
     ICompilationUnit unit = JDTUtils.resolveCompilationUnit(fileUri);
     if (unit == null || !unit.exists()) {
@@ -46,7 +66,7 @@ public class TestDetectionHandler {
 
     try {
       if (cursorOffset == -1) {
-        addAllTestsMethod(result, unit, testAnnotation);
+        addAllTestsMethod(result, unit, testAnnotation, pm);
       } else {
         IJavaElement elementAt = unit.getElementAt(cursorOffset);
         if (elementAt != null && elementAt.getElementType() == IJavaElement.METHOD) {
@@ -54,7 +74,7 @@ public class TestDetectionHandler {
             result.add(createTestPosition((IMethod) elementAt));
           }
         } else {
-          addAllTestsMethod(result, unit, testAnnotation);
+          addAllTestsMethod(result, unit, testAnnotation, pm);
         }
       }
     } catch (Exception e) {
@@ -64,9 +84,17 @@ public class TestDetectionHandler {
   }
 
   private static void addAllTestsMethod(
-      List<TestPosition> result, ICompilationUnit compilationUnit, String testAnnotation)
+      List<TestPosition> result,
+      ICompilationUnit compilationUnit,
+      String testAnnotation,
+      IProgressMonitor pm)
       throws JavaModelException {
     for (IType type : compilationUnit.getAllTypes()) {
+
+      if (pm.isCanceled()) {
+        throw new OperationCanceledException();
+      }
+
       for (IMethod method : type.getMethods()) {
         if (isTestMethod(method, compilationUnit, testAnnotation)) {
           result.add(createTestPosition(method));

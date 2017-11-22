@@ -22,6 +22,7 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
     List<Object> arguments = asList(projectUri);
-    List<String> result = resolveClasspaths(arguments);
+    List<String> result = resolveClasspaths(arguments, new NullProgressMonitor());
 
     assertNotNull(result);
     assertFalse(result.isEmpty());
@@ -51,7 +52,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
     List<Object> arguments = asList(projectUri);
-    String result = getOutputDirectory(arguments);
+    String result = getOutputDirectory(arguments, new NullProgressMonitor());
 
     assertTrue(result.endsWith("testproject/target/classes"));
   }
