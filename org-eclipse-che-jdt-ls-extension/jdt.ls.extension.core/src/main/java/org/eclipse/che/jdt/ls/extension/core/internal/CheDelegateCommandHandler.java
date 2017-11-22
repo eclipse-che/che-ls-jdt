@@ -10,16 +10,18 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiFunction;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnConverter;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 /**
  * Implementation of {@link IDelegateCommandHandler} which handles custom commands. For each
@@ -42,6 +44,8 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.FIND_TESTS_IN_FILE_COMMAND, TestFinderHandler::getClassFqn);
     commands.put(Commands.RESOLVE_CLASSPATH_COMMAND, ResolveClassPathsHandler::resolveClasspaths);
     commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
+    commands.put(Commands.LOCATION_TO_FQN_COMMAND, FqnConverter::locationToFqn);
+    commands.put(Commands.FQN_TO_LOCATION_COMMAND, FqnConverter::fqnToLocation);
   }
 
   @Override
