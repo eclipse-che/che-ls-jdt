@@ -16,6 +16,7 @@ import com.google.gson.GsonBuilder;
 import org.eclipse.che.jdt.ls.extension.api.dto.debug.LocationParameters;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -25,13 +26,21 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.search.IJavaSearchConstants;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.TypeNameMatch;
+import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
 import org.eclipse.jdt.internal.core.JavaModel;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+
+// TODO javadoc
 
 /** @author Anatolii Bazko */
 public class FqnConverter {
@@ -137,7 +146,73 @@ public class FqnConverter {
   }
 
   public static List<String> fqnToLocation(List<Object> parameters, IProgressMonitor pm) {
-    return null;
+    String fqn = location.declaringType().name();
+
+    List<IType> types;
+    try {
+      Pair<char[][], char[][]> fqnPair = prepareFqnToSearch(fqn);
+
+      types = findTypeByFqn(fqnPair.first, fqnPair.second, createWorkspaceScope());
+    } catch (JavaModelException e) {
+      throw new DebuggerException("Can't find class models by fqn: " + fqn, e);
+    }
+
+    if (types.isEmpty()) {
+      throw new DebuggerException("Type with fully qualified name: " + fqn + " was not found");
+    }
+
+    IType type = types.get(0); // TODO we need handle few result! It's temporary solution.
+    String typeProjectPath = type.getJavaProject().getPath().toOSString();
+    if (type.isBinary()) {
+      IClassFile classFile = type.getClassFile();
+      int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
+      return new LocationImpl(fqn, location.lineNumber(), true, libId, typeProjectPath, null, -1);
+    } else {
+      ICompilationUnit compilationUnit = type.getCompilationUnit();
+      typeProjectPath = type.getJavaProject().getPath().toOSString();
+      String resourcePath = compilationUnit.getPath().toOSString();
+      return new LocationImpl(
+          resourcePath, location.lineNumber(), false, -1, typeProjectPath, null, -1);
+    }
+  }
+
+  private static List<IType> findTypeByFqn(
+      char[][] packages, char[][] names, IJavaSearchScope scope) throws JavaModelException {
+    List<IType> result = new ArrayList<>();
+
+    SearchEngine searchEngine = new SearchEngine();
+    searchEngine.searchAllTypeNames(
+        packages,
+        names,
+        scope,
+        new TypeNameMatchRequestor() {
+          @Override
+          public void acceptTypeNameMatch(TypeNameMatch typeNameMatch) {
+            result.add(typeNameMatch.getType());
+          }
+        },
+        IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
+        new NullProgressMonitor());
+    return result;
+  }
+
+  private static Pair<char[][], char[][]> prepareFqnToSearch(String fqn) {
+    String outerClassFqn = extractOuterClassFqn(fqn);
+    int lastDotIndex = outerClassFqn.trim().lastIndexOf('.');
+
+    char[][] packages;
+    char[][] names;
+    if (lastDotIndex == -1) {
+      packages = new char[0][];
+      names = new char[][] {outerClassFqn.toCharArray()};
+    } else {
+      String packageLine = fqn.substring(0, lastDotIndex);
+      packages = new char[][] {packageLine.toCharArray()};
+
+      String nameLine = fqn.substring(lastDotIndex + 1, outerClassFqn.length());
+      names = new char[][] {nameLine.toCharArray()};
+    }
+    return new Pair<>(packages, names);
   }
 
   private static String extractOuterClassFqn(String fqn) {
