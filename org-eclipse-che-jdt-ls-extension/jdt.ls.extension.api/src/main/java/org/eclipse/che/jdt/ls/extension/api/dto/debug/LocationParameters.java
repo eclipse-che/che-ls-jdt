@@ -15,6 +15,22 @@ public class LocationParameters {
   private String projectPath;
   private String target;
   private int lineNumber;
+  private int libId;
+
+  public LocationParameters() {}
+
+  public LocationParameters(String target, int lineNumber, String projectPath) {
+    this.target = target;
+    this.lineNumber = lineNumber;
+    this.projectPath = projectPath;
+  }
+
+  public LocationParameters(String target, int lineNumber, int libId, String projectPath) {
+    this.target = target;
+    this.lineNumber = lineNumber;
+    this.projectPath = projectPath;
+    this.libId = libId;
+  }
 
   public int getLineNumber() {
     return lineNumber;
@@ -24,11 +40,27 @@ public class LocationParameters {
     this.lineNumber = lineNumber;
   }
 
+  public String getTarget() {
+    return target;
+  }
+
+  public void setTarget(String target) {
+    this.target = target;
+  }
+
   public String getProjectPath() {
     return projectPath;
   }
 
   public void setProjectPath(String projectPath) {
     this.projectPath = projectPath;
+  }
+
+  private int getLibId() {
+    return libId;
+  }
+
+  private void setLibId(int libId) {
+    this.libId = libId;
   }
 }
