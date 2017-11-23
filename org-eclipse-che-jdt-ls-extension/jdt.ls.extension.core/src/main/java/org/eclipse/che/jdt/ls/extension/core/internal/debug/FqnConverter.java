@@ -13,15 +13,15 @@ package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.che.jdt.ls.extension.api.dto.debug.LocationParameters;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -32,13 +32,20 @@ import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
 import org.eclipse.jdt.internal.core.JavaModel;
+import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
+import org.eclipse.jdt.internal.core.SourceMethod;
+import org.eclipse.jdt.internal.core.SourceType;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
@@ -52,24 +59,31 @@ public class FqnConverter {
           .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
           .create();
 
-  /**
-   * Return nested class fqn if line with number {@code lineNumber} contains such element, otherwise
-   * return outer class fqn.
-   *
-   * @throws JavaModelException
-   */
-  public static List<String> locationToFqn(List<Object> parameters, IProgressMonitor pm) throws JavaModelException{
-    Preconditions.checkArgument(parameters.isEmpty(), "At least one parameter is expected");
-    Preconditions.checkArgument(parameters.get(0) instanceof String, "");    
-    
+  /** Converts {@link LocationParameters} into fqn. */
+  public static String locationToFqn(List<Object> parameters, IProgressMonitor pm) {
+    Preconditions.checkArgument(parameters.isEmpty(), "LocationParameters is expected");
+    Preconditions.checkArgument(parameters.get(0) instanceof String, "");
+
     LocationParameters location =
         gson.fromJson(gson.toJson(parameters.get(0)), LocationParameters.class);
 
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
+    JavaModel javaModel = JavaModelManager.getJavaModelManager().getJavaModel();
+
     IPath path = Path.fromOSString(location.getTarget());
-    IJavaProject project = getJavaProject(path);
+    IJavaProject project;
+    try {
+      project = getJavaProject(path, javaModel);
+    } catch (JavaModelException e) {
+      throw new RuntimeException(e);
+    }
+
     if (project == null) {
-      if (location.getResourceProjectPath() != null) {
-        project = MODEL.getJavaProject(location.getResourceProjectPath());
+      if (location.getProjectPath() != null) {
+        project = javaModel.getJavaProject(location.getProjectPath());
       } else {
         return location.getTarget();
       }
@@ -123,13 +137,13 @@ public class FqnConverter {
 
       iMember = binSearch(outerClass, start, end);
     } catch (JavaModelException e) {
-      throw new DebuggerException(
-          format(
+      throw new IllegalArgumentException(
+          String.format(
               "Unable to find source for class with fqn '%s' in the project '%s'",
               location.getTarget(), project),
           e);
     } catch (BadLocationException e) {
-      throw new DebuggerException("Unable to calculate breakpoint location", e);
+      throw new IllegalArgumentException("Unable to calculate breakpoint location", e);
     }
 
     if (iMember instanceof IType) {
@@ -152,29 +166,38 @@ public class FqnConverter {
       return fqn;
     }
 
-    throw new DebuggerException("Unable to calculate breakpoint location");
+    throw new IllegalArgumentException("Unable to calculate breakpoint location");
   }
-  
-  /**
-   * Returns Location for current debugger resource.
-   *
-   * @param location location type from JVM
-   * @throws DebuggerException in case {@link org.eclipse.jdt.core.JavaModelException} or if Java
-   *     {@link org.eclipse.jdt.core.IType} was not find
-   */
-  public static LocationParameters fqnToLocation(List<Object> parameters, IProgressMonitor pm) throws JavaModelException {
-    Preconditions.checkArgument(parameters.size() >= 2, "");
-    Preconditions.checkArgument(parameters.get(0) instanceof String, "");    
-    Preconditions.checkArgument(parameters.get(1) instanceof Long, "");        
-        
-    String fqn = (String)parameters.get(0);
-    Long lineNumber = (Long)parameters.get(1);
+
+  /** Converts fqn into {@link LocationParameters}. */
+  public static List<LocationParameters> fqnToLocation(
+      List<Object> parameters, IProgressMonitor pm) {
+    Preconditions.checkArgument(parameters.size() >= 2, "Fqn and line number are expected.");
+    Preconditions.checkArgument(
+        parameters.get(0) instanceof String,
+        "The first parameter is expected to be a String value.");
+    Preconditions.checkArgument(
+        parameters.get(1) instanceof Integer,
+        "The second parameter is expected o be an Integer value.");
+
+    String fqn = (String) parameters.get(0);
+    Integer lineNumber = (Integer) parameters.get(1);
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
 
     Pair<char[][], char[][]> fqnPair = prepareFqnToSearch(fqn);
-    List<IType> types = findTypeByFqn(fqnPair.getKey(), fqnPair.getValue(), SearchEngine.createWorkspaceScope());
+    List<IType> types;
+    try {
+      types =
+          findTypeByFqn(fqnPair.getKey(), fqnPair.getValue(), SearchEngine.createWorkspaceScope());
+    } catch (JavaModelException e) {
+      throw new RuntimeException(e);
+    }
 
     if (types.isEmpty()) {
-      throw new DebuggerException("Type with fully qualified name: " + fqn + " was not found");
+      throw new RuntimeException("Type with fully qualified name: " + fqn + " was not found");
     }
 
     IType type = types.get(0); // TODO we need handle few result! It's temporary solution.
@@ -182,12 +205,14 @@ public class FqnConverter {
     if (type.isBinary()) {
       IClassFile classFile = type.getClassFile();
       int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
-      return new LocationParameters(fqn, lineNumber, libId, typeProjectPath);
+      return Collections.singletonList(
+          new LocationParameters(fqn, lineNumber, libId, typeProjectPath));
     } else {
       ICompilationUnit compilationUnit = type.getCompilationUnit();
       typeProjectPath = type.getJavaProject().getPath().toOSString();
       String resourcePath = compilationUnit.getPath().toOSString();
-      return new LocationParameters(resourcePath, lineNumber, typeProjectPath);
+      return Collections.singletonList(
+          new LocationParameters(resourcePath, lineNumber, typeProjectPath));
     }
   }
 
