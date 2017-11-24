@@ -11,13 +11,11 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.che.jdt.ls.extension.api.dto.debug.LocationParameters;
+import org.eclipse.che.jdt.ls.extension.api.dto.LocationParameters;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -46,26 +44,17 @@ import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** @author Anatolii Bazko */
 public class FqnConverter {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
 
   /** Converts {@link LocationParameters} into fqn. */
-  public static String locationToFqn(List<Object> parameters, IProgressMonitor pm) {
-    Preconditions.checkArgument(parameters.isEmpty(), "LocationParameters is expected");
-    Preconditions.checkArgument(parameters.get(0) instanceof String, "");
+  public static String locationToFqn(List<Object> params, IProgressMonitor pm) {
+    Preconditions.checkArgument(params.size() >= 1, "LocationParameter is expected");
+    Preconditions.checkArgument(
+        params.get(0) instanceof LocationParameters, "LocationParameter is expected");
 
-    LocationParameters location =
-        gson.fromJson(gson.toJson(parameters.get(0)), LocationParameters.class);
+    LocationParameters location = (LocationParameters) params.get(0);
 
     if (pm.isCanceled()) {
       throw new OperationCanceledException();
@@ -152,7 +141,7 @@ public class FqnConverter {
 
     if (iMember != null) {
       fqn = ((IMember) iMember).getDeclaringType().getFullyQualifiedName();
-      while (!(iMember instanceof CompilationUnit)) {
+      while (iMember != null && !(iMember instanceof CompilationUnit)) {
         if (iMember instanceof SourceType
             && !((SourceType) iMember).isAnonymous()
             && iMember.getParent() instanceof SourceMethod) {
@@ -178,7 +167,7 @@ public class FqnConverter {
         "The first parameter is expected to be a String value.");
     Preconditions.checkArgument(
         parameters.get(1) instanceof Integer,
-        "The second parameter is expected o be an Integer value.");
+        "The second parameter is expeced o be an Integer value.");
 
     String fqn = (String) parameters.get(0);
     Integer lineNumber = (Integer) parameters.get(1);

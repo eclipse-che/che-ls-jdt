@@ -8,7 +8,7 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-package org.eclipse.che.jdt.ls.extension.api.dto.debug;
+package org.eclipse.che.jdt.ls.extension.api.dto;
 
 /** @author Anatolii Bazko */
 public class LocationParameters {
@@ -23,6 +23,7 @@ public class LocationParameters {
     this.target = target;
     this.lineNumber = lineNumber;
     this.projectPath = projectPath;
+    this.libId = -1;
   }
 
   public LocationParameters(String target, int lineNumber, int libId, String projectPath) {
@@ -56,11 +57,11 @@ public class LocationParameters {
     this.projectPath = projectPath;
   }
 
-  private int getLibId() {
+  public int getLibId() {
     return libId;
   }
 
-  private void setLibId(int libId) {
+  public void setLibId(int libId) {
     this.libId = libId;
   }
 }
