@@ -38,7 +38,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldConvertSimpleLocation() throws Exception {
     List<LocationParameters> result =
-        FqnConverter.fqnToLocation(asList(FQN, 15), new NullProgressMonitor());
+        FqnConverter.fqnToLocation(asList(FQN, "15"), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
@@ -56,7 +56,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldConvertExternalLibLocation() throws Exception {
     List<LocationParameters> result =
-        FqnConverter.fqnToLocation(asList("java.lang.String", 100), new NullProgressMonitor());
+        FqnConverter.fqnToLocation(asList("java.lang.String", "100"), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
@@ -74,7 +74,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldConvertInnerClassLocation() throws Exception {
     List<LocationParameters> result =
-        FqnConverter.fqnToLocation(asList(FQN + "$InnerClass", 35), new NullProgressMonitor());
+        FqnConverter.fqnToLocation(asList(FQN + "$InnerClass", "35"), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
@@ -93,7 +93,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldConvertAnonymousClassLocation() throws Exception {
     List<LocationParameters> result =
-        FqnConverter.fqnToLocation(asList(FQN + "$1", 22), new NullProgressMonitor());
+        FqnConverter.fqnToLocation(asList(FQN + "$1", "22"), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
@@ -112,7 +112,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldConvertLocationInsideLambdaToFqn() throws Exception {
     List<LocationParameters> result =
-        FqnConverter.fqnToLocation(asList(FQN, 29), new NullProgressMonitor());
+        FqnConverter.fqnToLocation(asList(FQN, "29"), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
