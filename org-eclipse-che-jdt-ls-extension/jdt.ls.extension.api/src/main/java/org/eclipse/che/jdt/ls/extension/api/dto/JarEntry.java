@@ -8,7 +8,7 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-package org.eclipse.che.jdt.ls.extension.api.dto.externallibrary;
+package org.eclipse.che.jdt.ls.extension.api.dto;
 
 /**
  * This class represents an entry of jar of external library.
