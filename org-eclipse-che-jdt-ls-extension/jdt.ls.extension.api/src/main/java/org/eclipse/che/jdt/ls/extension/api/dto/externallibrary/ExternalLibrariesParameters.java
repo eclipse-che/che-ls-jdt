@@ -8,7 +8,7 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-package org.eclipse.che.jdt.ls.extension.api.dto;
+package org.eclipse.che.jdt.ls.extension.api.dto.externallibrary;
 
 /**
  * Parameters for ExternalLibrary commands.

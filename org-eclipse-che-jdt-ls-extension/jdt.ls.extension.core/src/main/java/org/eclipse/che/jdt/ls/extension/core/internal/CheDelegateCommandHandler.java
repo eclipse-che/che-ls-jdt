@@ -37,7 +37,6 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
 
   static {
     commands = new HashMap<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>();
-    commands.put(Commands.HELLO_WORLD_COMMAND, (params, progress) -> "Hello World");
     commands.put(Commands.FILE_STRUCTURE_COMMAND, FileStructureCommand::execute);
     commands.put(Commands.TEST_DETECT_COMMAND, TestDetectionHandler::detect);
     commands.put(Commands.FIND_TEST_BY_CURSOR_COMMAND, TestFinderHandler::getTestByCursorPosition);
