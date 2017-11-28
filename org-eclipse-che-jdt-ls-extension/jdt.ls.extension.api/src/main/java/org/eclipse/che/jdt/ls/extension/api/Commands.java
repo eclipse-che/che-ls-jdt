@@ -30,6 +30,16 @@ public class Commands {
   public static final String FIND_TESTS_IN_FILE_COMMAND = "che.jdt.ls.extension.findTestInFile";
   public static final String RESOLVE_CLASSPATH_COMMAND = "che.jdt.ls.extension.resolveClasspath";
   public static final String GET_OUTPUT_DIR_COMMAND = "che.jdt.ls.extension.outputDir";
+  public static final String GET_EXTERNAL_LIBRARIES_COMMAND =
+      "che.jdt.ls.extension.externalLibraries";
+  public static final String GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND =
+      "che.jdt.ls.extension.externalLibrariesChildren";
+  public static final String GET_LIBRARY_CHILDREN_COMMAND = "che.jdt.ls.extension.libraryChildren";
+  public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
+  public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
+      "che.jdt.ls.extension.libraryContentByPath";
+  public static final String GET_LIBRARY_NODE_CONTENT_BY_FQN_COMMAND =
+      "che.jdt.ls.extension.libraryContentByFQN";
 
   private Commands() {}
 }

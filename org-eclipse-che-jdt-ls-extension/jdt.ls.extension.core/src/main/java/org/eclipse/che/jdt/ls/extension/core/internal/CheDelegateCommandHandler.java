@@ -16,6 +16,12 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByFqnCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByPathCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLibrariesChildrenCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,6 +48,14 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.FIND_TESTS_IN_FILE_COMMAND, TestFinderHandler::getClassFqn);
     commands.put(Commands.RESOLVE_CLASSPATH_COMMAND, ResolveClassPathsHandler::resolveClasspaths);
     commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
+    commands.put(Commands.GET_EXTERNAL_LIBRARIES_COMMAND, ProjectExternalLibraryCommand::execute);
+    commands.put(
+        Commands.GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND,
+        ExternalLibrariesChildrenCommand::execute);
+    commands.put(Commands.GET_LIBRARY_CHILDREN_COMMAND, LibraryChildrenCommand::execute);
+    commands.put(Commands.GET_LIBRARY_ENTRY_COMMAND, LibraryEntryCommand::execute);
+    commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND, ContentByPathCommand::execute);
+    commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_FQN_COMMAND, ContentByFqnCommand::execute);
   }
 
   @Override
