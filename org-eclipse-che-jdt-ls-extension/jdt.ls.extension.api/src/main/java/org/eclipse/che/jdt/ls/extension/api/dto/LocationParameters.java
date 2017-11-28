@@ -23,7 +23,7 @@ public class LocationParameters {
     this.target = target;
     this.lineNumber = lineNumber;
     this.projectPath = projectPath;
-    this.libId = -1;
+    this.libId = 0;
   }
 
   public LocationParameters(String target, int lineNumber, int libId, String projectPath) {

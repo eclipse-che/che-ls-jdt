@@ -11,8 +11,28 @@
 package org.eclipse.che.examples;
 
 public class HelloWorld {
-    public static void main(String[] argvs) {
-        String a = "Che";
-        System.out.println("Hello World " + a + "!");
+  public static void main(String[] argvs) {
+    String a = "Che";
+
+    new InnerClass().sayHello();
+
+    new Thread() {
+      @Override
+      public void run() {
+        System.out.println("Hello");
+      }
+    }.run();
+
+    Stream.of("a", "b")
+        .forEach(
+            v -> {
+              System.out.println(v);
+            });
+  }
+
+  private static class InnerClass {
+    public void sayHello() {
+      System.out.println("Hello");
     }
+  }
 }

@@ -10,31 +10,25 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import java.util.Arrays;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.LocationParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 import org.junit.Before;
 import org.junit.Test;
 
 public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+
+  private static final String PROJECT = "/debugproject";
+  private static final String TEST_CLASS =
+      PROJECT + "/src/main/java/org/eclipse/che/examples/HelloWorld.java";
+  private static final String FQN = "org.eclipse.che.examples.HelloWorld";
 
   @Before
   public void setup() throws Exception {
@@ -42,55 +36,95 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  public void shouldConvertFqnToLocation() throws Exception {
-    final String fqn = "org.eclipse.che.examples.HelloWorld";
-    final int lineNumber = 15;
-    final List<Object> params = Arrays.asList(fqn, lineNumber);
-
-    List<LocationParameters> result = FqnConverter.fqnToLocation(params, new NullProgressMonitor());
+  public void shouldConvertSimpleLocation() throws Exception {
+    List<LocationParameters> result =
+        FqnConverter.fqnToLocation(asList(FQN, 15), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
     LocationParameters location = result.get(0);
-    assertEquals(location.getLineNumber(), lineNumber);
-    assertEquals(
-        location.getTarget(),
-        "/debugproject/src/main/java/org/eclipse/che/examples/HelloWorld.java");
-    assertEquals(location.getProjectPath(), "/debugproject");
-    assertEquals(location.getLibId(), -1);
+    assertEquals(location.getLineNumber(), 15);
+    assertEquals(location.getTarget(), TEST_CLASS);
+    assertEquals(location.getProjectPath(), PROJECT);
+    assertEquals(location.getLibId(), 0);
+
+    String fqn = FqnConverter.locationToFqn(singletonList(location), new NullProgressMonitor());
+
+    assertEquals(fqn, FQN);
   }
 
   @Test
-  public void shouldConvertExternalLibFqnToLocationAndBack() throws Exception {
-    final String target = "java.lang.String";
-    final int lineNumber = 100;
-    final List<Object> params = Arrays.asList(target, lineNumber);
-
-    List<LocationParameters> result = FqnConverter.fqnToLocation(params, new NullProgressMonitor());
+  public void shouldConvertExternalLibLocation() throws Exception {
+    List<LocationParameters> result =
+        FqnConverter.fqnToLocation(asList("java.lang.String", 100), new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
     LocationParameters location = result.get(0);
-    assertEquals(location.getLineNumber(), lineNumber);
+    assertEquals(location.getLineNumber(), 100);
     assertEquals(location.getTarget(), "java.lang.String");
     assertNotNull(location.getProjectPath());
-    assertTrue(location.getLibId() != -1);
+    assertTrue(location.getLibId() != 0);
 
     String fqn = FqnConverter.locationToFqn(singletonList(location), new NullProgressMonitor());
 
-    assertEquals(fqn, target);
+    assertEquals(fqn, "java.lang.String");
   }
 
   @Test
-  public void shouldConvertLocationToFqn() throws Exception {
-    LocationParameters location =
-        new LocationParameters(
-            "/debugproject/src/main/java/org/eclipse/che/examples/HelloWorld.java",
-            15,
-            "/debugproject");
+  public void shouldConvertInnerClassLocation() throws Exception {
+    List<LocationParameters> result =
+        FqnConverter.fqnToLocation(asList(FQN + "$InnerClass", 35), new NullProgressMonitor());
+
+    assertEquals(result.size(), 1);
+
+    LocationParameters location = result.get(0);
+
+    assertEquals(location.getLineNumber(), 35);
+    assertEquals(location.getTarget(), TEST_CLASS);
+    assertEquals(location.getProjectPath(), PROJECT);
+    assertEquals(location.getLibId(), 0);
 
     String fqn = FqnConverter.locationToFqn(singletonList(location), new NullProgressMonitor());
 
-    assertEquals(fqn, "org.eclipse.che.examples.HelloWorld");
+    assertEquals(fqn, FQN + "$InnerClass");
+  }
+
+  @Test
+  public void shouldConvertAnonymousClassLocation() throws Exception {
+    List<LocationParameters> result =
+        FqnConverter.fqnToLocation(asList(FQN + "$1", 22), new NullProgressMonitor());
+
+    assertEquals(result.size(), 1);
+
+    LocationParameters location = result.get(0);
+
+    assertEquals(location.getLineNumber(), 22);
+    assertEquals(location.getTarget(), TEST_CLASS);
+    assertEquals(location.getProjectPath(), PROJECT);
+    assertEquals(location.getLibId(), 0);
+
+    String fqn = FqnConverter.locationToFqn(singletonList(location), new NullProgressMonitor());
+
+    assertEquals(fqn, FQN + "$1");
+  }
+
+  @Test
+  public void shouldConvertLocationInsideLambdaToFqn() throws Exception {
+    List<LocationParameters> result =
+        FqnConverter.fqnToLocation(asList(FQN, 29), new NullProgressMonitor());
+
+    assertEquals(result.size(), 1);
+
+    LocationParameters location = result.get(0);
+
+    assertEquals(location.getLineNumber(), 29);
+    assertEquals(location.getTarget(), TEST_CLASS);
+    assertEquals(location.getProjectPath(), PROJECT);
+    assertEquals(location.getLibId(), 0);
+
+    String fqn = FqnConverter.locationToFqn(singletonList(location), new NullProgressMonitor());
+
+    assertEquals(fqn, FQN);
   }
 }
