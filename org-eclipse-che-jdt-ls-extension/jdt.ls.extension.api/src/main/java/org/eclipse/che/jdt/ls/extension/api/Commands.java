@@ -31,5 +31,10 @@ public class Commands {
   public static final String RESOLVE_CLASSPATH_COMMAND = "che.jdt.ls.extension.resolveClasspath";
   public static final String GET_OUTPUT_DIR_COMMAND = "che.jdt.ls.extension.outputDir";
 
+  // debug
+
+  public static final String FQN_TO_LOCATION_COMMAND = "che.jdt.ls.extension.debug.fqnToLocation";
+  public static final String LOCATION_TO_FQN_COMMAND = "che.jdt.ls.extension.debug.locationToFqn";
+
   private Commands() {}
 }
