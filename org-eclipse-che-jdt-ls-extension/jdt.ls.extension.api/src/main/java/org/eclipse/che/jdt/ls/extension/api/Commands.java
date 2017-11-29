@@ -30,6 +30,7 @@ public class Commands {
   public static final String FIND_TESTS_IN_FILE_COMMAND = "che.jdt.ls.extension.findTestInFile";
   public static final String RESOLVE_CLASSPATH_COMMAND = "che.jdt.ls.extension.resolveClasspath";
   public static final String GET_OUTPUT_DIR_COMMAND = "che.jdt.ls.extension.outputDir";
+  public static final String GET_CLASS_PATH_TREE_COMMAND = "che.jdt.ls.extension.classpathTree";
   public static final String GET_EXTERNAL_LIBRARIES_COMMAND =
       "che.jdt.ls.extension.externalLibraries";
   public static final String GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND =

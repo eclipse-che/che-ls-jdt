@@ -20,6 +20,7 @@
             <command id="che.jdt.ls.extension.libraryChildren"/>
             <command id="che.jdt.ls.extension.externalLibrariesChildren"/>
             <command id="che.jdt.ls.extension.externalLibraries"/>
+            <command id="che.jdt.ls.extension.classpathTree"/>
        </delegateCommandHandler>
    </extension>
 </plugin>

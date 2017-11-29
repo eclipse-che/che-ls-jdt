@@ -23,8 +23,10 @@ package org.eclipse.che.jdt.ls.extension.core.internal.classpath;
 import static java.util.Collections.emptyList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.dto.ClasspathEntry;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -33,6 +35,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
 /**
@@ -86,6 +89,60 @@ public class ResolveClassPathsHandler {
     } catch (JavaModelException e) {
       return "";
     }
+  }
+
+  /**
+   * Returns classpath tree.
+   *
+   * @param params first parameter must be project URI
+   * @param pm a progress monitor
+   * @return list of classpath entries
+   */
+  public static List<ClasspathEntry> getClasspathModelTree(
+      List<Object> params, IProgressMonitor pm) {
+    String projectUri = (String) params.get(0);
+
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
+
+    IJavaProject javaProject = getJavaProject(projectUri);
+
+    if (javaProject == null) {
+      return emptyList();
+    }
+
+    try {
+      IClasspathEntry[] entries = javaProject.getRawClasspath();
+
+      if (entries.length == 0) {
+        return emptyList();
+      }
+
+      return convertClasspathEntriesToDTO(javaProject, entries);
+    } catch (JavaModelException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static List<ClasspathEntry> convertClasspathEntriesToDTO(
+      IJavaProject javaProject, IClasspathEntry[] entries) throws JavaModelException {
+    List<ClasspathEntry> entriesDTO = new ArrayList<>(entries.length);
+    for (IClasspathEntry entry : entries) {
+      ClasspathEntry entryDTO = new ClasspathEntry();
+      entryDTO.setEntryKind(entry.getEntryKind());
+      entryDTO.setPath(entry.getPath().toOSString());
+      if (IClasspathEntry.CPE_CONTAINER == entry.getEntryKind()) {
+
+        IClasspathEntry[] subEntries =
+            JavaCore.getClasspathContainer(entry.getPath(), javaProject).getClasspathEntries();
+
+        entryDTO.setChildren(convertClasspathEntriesToDTO(javaProject, subEntries));
+      }
+      entriesDTO.add(entryDTO);
+    }
+
+    return entriesDTO;
   }
 
   /**
