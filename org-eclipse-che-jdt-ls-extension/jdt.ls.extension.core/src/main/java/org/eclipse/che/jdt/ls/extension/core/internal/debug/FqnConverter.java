@@ -10,19 +10,20 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
+import static java.lang.String.format;
+
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.che.jdt.ls.extension.api.dto.LocationParameters;
+import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -38,91 +39,73 @@ import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
-import org.eclipse.jdt.internal.core.JavaModel;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.core.SourceType;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** @author Anatolii Bazko */
 public class FqnConverter {
 
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
-
-  /** Converts {@link LocationParameters} into fqn. */
+  /** Converts {@link LocationParameters} into fqn. The first parameter contains */
   public static String locationToFqn(List<Object> params, IProgressMonitor pm) {
-    Preconditions.checkArgument(params.size() >= 1, "LocationParameter is expected");
-
-    LocationParameters location;
-    if (params.get(0) instanceof LocationParameters) {
-      location = (LocationParameters) params.get(0);
-    } else {
-      location = gson.fromJson(gson.toJson(params.get(0)), LocationParameters.class);
-    }
+    Preconditions.checkArgument(params.size() >= 2, "File uri and line number are expected");
 
     if (pm.isCanceled()) {
       throw new OperationCanceledException();
     }
 
-    JavaModel javaModel = JavaModelManager.getJavaModelManager().getJavaModel();
+    final String fileUri = (String) params.get(0);
+    final Integer lineNumber = Integer.valueOf(params.get(1).toString());
 
-    IPath path = Path.fromOSString(location.getTarget());
-    IJavaProject project;
-    try {
-      project = getJavaProject(path, javaModel);
-    } catch (JavaModelException e) {
-      throw new RuntimeException(e);
+    // Not a URI then let's assume it is a FQN.
+    if (!fileUri.startsWith("file:")) {
+      return fileUri;
     }
 
-    if (project == null) {
-      if (location.getProjectPath() != null) {
-        project = javaModel.getJavaProject(location.getProjectPath());
-      } else {
-        return location.getTarget();
-      }
+    IJavaProject javaProject = JavaModelUtil.getJavaProject(fileUri);
+
+    if (javaProject == null) {
+      throw new IllegalArgumentException(format("Project for '%s' not found", fileUri));
     }
+
+    URI fileRelativeUri = javaProject.getProject().getLocationURI().relativize(URI.create(fileUri));
+    IPath fileRelativePath = javaProject.getPath().append(fileRelativeUri.toString());
 
     String fqn = null;
-    for (int i = path.segmentCount(); i > 0; i--) {
+    for (int i = fileRelativePath.segmentCount(); i > 0; i--) {
       try {
         IClasspathEntry classpathEntry =
-            ((JavaProject) project).getClasspathEntryFor(path.removeLastSegments(i));
+            ((JavaProject) javaProject)
+                .getClasspathEntryFor(fileRelativePath.removeLastSegments(i));
 
         if (classpathEntry != null) {
           fqn =
-              path.removeFirstSegments(path.segmentCount() - i)
+              fileRelativePath
+                  .removeFirstSegments(fileRelativePath.segmentCount() - i)
                   .removeFileExtension()
                   .toString()
                   .replace("/", ".");
           break;
         }
       } catch (JavaModelException e) {
-        return location.getTarget();
+        return fileUri;
       }
     }
 
     if (fqn == null) {
-      return location.getTarget();
+      return fileUri;
     }
 
     IType outerClass;
     IJavaElement iMember;
     try {
-      outerClass = project.findType(fqn);
+      outerClass = javaProject.findType(fqn);
 
       if (outerClass == null) {
-        return location.getTarget();
+        return fileUri;
       }
 
       String source;
@@ -135,16 +118,16 @@ public class FqnConverter {
       }
 
       Document document = new Document(source);
-      IRegion region = document.getLineInformation(location.getLineNumber());
+      IRegion region = document.getLineInformation(lineNumber);
       int start = region.getOffset();
       int end = start + region.getLength();
 
       iMember = binSearch(outerClass, start, end);
     } catch (JavaModelException e) {
       throw new IllegalArgumentException(
-          String.format(
+          format(
               "Unable to find source for class with fqn '%s' in the project '%s'",
-              location.getTarget(), project),
+              fileUri, javaProject),
           e);
     } catch (BadLocationException e) {
       throw new IllegalArgumentException("Unable to calculate breakpoint location", e);
@@ -199,18 +182,15 @@ public class FqnConverter {
     }
 
     IType type = types.get(0); // TODO we need handle few result! It's temporary solution.
-    String typeProjectPath = type.getJavaProject().getPath().toOSString();
     if (type.isBinary()) {
       IClassFile classFile = type.getClassFile();
       int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
-      return Collections.singletonList(
-          new LocationParameters(fqn, lineNumber, libId, typeProjectPath));
+      return Collections.singletonList(new LocationParameters(fqn, libId, lineNumber));
     } else {
       ICompilationUnit compilationUnit = type.getCompilationUnit();
-      typeProjectPath = type.getJavaProject().getPath().toOSString();
-      String resourcePath = compilationUnit.getPath().toOSString();
-      return Collections.singletonList(
-          new LocationParameters(resourcePath, lineNumber, typeProjectPath));
+      URI resourseUri =
+          type.getJavaProject().getProject().getFile(compilationUnit.getPath()).getRawLocationURI();
+      return Collections.singletonList(new LocationParameters(resourseUri.toString(), lineNumber));
     }
   }
 
@@ -261,22 +241,6 @@ public class FqnConverter {
 
     // handle fqn in case lambda expressions
     return fqn.contains("$$") ? fqn.substring(0, fqn.indexOf("$$")) : fqn;
-  }
-
-  private static IJavaProject getJavaProject(IPath path, JavaModel javaModel)
-      throws JavaModelException {
-    IJavaProject project = null;
-    outer:
-    for (int i = 1; i < path.segmentCount(); i++) {
-      IPath projectPath = path.removeLastSegments(i);
-      for (IJavaProject p : javaModel.getJavaProjects()) {
-        if (p.getPath().equals(projectPath)) {
-          project = p;
-          break outer;
-        }
-      }
-    }
-    return project;
   }
 
   /**

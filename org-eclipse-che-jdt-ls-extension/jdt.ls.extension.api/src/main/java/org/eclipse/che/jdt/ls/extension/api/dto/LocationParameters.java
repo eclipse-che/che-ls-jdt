@@ -12,25 +12,22 @@ package org.eclipse.che.jdt.ls.extension.api.dto;
 
 /** @author Anatolii Bazko */
 public class LocationParameters {
-  private String projectPath;
-  private String target;
+  private String filePath;
   private int lineNumber;
+  private String fqn;
   private int libId;
 
   public LocationParameters() {}
 
-  public LocationParameters(String target, int lineNumber, String projectPath) {
-    this.target = target;
+  public LocationParameters(String filePath, int lineNumber) {
+    this.filePath = filePath;
     this.lineNumber = lineNumber;
-    this.projectPath = projectPath;
-    this.libId = 0;
   }
 
-  public LocationParameters(String target, int lineNumber, int libId, String projectPath) {
-    this.target = target;
-    this.lineNumber = lineNumber;
-    this.projectPath = projectPath;
+  public LocationParameters(String fqn, int libId, int lineNumber) {
+    this.fqn = fqn;
     this.libId = libId;
+    this.lineNumber = lineNumber;
   }
 
   public int getLineNumber() {
@@ -41,20 +38,12 @@ public class LocationParameters {
     this.lineNumber = lineNumber;
   }
 
-  public String getTarget() {
-    return target;
+  public String getFilePath() {
+    return filePath;
   }
 
-  public void setTarget(String target) {
-    this.target = target;
-  }
-
-  public String getProjectPath() {
-    return projectPath;
-  }
-
-  public void setProjectPath(String projectPath) {
-    this.projectPath = projectPath;
+  public void setFilePath(String filePath) {
+    this.filePath = filePath;
   }
 
   public int getLibId() {
@@ -63,5 +52,13 @@ public class LocationParameters {
 
   public void setLibId(int libId) {
     this.libId = libId;
+  }
+
+  public String getFqn() {
+    return fqn;
+  }
+
+  public void setFqn(String fqn) {
+    this.fqn = fqn;
   }
 }
