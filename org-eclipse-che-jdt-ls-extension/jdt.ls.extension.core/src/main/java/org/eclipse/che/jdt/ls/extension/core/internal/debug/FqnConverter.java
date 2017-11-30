@@ -187,9 +187,15 @@ public class FqnConverter {
       int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
       return Collections.singletonList(new LocationParameters(fqn, libId, lineNumber));
     } else {
-      ICompilationUnit compilationUnit = type.getCompilationUnit();
+      IPath unitPath = type.getCompilationUnit().getPath();
+      IPath projectPath = type.getJavaProject().getPath();
+
       URI resourseUri =
-          type.getJavaProject().getProject().getFile(compilationUnit.getPath()).getRawLocationURI();
+          type.getJavaProject()
+              .getProject()
+              .getFile(unitPath.makeRelativeTo(projectPath))
+              .getRawLocationURI();
+
       return Collections.singletonList(new LocationParameters(resourseUri.toString(), lineNumber));
     }
   }

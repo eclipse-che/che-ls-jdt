@@ -36,7 +36,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setup() throws Exception {
-    importProjects("maven/debug");
+    importProjects("maven/debugproject");
     project = WorkspaceHelper.getProject("debugproject");
   }
 
@@ -48,7 +48,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
 
     LocationParameters location = result.get(0);
     assertEquals(location.getLineNumber(), 15);
-    assertTrue(location.getFilePath().endsWith(FILE));
+    assertTrue(location.getFilePath().endsWith("maven/debugproject" + FILE));
     assertEquals(location.getLibId(), 0);
     assertNull(location.getFqn());
 
@@ -85,7 +85,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     LocationParameters location = result.get(0);
 
     assertEquals(location.getLineNumber(), 35);
-    assertTrue(location.getFilePath().endsWith(FILE));
+    assertTrue(location.getFilePath().endsWith("maven/debugproject" + FILE));
     assertEquals(location.getLibId(), 0);
     assertNull(location.getFqn());
 
@@ -104,7 +104,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     LocationParameters location = result.get(0);
 
     assertEquals(location.getLineNumber(), 22);
-    assertTrue(location.getFilePath().endsWith(FILE));
+    assertTrue(location.getFilePath().endsWith("maven/debugproject" + FILE));
     assertEquals(location.getLibId(), 0);
     assertNull(location.getFqn());
 
@@ -122,7 +122,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     LocationParameters location = result.get(0);
 
     assertEquals(location.getLineNumber(), 29);
-    assertTrue(location.getFilePath().endsWith(FILE));
+    assertTrue(location.getFilePath().endsWith("maven/debugproject" + FILE));
     assertEquals(location.getLibId(), 0);
     assertNull(location.getFqn());
 
