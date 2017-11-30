@@ -53,7 +53,7 @@ public class FqnDiscover {
   /**
    * Identifies FQN in the given resource.
    *
-   * @param params contains two arguments; the resource uri and the line number
+   * @param params contains two arguments: the resource uri and the line number
    */
   public static String identifyFqnInResource(List<Object> params, IProgressMonitor pm) {
     Preconditions.checkArgument(params.size() >= 2, "Resource uri and line number are expected");
@@ -165,10 +165,10 @@ public class FqnDiscover {
   }
 
   /**
-   * Find resources by the fqn.
+   * Finds resources by a fqn.
    *
    * @param params contains fqn
-   * @return all resources are identified the given fqn
+   * @return all resources are identified by the given fqn
    */
   public static List<ResourceLocationParameters> findResourcesByFqn(
       List<Object> params, IProgressMonitor pm) {
