@@ -12,8 +12,8 @@
             <command id="che.jdt.ls.extension.resolveClasspath"/>
             <command id="che.jdt.ls.extension.outputDir"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
-            <command id="che.jdt.ls.extension.debug.fqnToLocation"/>
-            <command id="che.jdt.ls.extension.debug.locationToFqn"/>
+            <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
+            <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
         </delegateCommandHandler>
     </extension>
 </plugin>

@@ -10,40 +10,44 @@
  */
 package org.eclipse.che.jdt.ls.extension.api.dto;
 
-/** @author Anatolii Bazko */
-public class LocationParameters {
-  private String filePath;
-  private int lineNumber;
+/**
+ * Resource location parameters.
+ *
+ * @author Anatolii Bazko
+ */
+public class ResourceLocationParameters {
+  private String fileUri;
   private String fqn;
   private int libId;
 
-  public LocationParameters() {}
+  public ResourceLocationParameters() {}
 
-  public LocationParameters(String filePath, int lineNumber) {
-    this.filePath = filePath;
-    this.lineNumber = lineNumber;
+  /**
+   * Resource located in the source folder.
+   *
+   * @param fileUri the resource uri
+   */
+  public ResourceLocationParameters(String fileUri) {
+    this.fileUri = fileUri;
   }
 
-  public LocationParameters(String fqn, int libId, int lineNumber) {
+  /**
+   * Resource located in the external library.
+   *
+   * @param fqn the fully qualified name
+   * @param libId the library identifier
+   */
+  public ResourceLocationParameters(String fqn, int libId) {
     this.fqn = fqn;
     this.libId = libId;
-    this.lineNumber = lineNumber;
   }
 
-  public int getLineNumber() {
-    return lineNumber;
+  public String getFileUri() {
+    return fileUri;
   }
 
-  public void setLineNumber(int lineNumber) {
-    this.lineNumber = lineNumber;
-  }
-
-  public String getFilePath() {
-    return filePath;
-  }
-
-  public void setFilePath(String filePath) {
-    this.filePath = filePath;
+  public void setFileUri(String fileUri) {
+    this.fileUri = fileUri;
   }
 
   public int getLibId() {

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.che.jdt.ls.extension.api.dto.LocationParameters;
+import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocationParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,16 +42,21 @@ import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.core.SourceType;
+import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
 
 /** @author Anatolii Bazko */
-public class FqnConverter {
+public class FqnDiscover {
 
-  /** Converts {@link LocationParameters} into fqn. The first parameter contains */
-  public static String locationToFqn(List<Object> params, IProgressMonitor pm) {
-    Preconditions.checkArgument(params.size() >= 2, "File uri and line number are expected");
+  /**
+   * Identifies FQN in the given resource.
+   *
+   * @param params contains two arguments; the resource uri and the line number
+   */
+  public static String identifyFqnInResource(List<Object> params, IProgressMonitor pm) {
+    Preconditions.checkArgument(params.size() >= 2, "Resource uri and line number are expected");
 
     if (pm.isCanceled()) {
       throw new OperationCanceledException();
@@ -71,7 +76,8 @@ public class FqnConverter {
       throw new IllegalArgumentException(format("Project for '%s' not found", fileUri));
     }
 
-    URI fileRelativeUri = javaProject.getProject().getLocationURI().relativize(URI.create(fileUri));
+    URI fileRelativeUri =
+        javaProject.getProject().getLocationURI().relativize(JDTUtils.toURI(fileUri));
     IPath fileRelativePath = javaProject.getPath().append(fileRelativeUri.toString());
 
     String fqn = null;
@@ -139,6 +145,8 @@ public class FqnConverter {
 
     if (iMember != null) {
       fqn = ((IMember) iMember).getDeclaringType().getFullyQualifiedName();
+
+      // figure out if the fqn represents a local inner class
       while (iMember != null && !(iMember instanceof CompilationUnit)) {
         if (iMember instanceof SourceType
             && !((SourceType) iMember).isAnonymous()
@@ -156,13 +164,17 @@ public class FqnConverter {
     throw new IllegalArgumentException("Unable to calculate breakpoint location");
   }
 
-  /** Converts fqn into {@link LocationParameters}. */
-  public static List<LocationParameters> fqnToLocation(
-      List<Object> parameters, IProgressMonitor pm) {
-    Preconditions.checkArgument(parameters.size() >= 2, "Fqn and line number are expected.");
+  /**
+   * Find resources by the fqn.
+   *
+   * @param params contains fqn
+   * @return all resources are identified the given fqn
+   */
+  public static List<ResourceLocationParameters> findResourcesByFqn(
+      List<Object> params, IProgressMonitor pm) {
+    Preconditions.checkArgument(params.size() >= 1, "FQN is expected.");
 
-    String fqn = (String) parameters.get(0);
-    Integer lineNumber = Integer.parseInt(parameters.get(1).toString());
+    String fqn = (String) params.get(0);
 
     if (pm.isCanceled()) {
       throw new OperationCanceledException();
@@ -185,18 +197,10 @@ public class FqnConverter {
     if (type.isBinary()) {
       IClassFile classFile = type.getClassFile();
       int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
-      return Collections.singletonList(new LocationParameters(fqn, libId, lineNumber));
+      return Collections.singletonList(new ResourceLocationParameters(fqn, libId));
     } else {
-      IPath unitPath = type.getCompilationUnit().getPath();
-      IPath projectPath = type.getJavaProject().getPath();
-
-      URI resourseUri =
-          type.getJavaProject()
-              .getProject()
-              .getFile(unitPath.makeRelativeTo(projectPath))
-              .getRawLocationURI();
-
-      return Collections.singletonList(new LocationParameters(resourseUri.toString(), lineNumber));
+      return Collections.singletonList(
+          new ResourceLocationParameters(JDTUtils.toURI(type.getCompilationUnit())));
     }
   }
 

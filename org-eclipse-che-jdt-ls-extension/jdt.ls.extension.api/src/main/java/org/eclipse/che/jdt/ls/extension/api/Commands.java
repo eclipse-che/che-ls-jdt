@@ -33,8 +33,10 @@ public class Commands {
 
   // debug
 
-  public static final String FQN_TO_LOCATION_COMMAND = "che.jdt.ls.extension.debug.fqnToLocation";
-  public static final String LOCATION_TO_FQN_COMMAND = "che.jdt.ls.extension.debug.locationToFqn";
+  public static final String FIND_RESOURCES_BY_FQN =
+      "che.jdt.ls.extension.debug.findResourcesByFqn";
+  public static final String IDENTIFY_FQN_IN_RESOURCE =
+      "che.jdt.ls.extension.debug.identifyFqnInResource";
 
   private Commands() {}
 }
