@@ -37,7 +37,8 @@ public class LibraryEntryCommand {
   /**
    * Gets entry from external library node.
    *
-   * @param parameters first parameter must be of type ExternalLibrariesParameters
+   * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
+   *     contains project URI, library id and path of the entry
    * @param pm a progress monitor
    * @return entry {@link JarEntry}
    */

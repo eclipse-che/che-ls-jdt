@@ -37,7 +37,8 @@ public class LibraryChildrenCommand {
   /**
    * Gets children of external library node.
    *
-   * @param parameters first parameter must be of type ExternalLibrariesParameters
+   * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
+   *     contains project URI and library id
    * @param pm a progress monitor
    * @return list of entries
    */

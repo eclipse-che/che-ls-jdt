@@ -37,7 +37,8 @@ public class ProjectExternalLibraryCommand {
   /**
    * Gets list of project dependencies.
    *
-   * @param parameters first parameter must be of type ExternalLibrariesParameters
+   * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
+   *     contains project URI
    * @param pm a progress monitor
    * @return list of jars {@link Jar}
    */

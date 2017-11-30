@@ -37,7 +37,8 @@ public class ContentByPathCommand {
   /**
    * Get file's content by path.
    *
-   * @param parameters first parameter must be of type ExternalLibrariesParameters
+   * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
+   *     contains project URI, library id and the path of the library file
    * @param pm a progress monitor
    * @return content of the file {@link ClassContent}
    */
