@@ -28,7 +28,6 @@ import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBas
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -130,10 +129,5 @@ public class TestFinderHandlerTest extends AbstractProjectsManagerBasedTest {
   private String createFileUri(String file) {
     URI uri = project.getFile(file).getRawLocationURI();
     return getResourceUriAsString(uri);
-  }
-
-  @SuppressWarnings("restriction")
-  private String getResourceUriAsString(URI uri) {
-    return ResourceUtils.fixURI(uri);
   }
 }

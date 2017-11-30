@@ -10,6 +10,8 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 
+import static java.lang.String.format;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.List;
@@ -47,9 +49,10 @@ public class ContentByFqnCommand {
     ExternalLibrariesParameters params =
         gson.fromJson(gson.toJson(parameters.get(0)), ExternalLibrariesParameters.class);
     try {
-      IJavaProject project = JavaModelUtil.getJavaProject(params.getProjectUri());
+      String projectUri = params.getProjectUri();
+      IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
       if (project == null) {
-        return null;
+        throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
       }
       return LibraryNavigation.getContent(project, params.getNodePath());
     } catch (CoreException e) {

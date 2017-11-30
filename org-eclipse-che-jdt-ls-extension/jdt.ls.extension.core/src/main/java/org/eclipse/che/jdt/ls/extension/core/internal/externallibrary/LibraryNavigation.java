@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class LibraryNavigation {
       throws JavaModelException {
     IJavaProject javaProject = JavaModelUtil.getJavaProject(projectUri);
     if (javaProject == null) {
-      return emptyList();
+      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
     List<Jar> jars = new ArrayList<>();
     for (IPackageFragmentRoot fragmentRoot : javaProject.getAllPackageFragmentRoots()) {
@@ -99,7 +100,7 @@ public class LibraryNavigation {
       String projectUri, int hash, IProgressMonitor pm) throws JavaModelException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
-      return emptyList();
+      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
     IPackageFragmentRoot packageFragmentRoot = getPackageFragmentRoot(project, hash, pm);
 
@@ -125,14 +126,13 @@ public class LibraryNavigation {
       throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
-      return null;
+      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
     IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
     if (root == null) {
       return null;
     }
     if (path.startsWith("/")) {
-
       JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot) root;
       ZipFile jar = null;
       try {
@@ -199,7 +199,7 @@ public class LibraryNavigation {
       String projectUri, int rootId, String path, IProgressMonitor pm) throws JavaModelException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
-      return emptyList();
+      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
     IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
     if (root == null) {
@@ -247,7 +247,7 @@ public class LibraryNavigation {
       String projectUri, int rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
-      return new ClassContent("", false);
+      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
     IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
     if (root == null) {
@@ -330,7 +330,7 @@ public class LibraryNavigation {
   private static Object[] getPackageContent(IPackageFragment fragment, IProgressMonitor pm)
       throws JavaModelException {
     // hierarchical package mode
-    ArrayList<Object> result = new ArrayList<Object>();
+    ArrayList<Object> result = new ArrayList<>();
 
     getHierarchicalPackageChildren(
         (IPackageFragmentRoot) fragment.getParent(), fragment, result, pm);

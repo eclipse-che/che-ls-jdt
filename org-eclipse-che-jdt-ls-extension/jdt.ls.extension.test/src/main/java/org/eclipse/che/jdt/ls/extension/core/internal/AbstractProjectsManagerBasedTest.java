@@ -237,4 +237,9 @@ public abstract class AbstractProjectsManagerBasedTest {
 
     return to;
   }
+
+  @SuppressWarnings("restriction")
+  protected String getResourceUriAsString(URI uri) {
+    return ResourceUtils.fixURI(uri);
+  }
 }

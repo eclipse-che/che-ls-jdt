@@ -10,20 +10,18 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.classpath;
 
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler.getOutputDirectory;
 import static org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler.resolveClasspaths;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +38,7 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
   public void shouldReturnResolvedClasspath() throws Exception {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
-    List<Object> arguments = asList(projectUri);
+    List<Object> arguments = singletonList(projectUri);
     List<String> result = resolveClasspaths(arguments, new NullProgressMonitor());
 
     assertNotNull(result);
@@ -51,14 +49,9 @@ public class ResolveClassPathsHandlerTest extends AbstractProjectsManagerBasedTe
   public void shouldReturnOutputDirectory() throws Exception {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
 
-    List<Object> arguments = asList(projectUri);
+    List<Object> arguments = singletonList(projectUri);
     String result = getOutputDirectory(arguments, new NullProgressMonitor());
 
     assertTrue(result.endsWith("testproject/target/classes"));
-  }
-
-  @SuppressWarnings("restriction")
-  private String getResourceUriAsString(URI uri) {
-    return ResourceUtils.fixURI(uri);
   }
 }
