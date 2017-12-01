@@ -129,14 +129,8 @@ public class FqnDiscover {
       int end = start + region.getLength();
 
       iMember = binSearch(outerClass, start, end);
-    } catch (JavaModelException e) {
-      throw new IllegalArgumentException(
-          format(
-              "Unable to find source for class with fqn '%s' in the project '%s'",
-              fileUri, javaProject),
-          e);
-    } catch (BadLocationException e) {
-      throw new IllegalArgumentException("Unable to calculate breakpoint location", e);
+    } catch (JavaModelException | BadLocationException e) {
+      throw new IllegalArgumentException(e);
     }
 
     if (iMember instanceof IType) {
@@ -161,7 +155,8 @@ public class FqnDiscover {
       return fqn;
     }
 
-    throw new IllegalArgumentException("Unable to calculate breakpoint location");
+    throw new IllegalArgumentException(
+        format("Unable to find source code for '%s' in the project '%s'", fileUri, javaProject));
   }
 
   /**
