@@ -118,6 +118,7 @@ public class LibraryNavigation {
    *
    * @param projectUri project URI
    * @param rootId id of root node
+   * @param path path to the library
    * @param pm a progress monitor
    * @return instance of {@link JarEntry}
    * @throws CoreException if an exception occurs while accessing its corresponding resource
