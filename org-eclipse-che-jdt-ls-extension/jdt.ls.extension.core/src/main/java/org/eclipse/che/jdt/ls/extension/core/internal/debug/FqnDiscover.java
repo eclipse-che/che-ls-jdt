@@ -22,7 +22,6 @@ import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocationParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -179,7 +178,8 @@ public class FqnDiscover {
     List<IType> types;
     try {
       types =
-          findTypeByFqn(fqnPair.getKey(), fqnPair.getValue(), SearchEngine.createWorkspaceScope());
+          findTypeByFqn(
+              fqnPair.getKey(), fqnPair.getValue(), SearchEngine.createWorkspaceScope(), pm);
     } catch (JavaModelException e) {
       throw new RuntimeException(e);
     }
@@ -200,7 +200,8 @@ public class FqnDiscover {
   }
 
   private static List<IType> findTypeByFqn(
-      char[][] packages, char[][] names, IJavaSearchScope scope) throws JavaModelException {
+      char[][] packages, char[][] names, IJavaSearchScope scope, IProgressMonitor pm)
+      throws JavaModelException {
     List<IType> result = new ArrayList<>();
 
     SearchEngine searchEngine = new SearchEngine();
@@ -215,7 +216,7 @@ public class FqnDiscover {
           }
         },
         IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
-        new NullProgressMonitor());
+        pm);
     return result;
   }
 
