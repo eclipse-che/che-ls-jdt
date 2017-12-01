@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.che.jdt.ls.extension.api.dto.GetEffectivePomParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
@@ -43,10 +42,7 @@ public class EffectivePomHandlerTest extends AbstractProjectsManagerBasedTest {
     final String TEST_PROJECT_EFFECTIVE_POM =
         removeWorkspaceDependentComponents(getExpectedEffectivePom());
 
-    final String absolutePathToPom = project.getLocation().toString() + "/pom.xml";
-    final GetEffectivePomParameters parameters =
-        new GetEffectivePomParameters().withPathToProjectPom(absolutePathToPom);
-    final List<Object> arguments = singletonList(parameters);
+    final List<Object> arguments = singletonList("file://" + project.getLocation().toString());
 
     String effectivePom = getEffectivePom(arguments, new NullProgressMonitor());
 
@@ -67,10 +63,8 @@ public class EffectivePomHandlerTest extends AbstractProjectsManagerBasedTest {
    * @return effective pom without environment specific components
    */
   private String removeWorkspaceDependentComponents(String effectivePom) {
-    final String TAG_WITH_PATH_SUBSTR = "irectory>";
-
     return Arrays.stream(effectivePom.split("\\r?\\n"))
-        .filter(line -> !line.contains(TAG_WITH_PATH_SUBSTR))
+        .filter(line -> !line.contains("irectory>"))
         .collect(Collectors.joining("\n"));
   }
 }
