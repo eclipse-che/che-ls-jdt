@@ -11,6 +11,7 @@
             <command id="che.jdt.ls.extension.findTestInFile"/>
             <command id="che.jdt.ls.extension.resolveClasspath"/>
             <command id="che.jdt.ls.extension.outputDir"/>
+            <command id="che.jdt.ls.extension.effectivePom"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
             <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
             <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
