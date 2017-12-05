@@ -18,7 +18,7 @@ package org.eclipse.che.jdt.ls.extension.api.dto;
 public class ResourceLocationParameters {
   private String fileUri;
   private String fqn;
-  private int libId;
+  private String libId;
 
   public ResourceLocationParameters() {}
 
@@ -37,7 +37,7 @@ public class ResourceLocationParameters {
    * @param fqn the fully qualified name
    * @param libId the library identifier
    */
-  public ResourceLocationParameters(String fqn, int libId) {
+  public ResourceLocationParameters(String fqn, String libId) {
     this.fqn = fqn;
     this.libId = libId;
   }
@@ -50,11 +50,11 @@ public class ResourceLocationParameters {
     this.fileUri = fileUri;
   }
 
-  public int getLibId() {
+  public String getLibId() {
     return libId;
   }
 
-  public void setLibId(int libId) {
+  public void setLibId(String libId) {
     this.libId = libId;
   }
 

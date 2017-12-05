@@ -191,7 +191,8 @@ public class FqnDiscover {
     IType type = types.get(0); // TODO we need handle few result! It's temporary solution.
     if (type.isBinary()) {
       IClassFile classFile = type.getClassFile();
-      int libId = classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).hashCode();
+      String libId =
+          classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
       return Collections.singletonList(new ResourceLocationParameters(fqn, libId));
     } else {
       return Collections.singletonList(

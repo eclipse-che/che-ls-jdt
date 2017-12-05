@@ -14,6 +14,7 @@ import static java.util.Arrays.asList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover.findResourcesByFqn;
 import static org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover.identifyFqnInResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -28,7 +29,7 @@ import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
+public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
   private static final String FILE = "/src/main/java/org/eclipse/che/examples/HelloWorld.java";
   private static final String FQN = "org.eclipse.che.examples.HelloWorld";
 
@@ -49,7 +50,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
 
     ResourceLocationParameters location = result.get(0);
     assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertEquals(location.getLibId(), 0);
+    assertNull(location.getLibId());
     assertNull(location.getFqn());
 
     params = asList(createFileUri(FILE), "15");
@@ -68,7 +69,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     ResourceLocationParameters location = result.get(0);
     assertNull(location.getFileUri());
     assertEquals(location.getFqn(), "java.lang.String");
-    assertTrue(location.getLibId() != 0);
+    assertNotNull(location.getLibId());
 
     params = asList(location.getFqn(), "15");
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
@@ -86,7 +87,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     ResourceLocationParameters location = result.get(0);
 
     assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertEquals(location.getLibId(), 0);
+    assertNull(location.getLibId());
     assertNull(location.getFqn());
 
     params = asList(createFileUri(FILE), "35");
@@ -105,7 +106,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     ResourceLocationParameters location = result.get(0);
 
     assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertEquals(location.getLibId(), 0);
+    assertNull(location.getLibId());
     assertNull(location.getFqn());
 
     params = asList(createFileUri(FILE), "22");
@@ -124,7 +125,7 @@ public class FqnConverterTest extends AbstractProjectsManagerBasedTest {
     ResourceLocationParameters location = result.get(0);
 
     assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertEquals(location.getLibId(), 0);
+    assertNull(location.getLibId());
     assertNull(location.getFqn());
 
     params = asList(createFileUri(FILE), "29");
