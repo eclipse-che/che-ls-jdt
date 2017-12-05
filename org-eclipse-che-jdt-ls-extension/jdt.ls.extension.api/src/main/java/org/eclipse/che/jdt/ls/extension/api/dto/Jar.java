@@ -17,11 +17,11 @@ package org.eclipse.che.jdt.ls.extension.api.dto;
  */
 public class Jar {
   private String name;
-  private int id;
+  private String id;
 
   public Jar() {}
 
-  public Jar(String name, int id) {
+  public Jar(String name, String id) {
     this.name = name;
     this.id = id;
   }
@@ -34,11 +34,11 @@ public class Jar {
     this.name = name;
   }
 
-  public int getId() {
+  public String getId() {
     return id;
   }
 
-  public void setId(int id) {
+  public void setId(String id) {
     this.id = id;
   }
 }

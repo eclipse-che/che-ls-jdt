@@ -79,7 +79,7 @@ public class LibraryNavigation {
         throw new OperationCanceledException();
       }
       if (fragmentRoot instanceof JarPackageFragmentRoot) {
-        Jar jar = new Jar(fragmentRoot.getElementName(), fragmentRoot.hashCode());
+        Jar jar = new Jar(fragmentRoot.getElementName(), fragmentRoot.getHandleIdentifier());
         jars.add(jar);
       }
     }
@@ -91,18 +91,18 @@ public class LibraryNavigation {
    * Returns the hierarchical packages inside a given fragment or root.
    *
    * @param projectUri project URI
-   * @param hash id of library's node
+   * @param id id of library's node
    * @param pm a progress monitor
    * @return list of entries
    * @throws JavaModelException if an exception occurs while accessing its corresponding resource
    */
   public static List<JarEntry> getPackageFragmentRootContent(
-      String projectUri, int hash, IProgressMonitor pm) throws JavaModelException {
+      String projectUri, String id, IProgressMonitor pm) throws JavaModelException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
-    IPackageFragmentRoot packageFragmentRoot = getPackageFragmentRoot(project, hash, pm);
+    IPackageFragmentRoot packageFragmentRoot = getPackageFragmentRoot(project, id, pm);
 
     if (packageFragmentRoot == null) {
       return emptyList();
@@ -123,8 +123,8 @@ public class LibraryNavigation {
    * @return instance of {@link JarEntry}
    * @throws CoreException if an exception occurs while accessing its corresponding resource
    */
-  public static JarEntry getEntry(String projectUri, int rootId, String path, IProgressMonitor pm)
-      throws CoreException {
+  public static JarEntry getEntry(
+      String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
@@ -197,7 +197,8 @@ public class LibraryNavigation {
    * @throws JavaModelException if an exception occurs while accessing its corresponding resource
    */
   public static List<JarEntry> getChildren(
-      String projectUri, int rootId, String path, IProgressMonitor pm) throws JavaModelException {
+      String projectUri, String rootId, String path, IProgressMonitor pm)
+      throws JavaModelException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
@@ -245,7 +246,7 @@ public class LibraryNavigation {
    * @throws CoreException if an exception occurs while accessing its corresponding resource
    */
   public static ClassContent getContent(
-      String projectUri, int rootId, String path, IProgressMonitor pm) throws CoreException {
+      String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
@@ -367,14 +368,14 @@ public class LibraryNavigation {
   }
 
   private static IPackageFragmentRoot getPackageFragmentRoot(
-      IJavaProject project, int hash, IProgressMonitor pm) throws JavaModelException {
+      IJavaProject project, String id, IProgressMonitor pm) throws JavaModelException {
     IPackageFragmentRoot[] roots = project.getAllPackageFragmentRoots();
     IPackageFragmentRoot packageFragmentRoot = null;
     for (IPackageFragmentRoot root : roots) {
       if (pm.isCanceled()) {
         throw new OperationCanceledException();
       }
-      if (root.hashCode() == hash) {
+      if (root.getHandleIdentifier().equals(id)) {
         packageFragmentRoot = root;
         break;
       }

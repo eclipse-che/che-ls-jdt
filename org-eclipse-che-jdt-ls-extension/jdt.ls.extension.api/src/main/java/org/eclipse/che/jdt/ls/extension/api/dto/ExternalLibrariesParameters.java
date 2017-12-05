@@ -18,7 +18,7 @@ package org.eclipse.che.jdt.ls.extension.api.dto;
 public class ExternalLibrariesParameters {
   private String projectUri;
   private String nodePath;
-  private int nodeId;
+  private String nodeId;
 
   public ExternalLibrariesParameters() {}
 
@@ -26,12 +26,12 @@ public class ExternalLibrariesParameters {
     this.projectUri = projectUri;
   }
 
-  public ExternalLibrariesParameters(String projectUri, int nodeId) {
+  public ExternalLibrariesParameters(String projectUri, String nodeId) {
     this.projectUri = projectUri;
     this.nodeId = nodeId;
   }
 
-  public ExternalLibrariesParameters(String projectUri, String nodePath, int nodeId) {
+  public ExternalLibrariesParameters(String projectUri, String nodePath, String nodeId) {
     this.projectUri = projectUri;
     this.nodePath = nodePath;
     this.nodeId = nodeId;
@@ -53,11 +53,11 @@ public class ExternalLibrariesParameters {
     this.nodePath = nodePath;
   }
 
-  public int getNodeId() {
+  public String getNodeId() {
     return nodeId;
   }
 
-  public void setNodeId(int nodeId) {
+  public void setNodeId(String nodeId) {
     this.nodeId = nodeId;
   }
 }
