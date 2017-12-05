@@ -18,13 +18,11 @@
 <repository>
 <id>
 <name>
-<url>
 </repository>
 </repositories>
 <pluginRepositories>
 <pluginRepository>
 <releases>
-<updatePolicy>
 </releases>
 </pluginRepository>
 </pluginRepositories>
