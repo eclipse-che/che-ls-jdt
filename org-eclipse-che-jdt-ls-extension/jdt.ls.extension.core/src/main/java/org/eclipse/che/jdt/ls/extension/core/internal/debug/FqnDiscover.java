@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocationParameters;
+import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -63,11 +63,6 @@ public class FqnDiscover {
 
     final String fileUri = (String) params.get(0);
     final Integer lineNumber = Integer.valueOf(params.get(1).toString());
-
-    // Not a URI then let's assume it is a FQN.
-    if (!fileUri.startsWith("file:")) {
-      return fileUri;
-    }
 
     IJavaProject javaProject = JavaModelUtil.getJavaProject(fileUri);
 
@@ -145,6 +140,8 @@ public class FqnDiscover {
             && !((SourceType) iMember).isAnonymous()
             && iMember.getParent() instanceof SourceMethod) {
 
+          // In case of local inner class the fqn should be altered
+          // a$b -> a$1b, it is the name of loaded class into VM
           fqn = fqn.replace("$" + iMember.getElementName(), "$1" + iMember.getElementName());
         }
 
@@ -164,7 +161,7 @@ public class FqnDiscover {
    * @param params contains fqn
    * @return all resources are identified by the given fqn
    */
-  public static List<ResourceLocationParameters> findResourcesByFqn(
+  public static List<ResourceLocation> findResourcesByFqn(
       List<Object> params, IProgressMonitor pm) {
     Preconditions.checkArgument(params.size() >= 1, "FQN is expected.");
 
@@ -193,10 +190,10 @@ public class FqnDiscover {
       IClassFile classFile = type.getClassFile();
       String libId =
           classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
-      return Collections.singletonList(new ResourceLocationParameters(fqn, libId));
+      return Collections.singletonList(new ResourceLocation(fqn, libId));
     } else {
       return Collections.singletonList(
-          new ResourceLocationParameters(JDTUtils.toURI(type.getCompilationUnit())));
+          new ResourceLocation(JDTUtils.toURI(type.getCompilationUnit())));
     }
   }
 
@@ -250,16 +247,6 @@ public class FqnDiscover {
     return fqn.contains("$$") ? fqn.substring(0, fqn.indexOf("$$")) : fqn;
   }
 
-  /**
-   * Searches the given source range of the container for a member that is not the same as the given
-   * type.
-   *
-   * @param type the {@link IType}
-   * @param start the starting position
-   * @param end the ending position
-   * @return the {@link IMember} from the given start-end range
-   * @throws JavaModelException if there is a problem with the backing Java model
-   */
   private static IMember binSearch(IType type, int start, int end) throws JavaModelException {
     IJavaElement je = getElementAt(type, start);
     if (je != null && !je.equals(type)) {
