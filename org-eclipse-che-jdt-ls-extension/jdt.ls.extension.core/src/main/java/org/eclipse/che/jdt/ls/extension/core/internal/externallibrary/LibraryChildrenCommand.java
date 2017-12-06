@@ -38,7 +38,7 @@ public class LibraryChildrenCommand {
    * Gets children of external library node.
    *
    * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
-   *     contains project URI and library id
+   *     contains library id
    * @param pm a progress monitor
    * @return list of entries
    */
@@ -46,8 +46,7 @@ public class LibraryChildrenCommand {
     ExternalLibrariesParameters params =
         gson.fromJson(gson.toJson(parameters.get(0)), ExternalLibrariesParameters.class);
     try {
-      return LibraryNavigation.getPackageFragmentRootContent(
-          params.getProjectUri(), params.getNodeId(), pm);
+      return LibraryNavigation.getPackageFragmentRootContent(params.getNodeId(), pm);
     } catch (JavaModelException e) {
       throw new RuntimeException(e);
     }

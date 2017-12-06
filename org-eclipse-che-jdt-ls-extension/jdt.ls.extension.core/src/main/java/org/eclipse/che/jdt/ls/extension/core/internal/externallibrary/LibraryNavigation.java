@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarEntryDirectory;
 import org.eclipse.jdt.internal.core.JarEntryFile;
@@ -61,6 +62,55 @@ public class LibraryNavigation {
   private static final String FOLDER_ENTRY_TYPE = "FOLDER";
   private static final String CLASS_FILE_ENTRY_TYPE = "CLASS_FILE";
   private static final String FILE_ENTRY_TYPE = "FILE";
+
+  private static final Comparator<JarEntry> COMPARATOR =
+      (o1, o2) -> {
+        if (PACKAGE_ENTRY_TYPE.equals(o1.getEntryType())
+            && !PACKAGE_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return 1;
+        }
+
+        if (PACKAGE_ENTRY_TYPE.equals(o2.getEntryType())
+            && !PACKAGE_ENTRY_TYPE.equals(o1.getEntryType())) {
+          return 1;
+        }
+
+        if (CLASS_FILE_ENTRY_TYPE.equals(o1.getEntryType())
+            && !CLASS_FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return 1;
+        }
+
+        if (!CLASS_FILE_ENTRY_TYPE.equals(o1.getEntryType())
+            && CLASS_FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return 1;
+        }
+
+        if (FOLDER_ENTRY_TYPE.equals(o1.getEntryType())
+            && !FOLDER_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return 1;
+        }
+
+        if (!FOLDER_ENTRY_TYPE.equals(o1.getEntryType())
+            && FOLDER_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return 1;
+        }
+
+        if (FILE_ENTRY_TYPE.equals(o1.getEntryType())
+            && !FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return -1;
+        }
+
+        if (!FILE_ENTRY_TYPE.equals(o1.getEntryType())
+            && FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
+          return -1;
+        }
+
+        if (o1.getEntryType().equals(o2.getEntryType())) {
+          return o1.getName().compareTo(o2.getName());
+        }
+
+        return 0;
+      };
 
   /**
    * Computes dependencies of the project.
@@ -92,27 +142,22 @@ public class LibraryNavigation {
   }
 
   /**
-   * Returns the hierarchical packages inside a given fragment or root.
+   * Returns packages and files inside a given fragment or root.
    *
-   * @param projectUri project URI
    * @param id id of library's node
    * @param pm a progress monitor
    * @return list of entries
    * @throws JavaModelException if an exception occurs while accessing its corresponding resource
    */
-  public static List<JarEntry> getPackageFragmentRootContent(
-      String projectUri, String id, IProgressMonitor pm) throws JavaModelException {
-    IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
-    if (project == null) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
-    }
-    IPackageFragmentRoot packageFragmentRoot = getPackageFragmentRoot(project, id, pm);
+  public static List<JarEntry> getPackageFragmentRootContent(String id, IProgressMonitor pm)
+      throws JavaModelException {
+    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(id);
 
-    if (packageFragmentRoot == null) {
+    if (root == null) {
       return emptyList();
     }
 
-    Object[] rootContent = getPackageFragmentRootContent(packageFragmentRoot, pm);
+    Object[] rootContent = getPackageFragmentRootContent(root, pm);
 
     return convertToJarEntry(rootContent);
   }
@@ -130,10 +175,13 @@ public class LibraryNavigation {
   public static JarEntry getEntry(
       String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
+    if (pm.isCanceled()) {
+      throw new OperationCanceledException();
+    }
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
-    IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
+    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(rootId);
     if (root == null) {
       return null;
     }
@@ -147,7 +195,8 @@ public class LibraryNavigation {
           JarEntry result = new JarEntry();
           result.setEntryType(FILE_ENTRY_TYPE);
           result.setPath(path);
-          result.setName(entry.getName().substring(entry.getName().lastIndexOf("/") + 1));
+          result.setName(
+              entry.getName().substring(entry.getName().lastIndexOf(PATH_SEPARATOR) + 1));
           return result;
         }
       } finally {
@@ -193,21 +242,15 @@ public class LibraryNavigation {
   /**
    * Computes children of library.
    *
-   * @param projectUri project URI
    * @param rootId id of root node
    * @param pm a progress monitor
    * @param path path of the parent node
    * @return list of entries {@link JarEntry}
    * @throws JavaModelException if an exception occurs while accessing its corresponding resource
    */
-  public static List<JarEntry> getChildren(
-      String projectUri, String rootId, String path, IProgressMonitor pm)
+  public static List<JarEntry> getChildren(String rootId, String path, IProgressMonitor pm)
       throws JavaModelException {
-    IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
-    if (project == null) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
-    }
-    IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
+    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(rootId);
     if (root == null) {
       return emptyList();
     }
@@ -260,7 +303,7 @@ public class LibraryNavigation {
       return getContent(project, path, pm);
     }
 
-    IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
+    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(rootId);
     if (root == null) {
       return null;
     }
@@ -337,7 +380,7 @@ public class LibraryNavigation {
     // hierarchical package mode
     ArrayList<Object> result = new ArrayList<>();
 
-    getHierarchicalPackageChildren(
+    collectHierarchicalPackageChildren(
         (IPackageFragmentRoot) fragment.getParent(), fragment, result, pm);
     IClassFile[] classFiles = fragment.getClassFiles();
     List<IClassFile> filtered = new ArrayList<>();
@@ -368,22 +411,6 @@ public class LibraryNavigation {
       }
     }
     return null;
-  }
-
-  private static IPackageFragmentRoot getPackageFragmentRoot(
-      IJavaProject project, String id, IProgressMonitor pm) throws JavaModelException {
-    IPackageFragmentRoot[] roots = project.getAllPackageFragmentRoots();
-    IPackageFragmentRoot packageFragmentRoot = null;
-    for (IPackageFragmentRoot root : roots) {
-      if (pm.isCanceled()) {
-        throw new OperationCanceledException();
-      }
-      if (root.getHandleIdentifier().equals(id)) {
-        packageFragmentRoot = root;
-        break;
-      }
-    }
-    return packageFragmentRoot;
   }
 
   private static String readFileContent(JarEntryFile file) {
@@ -417,21 +444,21 @@ public class LibraryNavigation {
   private static Object[] getPackageFragmentRootContent(
       IPackageFragmentRoot root, IProgressMonitor pm) throws JavaModelException {
     ArrayList<Object> result = new ArrayList<>();
-    getHierarchicalPackageChildren(root, null, result, pm);
+    collectHierarchicalPackageChildren(root, null, result, pm);
     Object[] nonJavaResources = root.getNonJavaResources();
     Collections.addAll(result, nonJavaResources);
     return result.toArray();
   }
 
   /**
-   * Returns the hierarchical packages inside a given fragment or root.
+   * Returns packages, folders and files inside a given fragment or root.
    *
    * @param parent the parent package fragment root
    * @param fragment the package to get the children for or 'null' to get the children of the root
    * @param result Collection where the resulting elements are added
    * @throws JavaModelException if fetching the children fails
    */
-  private static void getHierarchicalPackageChildren(
+  private static void collectHierarchicalPackageChildren(
       IPackageFragmentRoot parent,
       IPackageFragment fragment,
       Collection<Object> result,
@@ -440,11 +467,11 @@ public class LibraryNavigation {
     IJavaElement[] children = parent.getChildren();
     String prefix = fragment != null ? fragment.getElementName() + PERIOD : ""; // $NON-NLS-1$
     int prefixLen = prefix.length();
-    for (IJavaElement aChildren : children) {
+    for (IJavaElement child : children) {
       if (pm.isCanceled()) {
         throw new OperationCanceledException();
       }
-      IPackageFragment curr = (IPackageFragment) aChildren;
+      IPackageFragment curr = (IPackageFragment) child;
       String name = curr.getElementName();
       if (name.startsWith(prefix)
           && name.length() > prefixLen
@@ -481,7 +508,7 @@ public class LibraryNavigation {
       String name = element.getElementName();
       if (name.startsWith(prefix)
           && name.length() > prefixLen
-          && name.indexOf('.', prefixLen) == -1) {
+          && name.indexOf(PERIOD, prefixLen) == -1) {
         if (found == null) {
           found = (IPackageFragment) element;
         } else {
@@ -523,7 +550,7 @@ public class LibraryNavigation {
         result.add(getJarEntryResource((JarEntryResource) root));
       }
     }
-    result.sort(comparator);
+    result.sort(COMPARATOR);
     return result;
   }
 
@@ -553,7 +580,7 @@ public class LibraryNavigation {
   }
 
   private static String getNameDelta(IPackageFragment parent, IPackageFragment fragment) {
-    String prefix = parent.getElementName() + '.';
+    String prefix = parent.getElementName() + PERIOD;
     String fullName = fragment.getElementName();
     if (fullName.startsWith(prefix)) {
       return fullName.substring(prefix.length());
@@ -581,55 +608,6 @@ public class LibraryNavigation {
     }
     return parent;
   }
-
-  private static Comparator<JarEntry> comparator =
-      (o1, o2) -> {
-        if (PACKAGE_ENTRY_TYPE.equals(o1.getEntryType())
-            && !PACKAGE_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return 1;
-        }
-
-        if (PACKAGE_ENTRY_TYPE.equals(o2.getEntryType())
-            && !PACKAGE_ENTRY_TYPE.equals(o1.getEntryType())) {
-          return 1;
-        }
-
-        if (CLASS_FILE_ENTRY_TYPE.equals(o1.getEntryType())
-            && !CLASS_FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return 1;
-        }
-
-        if (!CLASS_FILE_ENTRY_TYPE.equals(o1.getEntryType())
-            && CLASS_FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return 1;
-        }
-
-        if (FOLDER_ENTRY_TYPE.equals(o1.getEntryType())
-            && !FOLDER_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return 1;
-        }
-
-        if (!FOLDER_ENTRY_TYPE.equals(o1.getEntryType())
-            && FOLDER_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return 1;
-        }
-
-        if (FILE_ENTRY_TYPE.equals(o1.getEntryType())
-            && !FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return -1;
-        }
-
-        if (!FILE_ENTRY_TYPE.equals(o1.getEntryType())
-            && FILE_ENTRY_TYPE.equals(o2.getEntryType())) {
-          return -1;
-        }
-
-        if (o1.getEntryType().equals(o2.getEntryType())) {
-          return o1.getName().compareTo(o2.getName());
-        }
-
-        return 0;
-      };
 
   /**
    * Utility method to concatenate two arrays.
