@@ -16,7 +16,6 @@ import static java.util.Collections.singletonList;
 import com.google.common.base.Preconditions;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
@@ -142,9 +141,24 @@ public class FqnDiscover {
             && !((SourceType) iMember).isAnonymous()
             && iMember.getParent() instanceof SourceMethod) {
 
+          int index = 1;
+          try {
+            ArrayList<SourceType> sources =
+                ((SourceMethod) iMember.getParent()).getChildrenOfType(iMember.getElementType());
+
+            for (int i = 0; i < sources.size(); i++, index++) {
+              if (sources.get(i).getElementName().equals(iMember.getElementName())) {
+                break;
+              }
+            }
+
+          } catch (JavaModelException e) {
+            throw new IllegalArgumentException(e);
+          }
+
           // In case of local inner class the fqn should be altered
-          // a$b -> a$1b, it is the name of loaded class into VM
-          fqn = fqn.replace("$" + iMember.getElementName(), "$1" + iMember.getElementName());
+          // a$b -> a$1b, it will be the name of loaded class into VM
+          fqn = fqn.replace("$" + iMember.getElementName(), "$" + index + iMember.getElementName());
         }
 
         iMember = iMember.getParent();

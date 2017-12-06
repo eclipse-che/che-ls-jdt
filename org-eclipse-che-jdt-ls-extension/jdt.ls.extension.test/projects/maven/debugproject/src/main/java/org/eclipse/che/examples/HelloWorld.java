@@ -35,4 +35,18 @@ public class HelloWorld {
       System.out.println("Hello");
     }
   }
+
+  public static void test() {
+    class LocalClass1 {
+      public void sayHello() {
+        System.out.println("Hello");
+      }
+    }
+    
+    class LocalClass2 {
+      public void sayHello() {
+        System.out.println("Hello");
+      }
+    }
+  }
 }

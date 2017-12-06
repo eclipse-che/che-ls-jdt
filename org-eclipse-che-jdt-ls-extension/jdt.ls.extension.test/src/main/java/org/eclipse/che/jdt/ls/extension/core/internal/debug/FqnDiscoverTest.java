@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.List;
-
 import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
@@ -127,6 +126,24 @@ public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
 
     assertEquals(fqn, FQN);
+  }
+
+  @Test
+  public void shouldHandleLocalClasses() throws Exception {
+    List<Object> params = asList(FQN + "$1LocalClass1", "42");
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
+
+    assertEquals(result.size(), 1);
+
+    Either<String, ResourceLocation> location = result.get(0);
+    assertTrue(location.getLeft().endsWith("maven/debugproject" + FILE));
+    assertNull(location.getRight());
+
+    params = asList(createFileUri(FILE), "48");
+    String fqn = identifyFqnInResource(params, new NullProgressMonitor());
+
+    assertEquals(fqn, FQN + "$2LocalClass2");
   }
 
   private String createFileUri(String file) {
