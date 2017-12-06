@@ -380,8 +380,7 @@ public class LibraryNavigation {
     // hierarchical package mode
     ArrayList<Object> result = new ArrayList<>();
 
-    collectHierarchicalPackageChildren(
-        (IPackageFragmentRoot) fragment.getParent(), fragment, result, pm);
+    collectPackageChildren((IPackageFragmentRoot) fragment.getParent(), fragment, result, pm);
     IClassFile[] classFiles = fragment.getClassFiles();
     List<IClassFile> filtered = new ArrayList<>();
     // filter inner classes
@@ -444,7 +443,7 @@ public class LibraryNavigation {
   private static Object[] getPackageFragmentRootContent(
       IPackageFragmentRoot root, IProgressMonitor pm) throws JavaModelException {
     ArrayList<Object> result = new ArrayList<>();
-    collectHierarchicalPackageChildren(root, null, result, pm);
+    collectPackageChildren(root, null, result, pm);
     Object[] nonJavaResources = root.getNonJavaResources();
     Collections.addAll(result, nonJavaResources);
     return result.toArray();
@@ -458,7 +457,7 @@ public class LibraryNavigation {
    * @param result Collection where the resulting elements are added
    * @throws JavaModelException if fetching the children fails
    */
-  private static void collectHierarchicalPackageChildren(
+  private static void collectPackageChildren(
       IPackageFragmentRoot parent,
       IPackageFragment fragment,
       Collection<Object> result,
