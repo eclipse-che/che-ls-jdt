@@ -12,6 +12,8 @@ package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static org.eclipse.jdt.ls.core.internal.JDTUtils.PATH_SEPARATOR;
+import static org.eclipse.jdt.ls.core.internal.JDTUtils.PERIOD;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +25,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.che.jdt.ls.extension.api.dto.ClassContent;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JarEntry;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
@@ -44,8 +45,11 @@ import org.eclipse.jdt.internal.core.JarEntryResource;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
+import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
+import org.eclipse.jdt.ls.core.internal.managers.ContentProviderManager;
+import org.eclipse.lsp4j.Location;
 
 /**
  * Utilities for working with External libraries.
@@ -133,7 +137,7 @@ public class LibraryNavigation {
     if (root == null) {
       return null;
     }
-    if (path.startsWith("/")) {
+    if (path.startsWith(PATH_SEPARATOR)) {
       JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot) root;
       ZipFile jar = null;
       try {
@@ -242,21 +246,26 @@ public class LibraryNavigation {
    * @param rootId id of root node
    * @param path path of the node
    * @param pm a progress monitor
-   * @return content of the library's node {@link ClassContent}
+   * @return content of the library's node
    * @throws CoreException if an exception occurs while accessing its corresponding resource
    */
-  public static ClassContent getContent(
+  public static String getContent(
       String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
+
+    if (rootId == null) {
+      return getContent(project, path, pm);
+    }
+
     IPackageFragmentRoot root = getPackageFragmentRoot(project, rootId, pm);
     if (root == null) {
       return null;
     }
 
-    if (path.startsWith("/")) {
+    if (path.startsWith(PATH_SEPARATOR)) {
       // non java file
       if (root instanceof JarPackageFragmentRoot) {
         JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot) root;
@@ -266,7 +275,7 @@ public class LibraryNavigation {
           ZipEntry entry = jar.getEntry(path.substring(1));
           if (entry != null) {
             try (InputStream stream = jar.getInputStream(entry)) {
-              return new ClassContent(IOUtils.toString(stream, "UTF-8"), false);
+              return IOUtils.toString(stream, "UTF-8");
             } catch (IOException e) {
               JavaLanguageServerPlugin.logException(
                   "Can't read file content: " + entry.getName(), e);
@@ -296,37 +305,31 @@ public class LibraryNavigation {
         }
       }
     } else {
-      return getContent(project, path);
+      return getContent(project, path, pm);
     }
     return null;
   }
 
   /**
-   * Computes content of node by fqn.
+   * Computes content of java file by fqn.
    *
    * @param project project
    * @param path path of the node
-   * @return content of the library's node {@link ClassContent}
+   * @param pm progress monitor
+   * @return content of the library's node
    * @throws JavaModelException if an exception occurs while accessing its corresponding resource
    */
-  public static ClassContent getContent(IJavaProject project, String path)
+  private static String getContent(IJavaProject project, String path, IProgressMonitor pm)
       throws JavaModelException {
-    // java class or file
     IType type = project.findType(path);
-    if (type != null) {
-      if (type.isBinary()) {
-        IClassFile classFile = type.getClassFile();
-        if (classFile.getSourceRange() != null) {
-          return new ClassContent(classFile.getSource(), false);
-        } else {
-          return new ClassContent(
-              SourcesFromBytecodeGenerator.generateSource(classFile.getType()), true);
-        }
-      } else {
-        return new ClassContent(type.getCompilationUnit().getSource(), false);
-      }
+    if (type == null) {
+      throw new JavaModelException(new JavaModelStatus(0, "Can't find type: " + path));
     }
-    throw new JavaModelException(new JavaModelStatus(0, "Can't find type: " + path));
+
+    Location location = JDTUtils.toLocation(type);
+
+    ContentProviderManager handler = JavaLanguageServerPlugin.getContentProviderManager();
+    return handler.getContent(JDTUtils.toURI(location.getUri()), pm);
   }
 
   private static Object[] getPackageContent(IPackageFragment fragment, IProgressMonitor pm)
@@ -383,9 +386,9 @@ public class LibraryNavigation {
     return packageFragmentRoot;
   }
 
-  private static ClassContent readFileContent(JarEntryFile file) {
+  private static String readFileContent(JarEntryFile file) {
     try (InputStream stream = (file.getContents())) {
-      return new ClassContent(IOUtils.toString(stream, "UTF-8"), false);
+      return IOUtils.toString(stream, "UTF-8");
     } catch (IOException | CoreException e) {
       JavaLanguageServerPlugin.logException("Can't read file content: " + file.getFullPath(), e);
     }
@@ -435,7 +438,7 @@ public class LibraryNavigation {
       IProgressMonitor pm)
       throws JavaModelException {
     IJavaElement[] children = parent.getChildren();
-    String prefix = fragment != null ? fragment.getElementName() + '.' : ""; // $NON-NLS-1$
+    String prefix = fragment != null ? fragment.getElementName() + PERIOD : ""; // $NON-NLS-1$
     int prefixLen = prefix.length();
     for (IJavaElement aChildren : children) {
       if (pm.isCanceled()) {
@@ -445,7 +448,7 @@ public class LibraryNavigation {
       String name = curr.getElementName();
       if (name.startsWith(prefix)
           && name.length() > prefixLen
-          && name.indexOf('.', prefixLen) == -1) {
+          && name.indexOf(PERIOD, prefixLen) == -1) {
         curr = getFolded(children, curr);
         result.add(curr);
       } else if (fragment == null && curr.isDefaultPackage()) {
@@ -471,7 +474,7 @@ public class LibraryNavigation {
 
   private static IPackageFragment findSinglePackageChild(
       IPackageFragment fragment, IJavaElement[] children) {
-    String prefix = fragment.getElementName() + '.';
+    String prefix = fragment.getElementName() + PERIOD;
     int prefixLen = prefix.length();
     IPackageFragment found = null;
     for (IJavaElement element : children) {
@@ -561,7 +564,7 @@ public class LibraryNavigation {
   private static IJavaElement getHierarchicalPackageParent(IPackageFragment child) {
     String name = child.getElementName();
     IPackageFragmentRoot parent = (IPackageFragmentRoot) child.getParent();
-    int index = name.lastIndexOf('.');
+    int index = name.lastIndexOf(PERIOD);
     if (index != -1) {
       String realParentName = name.substring(0, index);
       IPackageFragment element = parent.getPackageFragment(realParentName);

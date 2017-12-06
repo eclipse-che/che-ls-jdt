@@ -42,8 +42,6 @@ public class Commands {
   public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
   public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
       "che.jdt.ls.extension.libraryContentByPath";
-  public static final String GET_LIBRARY_NODE_CONTENT_BY_FQN_COMMAND =
-      "che.jdt.ls.extension.libraryContentByFQN";
 
   private Commands() {}
 }

@@ -13,7 +13,6 @@ package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.dto.ClassContent;
 import org.eclipse.che.jdt.ls.extension.api.dto.ExternalLibrariesParameters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -40,9 +39,9 @@ public class ContentByPathCommand {
    * @param parameters first parameter must be of type {@link ExternalLibrariesParameters} which
    *     contains project URI, library id and the path of the library file
    * @param pm a progress monitor
-   * @return content of the file {@link ClassContent}
+   * @return content of the file
    */
-  public static ClassContent execute(List<Object> parameters, IProgressMonitor pm) {
+  public static String execute(List<Object> parameters, IProgressMonitor pm) {
     ExternalLibrariesParameters params =
         gson.fromJson(gson.toJson(parameters.get(0)), ExternalLibrariesParameters.class);
     try {

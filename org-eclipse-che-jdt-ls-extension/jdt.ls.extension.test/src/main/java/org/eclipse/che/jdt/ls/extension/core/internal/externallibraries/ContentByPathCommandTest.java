@@ -12,14 +12,12 @@ package org.eclipse.che.jdt.ls.extension.core.internal.externallibraries;
 
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.che.jdt.ls.extension.api.dto.ClassContent;
 import org.eclipse.che.jdt.ls.extension.api.dto.ExternalLibrariesParameters;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
@@ -53,14 +51,12 @@ public class ContentByPathCommandTest extends AbstractProjectsManagerBasedTest {
 
     params.setNodeId(junitJar.getId());
     params.setNodePath("junit.extensions.TestSetup");
-    ClassContent content =
-        ContentByPathCommand.execute(singletonList(params), new NullProgressMonitor());
+    String content = ContentByPathCommand.execute(singletonList(params), new NullProgressMonitor());
 
     String expectedContent = getExpectedContent();
 
     assertNotNull(content);
-    assertFalse(content.isGenerated());
-    assertEquals(expectedContent, content.getContent());
+    assertEquals(expectedContent, content);
   }
 
   private Jar findJarByName(String name, List<Jar> jars) {

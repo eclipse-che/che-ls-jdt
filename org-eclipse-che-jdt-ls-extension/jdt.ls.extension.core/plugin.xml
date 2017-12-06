@@ -14,7 +14,6 @@
             <command id="che.jdt.ls.extension.externalLibraries"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
             <command id="che.jdt.ls.extension.libraryContentURL"/>
-            <command id="che.jdt.ls.extension.libraryContentByFQN"/>
             <command id="che.jdt.ls.extension.libraryContentByPath"/>
             <command id="che.jdt.ls.extension.libraryEntry"/>
             <command id="che.jdt.ls.extension.libraryChildren"/>
