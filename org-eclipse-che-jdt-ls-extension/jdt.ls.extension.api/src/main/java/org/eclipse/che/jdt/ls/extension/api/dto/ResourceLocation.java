@@ -16,20 +16,10 @@ package org.eclipse.che.jdt.ls.extension.api.dto;
  * @author Anatolii Bazko
  */
 public class ResourceLocation {
-  private String fileUri;
   private String fqn;
   private String libId;
 
   public ResourceLocation() {}
-
-  /**
-   * Resource located in the source folder.
-   *
-   * @param fileUri the resource uri
-   */
-  public ResourceLocation(String fileUri) {
-    this.fileUri = fileUri;
-  }
 
   /**
    * Resource located in the external library.
@@ -40,14 +30,6 @@ public class ResourceLocation {
   public ResourceLocation(String fqn, String libId) {
     this.fqn = fqn;
     this.libId = libId;
-  }
-
-  public String getFileUri() {
-    return fileUri;
-  }
-
-  public void setFileUri(String fileUri) {
-    this.fileUri = fileUri;
   }
 
   public String getLibId() {

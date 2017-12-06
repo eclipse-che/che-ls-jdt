@@ -11,6 +11,7 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
@@ -45,6 +46,7 @@ import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 /** @author Anatolii Bazko */
 public class FqnDiscover {
@@ -161,7 +163,7 @@ public class FqnDiscover {
    * @param params contains fqn
    * @return all resources are identified by the given fqn
    */
-  public static List<ResourceLocation> findResourcesByFqn(
+  public static List<Either<String, ResourceLocation>> findResourcesByFqn(
       List<Object> params, IProgressMonitor pm) {
     Preconditions.checkArgument(params.size() >= 1, "FQN is expected.");
 
@@ -190,10 +192,9 @@ public class FqnDiscover {
       IClassFile classFile = type.getClassFile();
       String libId =
           classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
-      return Collections.singletonList(new ResourceLocation(fqn, libId));
+      return singletonList(Either.forRight(new ResourceLocation(fqn, libId)));
     } else {
-      return Collections.singletonList(
-          new ResourceLocation(JDTUtils.toURI(type.getCompilationUnit())));
+      return singletonList(Either.forLeft(JDTUtils.toURI(type.getCompilationUnit())));
     }
   }
 

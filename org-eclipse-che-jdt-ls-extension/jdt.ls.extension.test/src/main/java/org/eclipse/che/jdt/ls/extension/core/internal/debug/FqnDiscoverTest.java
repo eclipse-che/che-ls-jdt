@@ -27,6 +27,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,14 +46,14 @@ public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldHandleSimpleFqn() throws Exception {
     List<Object> params = asList(FQN, "15");
-    List<ResourceLocation> result = findResourcesByFqn(params, new NullProgressMonitor());
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
-    ResourceLocation location = result.get(0);
-    assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertNull(location.getLibId());
-    assertNull(location.getFqn());
+    Either<String, ResourceLocation> location = result.get(0);
+    assertTrue(location.getLeft().endsWith("maven/debugproject" + FILE));
+    assertNull(location.getRight());
 
     params = asList(createFileUri(FILE), "15");
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
@@ -63,28 +64,28 @@ public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldHandleSimpleFqnInExternalLibrary() throws Exception {
     List<Object> params = asList("java.lang.String", "100");
-    List<ResourceLocation> result = findResourcesByFqn(params, new NullProgressMonitor());
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
-    ResourceLocation location = result.get(0);
-    assertNull(location.getFileUri());
-    assertEquals(location.getFqn(), "java.lang.String");
-    assertNotNull(location.getLibId());
+    Either<String, ResourceLocation> location = result.get(0);
+    assertEquals(location.getRight().getFqn(), "java.lang.String");
+    assertNotNull(location.getRight().getLibId());
+    assertNull(location.getLeft());
   }
 
   @Test
   public void shouldHandleInnerClassFqn() throws Exception {
     List<Object> params = asList(FQN + "$InnerClass", "35");
-    List<ResourceLocation> result = findResourcesByFqn(params, new NullProgressMonitor());
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
-    ResourceLocation location = result.get(0);
-
-    assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertNull(location.getLibId());
-    assertNull(location.getFqn());
+    Either<String, ResourceLocation> location = result.get(0);
+    assertTrue(location.getLeft().endsWith("maven/debugproject" + FILE));
+    assertNull(location.getRight());
 
     params = asList(createFileUri(FILE), "35");
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
@@ -95,15 +96,14 @@ public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldHandleAnonymousClassFqn() throws Exception {
     List<Object> params = asList(FQN + "$1", "22");
-    List<ResourceLocation> result = findResourcesByFqn(params, new NullProgressMonitor());
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
-    ResourceLocation location = result.get(0);
-
-    assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertNull(location.getLibId());
-    assertNull(location.getFqn());
+    Either<String, ResourceLocation> location = result.get(0);
+    assertTrue(location.getLeft().endsWith("maven/debugproject" + FILE));
+    assertNull(location.getRight());
 
     params = asList(createFileUri(FILE), "22");
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
@@ -114,15 +114,14 @@ public class FqnDiscoverTest extends AbstractProjectsManagerBasedTest {
   @Test
   public void shouldHandleFqnInsideLambda() throws Exception {
     List<Object> params = asList(FQN, "29");
-    List<ResourceLocation> result = findResourcesByFqn(params, new NullProgressMonitor());
+    List<Either<String, ResourceLocation>> result =
+        findResourcesByFqn(params, new NullProgressMonitor());
 
     assertEquals(result.size(), 1);
 
-    ResourceLocation location = result.get(0);
-
-    assertTrue(location.getFileUri().endsWith("maven/debugproject" + FILE));
-    assertNull(location.getLibId());
-    assertNull(location.getFqn());
+    Either<String, ResourceLocation> location = result.get(0);
+    assertTrue(location.getLeft().endsWith("maven/debugproject" + FILE));
+    assertNull(location.getRight());
 
     params = asList(createFileUri(FILE), "29");
     String fqn = identifyFqnInResource(params, new NullProgressMonitor());
