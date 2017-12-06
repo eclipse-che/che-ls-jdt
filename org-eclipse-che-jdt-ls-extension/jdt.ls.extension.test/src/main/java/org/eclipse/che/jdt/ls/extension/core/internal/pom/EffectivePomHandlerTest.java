@@ -12,13 +12,11 @@ package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
 import static java.util.Collections.singletonList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler.getEffectivePom;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
@@ -39,32 +37,21 @@ public class EffectivePomHandlerTest extends AbstractProjectsManagerBasedTest {
 
   @Test
   public void shouldGetEffectivePom() throws Exception {
-    final String TEST_PROJECT_EFFECTIVE_POM =
-        removeWorkspaceDependentComponents(getExpectedEffectivePom());
-
+    final String[] CHECKPOINTS = getEffectivePomCheckpoints();
     final List<Object> arguments = singletonList("file://" + project.getLocation().toString());
 
-    String effectivePom = getEffectivePom(arguments, new NullProgressMonitor());
+    final String effectivePom = getEffectivePom(arguments, new NullProgressMonitor());
 
-    effectivePom = removeWorkspaceDependentComponents(effectivePom);
-    assertEquals(TEST_PROJECT_EFFECTIVE_POM, effectivePom);
+    assertTrue(effectivePom.length() > 0);
+    for (String checkpoint : CHECKPOINTS) {
+      assertTrue(effectivePom.contains(checkpoint));
+    }
   }
 
-  private String getExpectedEffectivePom() throws IOException {
+  private String[] getEffectivePomCheckpoints() throws IOException {
     InputStream expectedEffectivePomInputStream =
-        getClass().getResourceAsStream("effective-pom.txt");
-    return IOUtils.toString(expectedEffectivePomInputStream, "UTF-8");
-  }
-
-  /**
-   * Removes effective pom components which are bind to specific workspace.
-   *
-   * @param effectivePom effective pom with workspace dependent paths
-   * @return effective pom without environment specific components
-   */
-  private String removeWorkspaceDependentComponents(String effectivePom) {
-    return Arrays.stream(effectivePom.split("\\r?\\n"))
-        .filter(line -> !line.contains("irectory>"))
-        .collect(Collectors.joining("\n"));
+        getClass().getResourceAsStream("effective-pom-checkpoints.txt");
+    String effectivePom = IOUtils.toString(expectedEffectivePomInputStream, "UTF-8");
+    return effectivePom.split("\\r?\\n");
   }
 }
