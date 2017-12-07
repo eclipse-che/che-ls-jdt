@@ -11,7 +11,6 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
 import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
@@ -36,6 +35,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
 import org.eclipse.jdt.internal.core.JavaProject;
@@ -187,7 +187,7 @@ public class FqnDiscover {
       throw new OperationCanceledException();
     }
 
-    Pair<char[][], char[][]> fqnPair = prepareFqnToSearch(fqn);
+    Pair<char[], char[]> fqnPair = prepareFqnToSearch(fqn);
     List<IType> types;
     try {
       types =
@@ -201,26 +201,34 @@ public class FqnDiscover {
       throw new RuntimeException("Type with fully qualified name: " + fqn + " was not found");
     }
 
-    IType type = types.get(0); // TODO we need handle few result! It's temporary solution.
-    if (type.isBinary()) {
-      IClassFile classFile = type.getClassFile();
-      String libId =
-          classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
-      return singletonList(Either.forRight(new ResourceLocation(fqn, libId)));
-    } else {
-      return singletonList(Either.forLeft(JDTUtils.toURI(type.getCompilationUnit())));
+    List<Either<String, ResourceLocation>> result = new ArrayList<>();
+    for (IType type : types) {
+      if (type.isBinary()) {
+        IClassFile classFile = type.getClassFile();
+        String libId =
+            classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
+        result.add(Either.forRight(new ResourceLocation(fqn, libId)));
+      } else {
+        result.add(Either.forLeft(JDTUtils.toURI(type.getCompilationUnit())));
+      }
     }
+
+    return result;
   }
 
   private static List<IType> findTypeByFqn(
-      char[][] packages, char[][] names, IJavaSearchScope scope, IProgressMonitor pm)
+      char[] packages, char[] names, IJavaSearchScope scope, IProgressMonitor pm)
       throws JavaModelException {
     List<IType> result = new ArrayList<>();
 
     SearchEngine searchEngine = new SearchEngine();
+
     searchEngine.searchAllTypeNames(
         packages,
+        SearchPattern.R_EXACT_MATCH,
         names,
+        SearchPattern.R_EXACT_MATCH,
+        IJavaSearchConstants.CLASS_AND_INTERFACE,
         scope,
         new TypeNameMatchRequestor() {
           @Override
@@ -233,21 +241,21 @@ public class FqnDiscover {
     return result;
   }
 
-  private static Pair<char[][], char[][]> prepareFqnToSearch(String fqn) {
+  private static Pair<char[], char[]> prepareFqnToSearch(String fqn) {
     String outerClassFqn = extractOuterClassFqn(fqn);
     int lastDotIndex = outerClassFqn.trim().lastIndexOf('.');
 
-    char[][] packages;
-    char[][] names;
+    char[] packages;
+    char[] names;
     if (lastDotIndex == -1) {
-      packages = new char[0][];
-      names = new char[][] {outerClassFqn.toCharArray()};
+      packages = new char[0];
+      names = outerClassFqn.toCharArray();
     } else {
       String packageLine = fqn.substring(0, lastDotIndex);
-      packages = new char[][] {packageLine.toCharArray()};
+      packages = packageLine.toCharArray();
 
       String nameLine = fqn.substring(lastDotIndex + 1, outerClassFqn.length());
-      names = new char[][] {nameLine.toCharArray()};
+      names = nameLine.toCharArray();
     }
     return Pair.of(packages, names);
   }
