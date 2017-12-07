@@ -12,9 +12,15 @@ package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.ls.core.internal.JDTUtils;
+import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
+import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
@@ -41,9 +47,29 @@ public class ReImportMavenProjectsHandler {
     ReImportMavenProjectsCommandParameters parameters =
         gson.fromJson(gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
     final List<String> projectsPaths = parameters.getProjectsToUpdate();
+    final List<String> updatedProjectsPaths = new ArrayList<String>(projectsPaths.size());
 
+    final PreferenceManager preferenceManager = new PreferenceManager();
+    final ProjectsManager projectsManager = new ProjectsManager(preferenceManager);
 
+    IFile pomFile;
+    for (String pathToProject : projectsPaths) {
+      ensureNotCancelled(progressMonitor);
 
-    return projectsPaths;
+      pomFile = JDTUtils.findFile(pathToProject + "/pom.xml");
+      if (pomFile == null) {
+        continue;
+      }
+      projectsManager.updateProject(pomFile.getProject());
+      updatedProjectsPaths.add(pathToProject);
+    }
+
+    return updatedProjectsPaths;
+  }
+
+  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
+    if (progressMonitor.isCanceled()) {
+      throw new OperationCanceledException();
+    }
   }
 }
