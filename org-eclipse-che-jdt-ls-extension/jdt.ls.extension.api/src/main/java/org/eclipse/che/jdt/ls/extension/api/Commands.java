@@ -31,6 +31,18 @@ public class Commands {
   public static final String RESOLVE_CLASSPATH_COMMAND = "che.jdt.ls.extension.resolveClasspath";
   public static final String GET_OUTPUT_DIR_COMMAND = "che.jdt.ls.extension.outputDir";
   public static final String GET_EFFECTIVE_POM_COMMAND = "che.jdt.ls.extension.effectivePom";
+  public static final String GET_CLASS_PATH_TREE_COMMAND = "che.jdt.ls.extension.classpathTree";
+
+  // External Library commands
+
+  public static final String GET_EXTERNAL_LIBRARIES_COMMAND =
+      "che.jdt.ls.extension.externalLibraries";
+  public static final String GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND =
+      "che.jdt.ls.extension.externalLibrariesChildren";
+  public static final String GET_LIBRARY_CHILDREN_COMMAND = "che.jdt.ls.extension.libraryChildren";
+  public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
+  public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
+      "che.jdt.ls.extension.libraryContentByPath";
 
   // debug
 
