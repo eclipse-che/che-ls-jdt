@@ -44,5 +44,12 @@ public class Commands {
   public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
       "che.jdt.ls.extension.libraryContentByPath";
 
+  // debug
+
+  public static final String FIND_RESOURCES_BY_FQN =
+      "che.jdt.ls.extension.debug.findResourcesByFqn";
+  public static final String IDENTIFY_FQN_IN_RESOURCE =
+      "che.jdt.ls.extension.debug.identifyFqnInResource";
+
   private Commands() {}
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.5"?>
 <plugin>
-   <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
-      <delegateCommandHandler class="org.eclipse.che.jdt.ls.extension.core.internal.CheDelegateCommandHandler">
+    <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
+        <delegateCommandHandler class="org.eclipse.che.jdt.ls.extension.core.internal.CheDelegateCommandHandler">
             <command id="che.jdt.ls.extension.detectTest"/>
             <command id="che.jdt.ls.extension.findTestByCursor"/>
             <command id="che.jdt.ls.extension.findTestFromProject"/>
@@ -20,6 +20,8 @@
             <command id="che.jdt.ls.extension.externalLibrariesChildren"/>
             <command id="che.jdt.ls.extension.externalLibraries"/>
             <command id="che.jdt.ls.extension.classpathTree"/>
+          <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
+          <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
        </delegateCommandHandler>
    </extension>
 </plugin>
