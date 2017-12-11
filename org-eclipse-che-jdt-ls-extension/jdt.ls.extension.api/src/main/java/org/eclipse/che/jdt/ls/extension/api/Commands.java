@@ -33,6 +33,25 @@ public class Commands {
   public static final String GET_EFFECTIVE_POM_COMMAND = "che.jdt.ls.extension.effectivePom";
   public static final String REIMPORT_MAVEN_PROJECTS_COMMAND =
       "che.jdt.ls.extension.reimportMavenProject";
+  public static final String GET_CLASS_PATH_TREE_COMMAND = "che.jdt.ls.extension.classpathTree";
+
+  // External Library commands
+
+  public static final String GET_EXTERNAL_LIBRARIES_COMMAND =
+      "che.jdt.ls.extension.externalLibraries";
+  public static final String GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND =
+      "che.jdt.ls.extension.externalLibrariesChildren";
+  public static final String GET_LIBRARY_CHILDREN_COMMAND = "che.jdt.ls.extension.libraryChildren";
+  public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
+  public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
+      "che.jdt.ls.extension.libraryContentByPath";
+
+  // debug
+
+  public static final String FIND_RESOURCES_BY_FQN =
+      "che.jdt.ls.extension.debug.findResourcesByFqn";
+  public static final String IDENTIFY_FQN_IN_RESOURCE =
+      "che.jdt.ls.extension.debug.identifyFqnInResource";
 
   private Commands() {}
 }

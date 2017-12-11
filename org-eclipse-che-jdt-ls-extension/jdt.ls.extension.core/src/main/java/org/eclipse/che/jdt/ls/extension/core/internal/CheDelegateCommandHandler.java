@@ -16,6 +16,12 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByPathCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLibrariesChildrenCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
@@ -33,7 +39,6 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
 
   static {
     commands = new HashMap<String, BiFunction<List<Object>, IProgressMonitor, ? extends Object>>();
-    commands.put(Commands.HELLO_WORLD_COMMAND, (params, progress) -> "Hello World");
     commands.put(Commands.FILE_STRUCTURE_COMMAND, FileStructureCommand::execute);
     commands.put(Commands.TEST_DETECT_COMMAND, TestDetectionHandler::detect);
     commands.put(Commands.FIND_TEST_BY_CURSOR_COMMAND, TestFinderHandler::getTestByCursorPosition);
@@ -48,6 +53,17 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(
         Commands.REIMPORT_MAVEN_PROJECTS_COMMAND,
         ReImportMavenProjectsHandler::reImportMavenProjects);
+    commands.put(
+        Commands.GET_CLASS_PATH_TREE_COMMAND, ResolveClassPathsHandler::getClasspathModelTree);
+    commands.put(Commands.GET_EXTERNAL_LIBRARIES_COMMAND, ProjectExternalLibraryCommand::execute);
+    commands.put(
+        Commands.GET_EXTERNAL_LIBRARIES_CHILDREN_COMMAND,
+        ExternalLibrariesChildrenCommand::execute);
+    commands.put(Commands.GET_LIBRARY_CHILDREN_COMMAND, LibraryChildrenCommand::execute);
+    commands.put(Commands.GET_LIBRARY_ENTRY_COMMAND, LibraryEntryCommand::execute);
+    commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND, ContentByPathCommand::execute);
+    commands.put(Commands.IDENTIFY_FQN_IN_RESOURCE, FqnDiscover::identifyFqnInResource);
+    commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
   }
 
   @Override
