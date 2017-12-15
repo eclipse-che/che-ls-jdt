@@ -13,8 +13,13 @@ package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
+import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsResult;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -24,6 +29,10 @@ import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
+import org.eclipse.m2e.core.internal.MavenPluginActivator;
+import org.eclipse.m2e.core.internal.project.registry.MavenProjectManager;
+import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
+import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 
 /** @author Mykola Morhun */
 public class ReImportMavenProjectsHandler {
@@ -35,41 +44,102 @@ public class ReImportMavenProjectsHandler {
           .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
           .create();
 
+  private static final Lock lock = new ReentrantLock();
+  private static final MavenProjectChangedListener mavenProjectChangedListener =
+      new MavenProjectChangedListener();
+
+  private static Set<String> updatedProjects = new HashSet<>();
+  private static Set<String> addedProjects = new HashSet<>();
+  private static Set<String> removedProjects = new HashSet<>();
+
   /**
    * Updates given maven projects.
    *
    * @param arguments contains ReImportMavenProjectsCommandParameters in the first element
    * @param progressMonitor progress monitor
-   * @return list of paths of updated projects
+   * @return paths of updated, added and removed projects
    */
-  public static List<String> reImportMavenProjects(
+  public static ReImportMavenProjectsResult reImportMavenProjects(
       List<Object> arguments, IProgressMonitor progressMonitor) {
-    ReImportMavenProjectsCommandParameters parameters =
-        gson.fromJson(gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
-    final List<String> projectsPaths = parameters.getProjectsToUpdate();
-    final List<String> updatedProjectsPaths = new ArrayList<String>(projectsPaths.size());
+
+    if (lock.tryLock()) {
+      try {
+        updatedProjects.clear();
+        addedProjects.clear();
+        removedProjects.clear();
+
+        ReImportMavenProjectsCommandParameters parameters =
+            gson.fromJson(
+                gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
+
+        ensureNotCancelled(progressMonitor);
+        doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor);
+
+        return new ReImportMavenProjectsResult()
+            .withUpdatedProjects(new ArrayList<>(updatedProjects))
+            .withAddedProjects(new ArrayList<>(addedProjects))
+            .withRemovedProjects(new ArrayList<>(removedProjects));
+      } finally {
+        lock.unlock();
+      }
+    }
+
+    throw new RuntimeException("Reimport is already in progress.");
+  }
+
+  /**
+   * Updates given maven projects.
+   *
+   * @param projectsUri list of URIs to projects which should be updated
+   */
+  private static void doReImportMavenProjects(
+      List<String> projectsUri, IProgressMonitor progressMonitor) {
+    final MavenProjectManager mavenProjectManager =
+        MavenPluginActivator.getDefault().getMavenProjectManager();
+    mavenProjectManager.addMavenProjectChangedListener(mavenProjectChangedListener);
 
     final PreferenceManager preferenceManager = new PreferenceManager();
     final ProjectsManager projectsManager = new ProjectsManager(preferenceManager);
 
     IFile pomFile;
-    for (String pathToProject : projectsPaths) {
+    for (String pathToProject : projectsUri) {
       ensureNotCancelled(progressMonitor);
 
       pomFile = JDTUtils.findFile(pathToProject + "/pom.xml");
       if (pomFile == null) {
         continue;
       }
+
       projectsManager.updateProject(pomFile.getProject());
-      updatedProjectsPaths.add(pathToProject);
     }
 
-    return updatedProjectsPaths;
+    mavenProjectManager.removeMavenProjectChangedListener(mavenProjectChangedListener);
   }
 
   private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
     if (progressMonitor.isCanceled()) {
       throw new OperationCanceledException();
+    }
+  }
+
+  private static class MavenProjectChangedListener implements IMavenProjectChangedListener {
+    /** Listens to maven project change events to get information about submodules. */
+    @Override
+    public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
+      for (MavenProjectChangedEvent event : events) {
+        String projectUri = event.getMavenProject().getProject().getFullPath().toString();
+        switch (event.getKind()) {
+          case MavenProjectChangedEvent.KIND_CHANGED:
+            updatedProjects.add(projectUri);
+            break;
+          case MavenProjectChangedEvent.KIND_ADDED:
+            addedProjects.add(projectUri);
+            break;
+          case MavenProjectChangedEvent.KIND_REMOVED:
+            removedProjects.add(projectUri);
+            break;
+        }
+      }
     }
   }
 }

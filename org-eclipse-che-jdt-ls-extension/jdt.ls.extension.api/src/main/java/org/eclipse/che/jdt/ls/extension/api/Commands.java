@@ -32,7 +32,7 @@ public class Commands {
   public static final String GET_OUTPUT_DIR_COMMAND = "che.jdt.ls.extension.outputDir";
   public static final String GET_EFFECTIVE_POM_COMMAND = "che.jdt.ls.extension.effectivePom";
   public static final String REIMPORT_MAVEN_PROJECTS_COMMAND =
-      "che.jdt.ls.extension.reimportMavenProject";
+      "che.jdt.ls.extension.reImportMavenProject";
   public static final String GET_CLASS_PATH_TREE_COMMAND = "che.jdt.ls.extension.classpathTree";
 
   // External Library commands
