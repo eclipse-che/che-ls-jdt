@@ -29,6 +29,9 @@
             <command id="che.jdt.ls.extension.plain.createProject"/>
             <command id="che.jdt.ls.extension.plain.updateClasspath"/>
             <command id="che.jdt.ls.extension.plain.sourceFolders"/>
+          	<command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
+          	<command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
+            <command id="che.jdt.ls.extension.findImplementers"/>
        </delegateCommandHandler>
    </extension>
 </plugin>
