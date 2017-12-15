@@ -22,6 +22,7 @@
             <command id="che.jdt.ls.extension.classpathTree"/>
           <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
           <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
+          <command id="che.jdt.ls.extension.organizeImports"/>
        </delegateCommandHandler>
    </extension>
 </plugin>

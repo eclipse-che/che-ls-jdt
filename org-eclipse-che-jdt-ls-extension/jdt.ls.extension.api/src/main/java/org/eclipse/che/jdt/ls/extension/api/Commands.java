@@ -11,7 +11,7 @@
 package org.eclipse.che.jdt.ls.extension.api;
 
 /**
- * Defines commmand ids for che specific custom commands.
+ * Defines command ids for che specific custom commands.
  *
  * @author Thomas Mäder
  */
@@ -43,6 +43,7 @@ public class Commands {
   public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
   public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
       "che.jdt.ls.extension.libraryContentByPath";
+  public static final String ORGANIZE_IMPORTS_COMMAND = "che.jdt.ls.extension.organizeImports";
 
   // debug
 
