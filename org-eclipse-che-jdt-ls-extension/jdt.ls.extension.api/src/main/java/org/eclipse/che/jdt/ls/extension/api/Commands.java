@@ -51,5 +51,7 @@ public class Commands {
   public static final String IDENTIFY_FQN_IN_RESOURCE =
       "che.jdt.ls.extension.debug.identifyFqnInResource";
 
+  public static final String UPDATE_WORKSPACE = "che.jdt.ls.extension.updateWorkspace";
+
   private Commands() {}
 }

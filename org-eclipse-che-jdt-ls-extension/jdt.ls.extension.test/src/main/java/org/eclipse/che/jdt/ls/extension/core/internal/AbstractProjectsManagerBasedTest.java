@@ -238,6 +238,12 @@ public abstract class AbstractProjectsManagerBasedTest {
     return to;
   }
 
+  protected File deleteFiles(String path) throws Exception {
+    File projectDir = new File(getWorkingProjectDirectory(), path);
+    FileUtils.forceDelete(projectDir);
+    return projectDir;
+  }
+
   @SuppressWarnings("restriction")
   protected String getResourceUriAsString(URI uri) {
     return ResourceUtils.fixURI(uri);
