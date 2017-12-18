@@ -52,7 +52,7 @@ public class Commands {
       "che.jdt.ls.extension.debug.findResourcesByFqn";
   public static final String IDENTIFY_FQN_IN_RESOURCE =
       "che.jdt.ls.extension.debug.identifyFqnInResource";
-  public static final String REFERENCES_COMMAND = "org.eclipse.che.jdt.ls.extension.references";
+  public static final String USAGES_COMMAND = "che.jdt.ls.extension.usages";
 
   public static final String UPDATE_WORKSPACE = "che.jdt.ls.extension.updateWorkspace";
 

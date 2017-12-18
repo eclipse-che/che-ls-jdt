@@ -49,7 +49,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
-public class ReferencesCommand {
+public class UsagesCommand {
   private static final Set<Integer> INTERESTING_ELEMENT_TYPES;
 
   static {

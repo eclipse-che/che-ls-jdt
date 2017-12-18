@@ -46,4 +46,9 @@ public class LinearRange {
   public int hashCode() {
     return this.offset & Integer.MAX_VALUE - this.length;
   }
+
+  @Override
+  public String toString() {
+    return "LinearRange[" + offset + ", " + length + "]";
+  }
 }
