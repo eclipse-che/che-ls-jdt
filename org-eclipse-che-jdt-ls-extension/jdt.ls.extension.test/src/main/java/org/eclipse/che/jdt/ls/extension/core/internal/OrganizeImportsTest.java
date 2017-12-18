@@ -49,7 +49,7 @@ public class OrganizeImportsTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  public void shouldReturnEmptyListIfNoOrganizeImportRequired() throws Exception {
+  public void shouldNotOrganizeImportRequiredIfNotRequired() throws Exception {
     String fileUri = createFileUri(FILE2);
     List<Object> params = Collections.singletonList(fileUri);
 
