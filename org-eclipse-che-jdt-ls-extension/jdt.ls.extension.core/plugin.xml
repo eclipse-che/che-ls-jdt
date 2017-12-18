@@ -20,8 +20,9 @@
             <command id="che.jdt.ls.extension.externalLibrariesChildren"/>
             <command id="che.jdt.ls.extension.externalLibraries"/>
             <command id="che.jdt.ls.extension.classpathTree"/>
-          <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
-          <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
-       </delegateCommandHandler>
-   </extension>
+            <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
+            <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
+            <command id="che.jdt.ls.extension.updateWorkspace"/>
+        </delegateCommandHandler>
+    </extension>
 </plugin>
