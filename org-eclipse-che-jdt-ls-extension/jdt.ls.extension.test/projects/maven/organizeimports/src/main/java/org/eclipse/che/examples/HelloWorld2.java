@@ -10,5 +10,4 @@
  */
 package org.eclipse.che.examples;
 
-public class HelloWorld {
-}
+public class HelloWorld {}

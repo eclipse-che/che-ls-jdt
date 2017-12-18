@@ -19,7 +19,7 @@ import java.util.List;
 
 public class HelloWorld1 {
 
-	public static void main(String[] args) {
-		List x = new ArrayList();
-	}
+  public static void main(String[] args) {
+    List x = new ArrayList();
+  }
 }
