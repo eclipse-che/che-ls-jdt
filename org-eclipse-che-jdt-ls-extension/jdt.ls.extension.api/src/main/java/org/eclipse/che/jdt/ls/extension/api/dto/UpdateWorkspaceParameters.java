@@ -27,6 +27,11 @@ public class UpdateWorkspaceParameters {
     this.removedProjectsUri = Collections.emptyList();
   }
 
+  public UpdateWorkspaceParameters(List<String> addedProjectsUri, List<String> removedProjectsUri) {
+    this.addedProjectsUri = addedProjectsUri;
+    this.removedProjectsUri = removedProjectsUri;
+  }
+
   public List<String> getAddedProjectsUri() {
     return addedProjectsUri;
   }
