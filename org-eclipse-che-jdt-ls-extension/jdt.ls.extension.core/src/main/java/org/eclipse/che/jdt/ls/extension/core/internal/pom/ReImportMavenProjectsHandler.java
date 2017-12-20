@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
-import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsResult;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -68,7 +67,7 @@ public class ReImportMavenProjectsHandler {
    * @param progressMonitor progress monitor
    * @return paths of updated, added and removed projects
    */
-  public static ReImportMavenProjectsResult reImportMavenProjects(
+  public static List<String> reImportMavenProjects(
       List<Object> arguments, IProgressMonitor progressMonitor) {
 
     if (lock.tryLock()) {
@@ -80,12 +79,10 @@ public class ReImportMavenProjectsHandler {
                 gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
 
         ensureNotCancelled(progressMonitor);
-        return new ReImportMavenProjectsResult()
-            .withUpdatedProjects(
-                new ArrayList<>(
-                    doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor)));
+        return new ArrayList<>(
+            doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor));
       } catch (InterruptedException e) {
-        throw new OperationCanceledException();
+        throw new OperationCanceledException(e.getMessage());
       } finally {
         lock.unlock();
       }
@@ -95,7 +92,7 @@ public class ReImportMavenProjectsHandler {
   }
 
   // TODO this is temporary solution.
-  // It shouldn't block response and send back submitted tasks.
+  // It shouldn't block response but send back projects to which a job was submitted.
   // Then progress should be send separately.
   // For details see https://github.com/eclipse/eclipse.jdt.ls/issues/404
   private static Set<String> doReImportMavenProjects(
