@@ -14,8 +14,6 @@ import java.util.List;
 
 public class ReImportMavenProjectsResult {
   private List<String> updatedProjects;
-  private List<String> addedProjects;
-  private List<String> removedProjects;
 
   public List<String> getUpdatedProjects() {
     return updatedProjects;
@@ -27,32 +25,6 @@ public class ReImportMavenProjectsResult {
 
   public ReImportMavenProjectsResult withUpdatedProjects(List<String> updatedProjects) {
     this.updatedProjects = updatedProjects;
-    return this;
-  }
-
-  public List<String> getAddedProjects() {
-    return addedProjects;
-  }
-
-  public void setAddedProjects(List<String> addedProjects) {
-    this.addedProjects = addedProjects;
-  }
-
-  public ReImportMavenProjectsResult withAddedProjects(List<String> addedProjects) {
-    this.addedProjects = addedProjects;
-    return this;
-  }
-
-  public List<String> getRemovedProjects() {
-    return removedProjects;
-  }
-
-  public void setRemovedProjects(List<String> removedProjects) {
-    this.removedProjects = removedProjects;
-  }
-
-  public ReImportMavenProjectsResult withRemovedProjects(List<String> removedProjects) {
-    this.removedProjects = removedProjects;
     return this;
   }
 }
