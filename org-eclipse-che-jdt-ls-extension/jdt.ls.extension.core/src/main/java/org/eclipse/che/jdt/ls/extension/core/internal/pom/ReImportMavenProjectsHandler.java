@@ -65,7 +65,7 @@ public class ReImportMavenProjectsHandler {
    *
    * @param arguments contains ReImportMavenProjectsCommandParameters in the first element
    * @param progressMonitor progress monitor
-   * @return paths of updated, added and removed projects
+   * @return URIs of updated projects
    */
   public static List<String> reImportMavenProjects(
       List<Object> arguments, IProgressMonitor progressMonitor) {

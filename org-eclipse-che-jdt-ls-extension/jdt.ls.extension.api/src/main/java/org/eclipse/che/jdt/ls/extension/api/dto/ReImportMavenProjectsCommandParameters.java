@@ -20,7 +20,7 @@ import java.util.List;
 public class ReImportMavenProjectsCommandParameters {
   private List<String> projectsToUpdate;
 
-  /** Returns paths to projects which should be updated. */
+  /** Returns URIs to projects which should be updated. */
   public List<String> getProjectsToUpdate() {
     return projectsToUpdate;
   }
