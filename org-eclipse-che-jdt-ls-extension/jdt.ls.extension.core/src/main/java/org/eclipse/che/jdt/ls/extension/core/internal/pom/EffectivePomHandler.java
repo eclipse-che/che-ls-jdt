@@ -26,7 +26,11 @@ import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
-/** @author Mykola Morhun */
+/** 
+ * Command to generate effective pom for a maven project
+ * 
+ * @author Mykola Morhun
+ */
 public class EffectivePomHandler {
 
   /**

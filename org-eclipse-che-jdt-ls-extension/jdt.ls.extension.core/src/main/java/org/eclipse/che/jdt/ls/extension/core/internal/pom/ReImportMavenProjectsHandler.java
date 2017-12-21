@@ -37,7 +37,11 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
-/** @author Mykola Morhun */
+/** 
+ * Command to update maven projects.
+ * 
+ * @author Mykola Morhun
+ */
 public class ReImportMavenProjectsHandler {
   public static long REIMPORT_TIMEOUT = 60_000L;
 
