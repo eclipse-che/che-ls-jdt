@@ -10,20 +10,23 @@
  */
 package org.eclipse.che.jdt.ls.extension.api.dto;
 
+import org.eclipse.che.jdt.ls.extension.api.Severity;
+
 /** @author Anatolii Bazko */
 public class JobResult {
-  private int severity;
+  private Severity severity;
   private int resultCode;
   private String message;
 
   public JobResult() {}
 
-  public JobResult(int severity, int resultCode, String message) {
+  public JobResult(Severity severity, int resultCode, String message) {
     this.resultCode = resultCode;
     this.message = message;
     this.severity = severity;
   }
 
+  /** Returns the result of a finished job. Zero means job has finished successfully. */
   public int getResultCode() {
     return resultCode;
   }
@@ -32,6 +35,7 @@ public class JobResult {
     this.resultCode = resultCode;
   }
 
+  /** Returns the message explaining the {@link #resultCode} */
   public String getMessage() {
     return message;
   }
@@ -40,11 +44,12 @@ public class JobResult {
     this.message = message;
   }
 
-  public int getSeverity() {
+  /** Returns the severity of a finished job. */
+  public Severity getSeverity() {
     return severity;
   }
 
-  public void setSeverity(int severity) {
+  public void setSeverity(Severity severity) {
     this.severity = severity;
   }
 }

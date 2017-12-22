@@ -16,11 +16,11 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URI;
+import org.eclipse.che.jdt.ls.extension.api.Severity;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateWorkspaceParameters;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Test;
 
@@ -103,7 +103,7 @@ public class UpdateWorkspaceTest extends AbstractProjectsManagerBasedTest {
   }
 
   private void assertJobResult(JobResult jobResult) {
-    assertEquals(jobResult.getSeverity(), IStatus.OK);
+    assertEquals(jobResult.getSeverity(), Severity.OK);
     assertEquals(jobResult.getResultCode(), 0);
   }
 

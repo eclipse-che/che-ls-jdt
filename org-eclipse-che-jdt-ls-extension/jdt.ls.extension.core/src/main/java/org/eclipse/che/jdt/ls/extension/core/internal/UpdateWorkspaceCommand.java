@@ -14,31 +14,22 @@ import static org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin.getProje
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.eclipse.che.jdt.ls.extension.api.Severity;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateWorkspaceParameters;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** @author Anatolii Bazko */
 public class UpdateWorkspaceCommand {
 
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+  private static final Gson gson = GsonUtils.getInstance();
 
   /**
    * Updates eclipse workspace after adding/removing projects.
@@ -48,7 +39,10 @@ public class UpdateWorkspaceCommand {
   public static JobResult execute(List<Object> params, IProgressMonitor pm) {
     Preconditions.checkArgument(
         !params.isEmpty(), UpdateWorkspaceParameters.class.getName() + " expected.");
-    ensureNotCancelled(pm);
+
+    if (pm.isCanceled()) {
+      return new JobResult(Severity.CANCEL, 0, "CANCELED");
+    }
 
     UpdateWorkspaceParameters updateWorkspaceParameters =
         gson.fromJson(gson.toJson(params.get(0)), UpdateWorkspaceParameters.class);
@@ -72,16 +66,12 @@ public class UpdateWorkspaceCommand {
       job.join(0L, pm);
     } catch (InterruptedException e) {
       JavaLanguageServerPlugin.logException(e.getMessage(), e);
-      return new JobResult(IStatus.CANCEL, 1, e.getMessage());
+      Thread.currentThread().interrupt();
+      return new JobResult(Severity.CANCEL, 0, e.getMessage());
     }
 
     IStatus result = job.getResult();
-    return new JobResult(result.getSeverity(), result.getCode(), result.getMessage());
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor pm) {
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    return new JobResult(
+        Severity.valueOf(result.getSeverity()), result.getCode(), result.getMessage());
   }
 }

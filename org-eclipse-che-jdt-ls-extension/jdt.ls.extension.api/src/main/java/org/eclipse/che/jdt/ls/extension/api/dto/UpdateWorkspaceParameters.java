@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Contains list of removed/added projects ot update eclipse workspace.
+ * Contains list of removed/added projects to update eclipse workspace.
  *
  * @author Anatolii Bazko
  */
