@@ -13,19 +13,19 @@ package org.eclipse.che.jdt.ls.extension.api.dto.navigation;
 import java.util.List;
 import org.eclipse.lsp4j.SymbolInformation;
 
-public class ImplementationsDescriptor {
+public class ImplementersResponse {
 
-  private String memberName;
+  private String searchedElement;
   private List<SymbolInformation> implementations;
 
-  public ImplementationsDescriptor() {}
+  public ImplementersResponse() {}
 
-  public String getMemberName() {
-    return this.memberName;
+  public String getSearchedElement() {
+    return this.searchedElement;
   }
 
-  public void setMemberName(String memberName) {
-    this.memberName = memberName;
+  public void setSearchedElement(String earchedElement) {
+    this.searchedElement = earchedElement;
   }
 
   /* public ImplementationsDescriptor withImplementations(List<SymbolInformation> implementations) {

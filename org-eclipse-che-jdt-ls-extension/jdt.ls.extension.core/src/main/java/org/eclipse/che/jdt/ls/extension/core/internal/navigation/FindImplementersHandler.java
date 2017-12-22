@@ -10,15 +10,11 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.navigation;
 
-import static java.util.Collections.emptyList;
-import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.dto.navigation.FindImplementationsCommandParameters;
-import org.eclipse.che.jdt.ls.extension.api.dto.navigation.ImplementationsDescriptor;
+import org.eclipse.che.jdt.ls.extension.api.dto.navigation.ImplementersResponse;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICodeAssist;
 import org.eclipse.jdt.core.IJavaElement;
@@ -26,19 +22,22 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.corext.util.MethodOverrideTester;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
-public class FindImplementorsHandler {
+public class FindImplementersHandler {
   private static final Gson gson =
       new GsonBuilder()
           .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
@@ -46,38 +45,33 @@ public class FindImplementorsHandler {
           .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
           .create();
 
-  public static Object getImplementors(List<Object> parameters, IProgressMonitor pm) {
-    FindImplementationsCommandParameters commandParameters =
-        gson.fromJson(gson.toJson(parameters.get(0)), FindImplementationsCommandParameters.class);
+  @SuppressWarnings("restriction")
+  public static Object getImplementers(List<Object> parameters, IProgressMonitor pm) {
+    TextDocumentPositionParams param =
+        gson.fromJson(gson.toJson(parameters.get(0)), TextDocumentPositionParams.class);
 
-    IJavaProject javaProject = getJavaProject(commandParameters.getProjectUri());
+    ITypeRoot typeRoot = JDTUtils.resolveTypeRoot(param.getTextDocument().getUri());
 
-    if (javaProject == null) {
-      return emptyList();
-    }
-
-    ImplementationsDescriptor implementationsDescriptor = new ImplementationsDescriptor();
-
+    ImplementersResponse implementersResponse = new ImplementersResponse();
+    List<SymbolInformation> implementations = new ArrayList<>();
+    implementersResponse.setImplementations(implementations);
     try {
-      IJavaElement element =
-          getJavaElement(javaProject, commandParameters.getFqn(), commandParameters.getOffset());
-      if (element == null) {
-        implementationsDescriptor.setImplementations(emptyList());
-        return implementationsDescriptor;
-      }
+      IJavaElement elementToSearch =
+          JDTUtils.findElementAtSelection(
+              typeRoot,
+              param.getPosition().getLine(),
+              param.getPosition().getCharacter(),
+              JavaLanguageServerPlugin.getPreferencesManager(),
+              pm);
 
-      List<SymbolInformation> implementations = new ArrayList<>();
-
-      implementationsDescriptor.setImplementations(implementations);
-
-      switch (element.getElementType()) {
-        case 7: // type
-          findSubTypes(element, implementations, pm);
-          implementationsDescriptor.setMemberName(element.getElementName());
+      switch (elementToSearch.getElementType()) {
+        case IJavaElement.TYPE: // type
+          findSubTypes(elementToSearch, implementations, pm);
+          implementersResponse.setSearchedElement(elementToSearch.getElementName());
           break;
-        case 9: // method
-          findTypesWithSubMethods(element, implementations, pm);
-          implementationsDescriptor.setMemberName(element.getElementName());
+        case IJavaElement.METHOD: // method
+          findTypesWithSubMethods(elementToSearch, implementations, pm);
+          implementersResponse.setSearchedElement(elementToSearch.getElementName());
           break;
         default:
           break;
@@ -86,7 +80,7 @@ public class FindImplementorsHandler {
       throw new RuntimeException(e);
     }
 
-    return implementationsDescriptor;
+    return implementersResponse;
   }
 
   private static IJavaElement getJavaElement(IJavaProject project, String fqn, int offset)
