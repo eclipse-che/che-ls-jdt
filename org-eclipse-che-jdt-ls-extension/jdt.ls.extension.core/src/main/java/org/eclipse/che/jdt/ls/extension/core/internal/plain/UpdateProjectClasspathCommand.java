@@ -12,6 +12,16 @@ package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
 import static java.lang.String.format;
 import static org.eclipse.core.runtime.Path.fromOSString;
+import static org.eclipse.jdt.core.IClasspathEntry.CPE_CONTAINER;
+import static org.eclipse.jdt.core.IClasspathEntry.CPE_LIBRARY;
+import static org.eclipse.jdt.core.IClasspathEntry.CPE_PROJECT;
+import static org.eclipse.jdt.core.IClasspathEntry.CPE_SOURCE;
+import static org.eclipse.jdt.core.IClasspathEntry.CPE_VARIABLE;
+import static org.eclipse.jdt.core.JavaCore.newContainerEntry;
+import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
+import static org.eclipse.jdt.core.JavaCore.newProjectEntry;
+import static org.eclipse.jdt.core.JavaCore.newSourceEntry;
+import static org.eclipse.jdt.core.JavaCore.newVariableEntry;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
@@ -25,7 +35,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
@@ -82,17 +91,22 @@ public class UpdateProjectClasspathCommand {
     List<IClasspathEntry> coreClasspathEntries = new ArrayList<>(entries.size());
     for (ClasspathEntry entry : entries) {
       IPath path = fromOSString(entry.getPath());
-      int entryKind = entry.getEntryKind();
-      if (IClasspathEntry.CPE_LIBRARY == entryKind) {
-        coreClasspathEntries.add(JavaCore.newLibraryEntry(path, null, null));
-      } else if (IClasspathEntry.CPE_SOURCE == entryKind) {
-        coreClasspathEntries.add(JavaCore.newSourceEntry(path));
-      } else if (IClasspathEntry.CPE_VARIABLE == entryKind) {
-        coreClasspathEntries.add(JavaCore.newVariableEntry(path, null, null));
-      } else if (IClasspathEntry.CPE_CONTAINER == entryKind) {
-        coreClasspathEntries.add(JavaCore.newContainerEntry(path));
-      } else if (IClasspathEntry.CPE_PROJECT == entryKind) {
-        coreClasspathEntries.add(JavaCore.newProjectEntry(path));
+      switch (entry.getEntryKind()) {
+        case CPE_LIBRARY:
+          coreClasspathEntries.add(newLibraryEntry(path, null, null));
+          break;
+        case CPE_SOURCE:
+          coreClasspathEntries.add(newSourceEntry(path));
+          break;
+        case CPE_VARIABLE:
+          coreClasspathEntries.add(newVariableEntry(path, null, null));
+          break;
+        case CPE_CONTAINER:
+          coreClasspathEntries.add(newContainerEntry(path));
+          break;
+        case CPE_PROJECT:
+          coreClasspathEntries.add(newProjectEntry(path));
+          break;
       }
     }
     return coreClasspathEntries.toArray(new IClasspathEntry[coreClasspathEntries.size()]);

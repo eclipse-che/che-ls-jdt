@@ -33,9 +33,6 @@ import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 /**
  * Creates simple java project with default .classpath file.
  *
- * @param arguments a list contains project URI and source folder's name
- * @param pm a progress monitor
- * @return uri of created project
  * @author Valeriy Svydenko
  */
 public class CreateSimpleProjectCommand {
