@@ -37,13 +37,13 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
-/** 
+/**
  * Command to update maven projects.
- * 
+ *
  * @author Mykola Morhun
  */
 public class ReImportMavenProjectsHandler {
-  public static long REIMPORT_TIMEOUT = 60_000L;
+  public static long REIMPORT_TIMEOUT = 60L;
 
   private static final Gson gson =
       new GsonBuilder()
@@ -61,7 +61,7 @@ public class ReImportMavenProjectsHandler {
   private static CountDownLatch jobsToBeFinished;
   // name -> path
   private static Map<String, String> projectsToBeUpdated = new ConcurrentHashMap<>();
-  // set of paths to updates projects; path -> ""
+  // set of paths to updated projects; path -> ""
   private static Map<String, String> updatedProjectsPaths = new ConcurrentHashMap<>();
 
   /**
@@ -103,10 +103,13 @@ public class ReImportMavenProjectsHandler {
       List<String> projectsUri, IProgressMonitor progressMonitor) throws InterruptedException {
     final List<IProject> projects = validateProjects(projectsUri, progressMonitor);
     jobManager.addJobChangeListener(jobChangedListener);
-    jobsToBeFinished = new CountDownLatch(projects.size());
-    submitUpdateJobs(projects);
-    jobsToBeFinished.await(REIMPORT_TIMEOUT, TimeUnit.SECONDS);
-    jobManager.removeJobChangeListener(jobChangedListener);
+    try {
+      jobsToBeFinished = new CountDownLatch(projects.size());
+      submitUpdateJobs(projects);
+      jobsToBeFinished.await(REIMPORT_TIMEOUT, TimeUnit.SECONDS);
+    } finally {
+      jobManager.removeJobChangeListener(jobChangedListener);
+    }
     return updatedProjectsPaths.keySet();
   }
 
@@ -155,6 +158,8 @@ public class ReImportMavenProjectsHandler {
     }
   }
 
+  // TODO temporary solution.
+  // Should be reworked when https://github.com/eclipse/eclipse.jdt.ls/issues/506 will be fixed.
   private static class JobChangedListener extends JobChangeAdapter {
     private static final String UPDATE_PROJECT_JOB_NAME_PREFIX = "Update project ";
 
