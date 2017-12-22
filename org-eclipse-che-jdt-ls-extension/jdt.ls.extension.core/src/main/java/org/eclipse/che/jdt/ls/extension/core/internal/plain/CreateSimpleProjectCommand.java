@@ -91,7 +91,7 @@ public class CreateSimpleProjectCommand {
 
       JavaLanguageServerPlugin.logInfo("Finished creating the Simple Java project");
     } catch (CoreException e) {
-      e.printStackTrace();
+      JavaLanguageServerPlugin.logException("Problem creating Simple Java project", e);
     }
     return projectUri;
   }
