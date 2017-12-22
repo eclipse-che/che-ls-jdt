@@ -10,23 +10,22 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
-import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IJavaProject;
-import org.hamcrest.CoreMatchers;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
 
 /** @author Valeriy Svydenko */
-public class SimpleJavaProjectImporterTest extends AbstractProjectsManagerBasedTest {
+public class GetSourceFoldersCommandTest extends AbstractProjectsManagerBasedTest {
   private IProject project;
 
   @Before
@@ -36,21 +35,15 @@ public class SimpleJavaProjectImporterTest extends AbstractProjectsManagerBasedT
   }
 
   @Test
-  public void shouldReadClasspath() throws Exception {
+  public void sourceFoldersShouldBeReturned() throws Exception {
     String projectUri = getResourceUriAsString(project.getRawLocationURI());
-    IJavaProject javaProject = getJavaProject(projectUri);
 
-    assertEquals("/plain/bin", javaProject.readOutputLocation().toString());
+    List<Object> arguments = singletonList(projectUri);
 
-    IClasspathEntry[] classpath = javaProject.getRawClasspath();
-    assertEquals(3, classpath.length);
-    List<String> paths = new ArrayList<>();
-    for (IClasspathEntry entry : classpath) {
-      paths.add(entry.getPath().toString());
-    }
-    assertThat(
-        paths,
-        CoreMatchers.hasItems(
-            "org.eclipse.jdt.launching.JRE_CONTAINER", "/plain/src", "/plain/src2"));
+    List<String> result = GetSourceFoldersCommand.execute(arguments, new NullProgressMonitor());
+
+    assertEquals(2, result.size());
+    List<String> sourceFolders = asList("/plain/src", "/plain/src2");
+    assertThat(sourceFolders, hasItems(result.get(0), result.get(1)));
   }
 }

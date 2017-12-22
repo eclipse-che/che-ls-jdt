@@ -51,5 +51,12 @@ public class Commands {
   public static final String IDENTIFY_FQN_IN_RESOURCE =
       "che.jdt.ls.extension.debug.identifyFqnInResource";
 
+  // simple java project
+
+  public static final String CREATE_SIMPLE_PROJECT = "che.jdt.ls.extension.plain.createProject";
+  public static final String UPDATE_PROJECT_CLASSPATH =
+      "che.jdt.ls.extension.plain.updateClasspath";
+  public static final String GET_SOURCE_FOLDERS = "che.jdt.ls.extension.plain.sourceFolders";
+
   private Commands() {}
 }

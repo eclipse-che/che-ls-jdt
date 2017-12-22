@@ -33,6 +33,11 @@ public class ClasspathEntry {
     this.entryKind = kind;
   }
 
+  public ClasspathEntry withEntryKind(int kind) {
+    this.entryKind = kind;
+    return this;
+  }
+
   /** Returns path to the entry. */
   public String getPath() {
     return path;
@@ -42,6 +47,11 @@ public class ClasspathEntry {
     this.path = path;
   }
 
+  public ClasspathEntry withPath(String path) {
+    this.path = path;
+    return this;
+  }
+
   /** Returns sub entries. */
   public List<ClasspathEntry> getChildren() {
     return children;
@@ -49,5 +59,10 @@ public class ClasspathEntry {
 
   public void setChildren(List<ClasspathEntry> children) {
     this.children = children;
+  }
+
+  public ClasspathEntry withChildren(List<ClasspathEntry> children) {
+    this.children = children;
+    return this;
   }
 }
