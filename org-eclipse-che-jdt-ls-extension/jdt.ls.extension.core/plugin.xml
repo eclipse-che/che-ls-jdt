@@ -27,13 +27,4 @@
             <command id="che.jdt.ls.extension.plain.sourceFolders"/>
        </delegateCommandHandler>
    </extension>
-   
-   <extension
-         id="importers"
-         point="org.eclipse.jdt.ls.core.importers">
-         <importer
-         	id = "simpleProjectImporter"
-         	order ="500"
-         	class = "org.eclipse.che.jdt.ls.extension.core.internal.plain.SimpleProjectImporter"/> 
-   </extension>
 </plugin>
