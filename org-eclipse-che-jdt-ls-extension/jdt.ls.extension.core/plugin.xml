@@ -12,6 +12,7 @@
             <command id="che.jdt.ls.extension.resolveClasspath"/>
             <command id="che.jdt.ls.extension.outputDir"/>
             <command id="che.jdt.ls.extension.effectivePom"/>
+            <command id="che.jdt.ls.extension.reImportMavenProject"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
             <command id="che.jdt.ls.extension.libraryContentURL"/>
             <command id="che.jdt.ls.extension.libraryContentByPath"/>

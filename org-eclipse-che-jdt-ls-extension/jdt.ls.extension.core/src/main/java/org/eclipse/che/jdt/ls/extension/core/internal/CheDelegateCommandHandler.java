@@ -23,6 +23,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChi
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,6 +50,9 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.RESOLVE_CLASSPATH_COMMAND, ResolveClassPathsHandler::resolveClasspaths);
     commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
     commands.put(Commands.GET_EFFECTIVE_POM_COMMAND, EffectivePomHandler::getEffectivePom);
+    commands.put(
+        Commands.REIMPORT_MAVEN_PROJECTS_COMMAND,
+        ReImportMavenProjectsHandler::reImportMavenProjects);
     commands.put(
         Commands.GET_CLASS_PATH_TREE_COMMAND, ResolveClassPathsHandler::getClasspathModelTree);
     commands.put(Commands.GET_EXTERNAL_LIBRARIES_COMMAND, ProjectExternalLibraryCommand::execute);
