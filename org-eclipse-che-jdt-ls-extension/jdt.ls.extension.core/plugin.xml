@@ -12,6 +12,7 @@
             <command id="che.jdt.ls.extension.resolveClasspath"/>
             <command id="che.jdt.ls.extension.outputDir"/>
             <command id="che.jdt.ls.extension.effectivePom"/>
+            <command id="che.jdt.ls.extension.reImportMavenProject"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
             <command id="che.jdt.ls.extension.libraryContentURL"/>
             <command id="che.jdt.ls.extension.libraryContentByPath"/>
@@ -20,6 +21,9 @@
             <command id="che.jdt.ls.extension.externalLibrariesChildren"/>
             <command id="che.jdt.ls.extension.externalLibraries"/>
             <command id="che.jdt.ls.extension.classpathTree"/>
+            <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
+            <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
+            <command id="che.jdt.ls.extension.updateWorkspace"/>
             <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
             <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
             <command id="che.jdt.ls.extension.plain.createProject"/>

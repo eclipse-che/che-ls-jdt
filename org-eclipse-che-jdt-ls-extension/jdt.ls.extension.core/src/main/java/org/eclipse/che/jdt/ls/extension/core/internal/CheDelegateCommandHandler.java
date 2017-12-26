@@ -26,6 +26,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectC
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.UpdateProjectClasspathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -53,6 +54,9 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
     commands.put(Commands.GET_EFFECTIVE_POM_COMMAND, EffectivePomHandler::getEffectivePom);
     commands.put(
+        Commands.REIMPORT_MAVEN_PROJECTS_COMMAND,
+        ReImportMavenProjectsHandler::reImportMavenProjects);
+    commands.put(
         Commands.GET_CLASS_PATH_TREE_COMMAND, ResolveClassPathsHandler::getClasspathModelTree);
     commands.put(Commands.GET_EXTERNAL_LIBRARIES_COMMAND, ProjectExternalLibraryCommand::execute);
     commands.put(
@@ -63,6 +67,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND, ContentByPathCommand::execute);
     commands.put(Commands.IDENTIFY_FQN_IN_RESOURCE, FqnDiscover::identifyFqnInResource);
     commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
+    commands.put(Commands.UPDATE_WORKSPACE, UpdateWorkspaceCommand::execute);
     commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
