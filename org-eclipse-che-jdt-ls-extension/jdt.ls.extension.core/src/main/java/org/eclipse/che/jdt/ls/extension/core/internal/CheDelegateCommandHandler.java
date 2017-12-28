@@ -22,6 +22,9 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLi
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.plain.UpdateProjectClasspathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
@@ -65,6 +68,9 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.IDENTIFY_FQN_IN_RESOURCE, FqnDiscover::identifyFqnInResource);
     commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
     commands.put(Commands.UPDATE_WORKSPACE, UpdateWorkspaceCommand::execute);
+    commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
+    commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
+    commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
   }
 
   @Override
