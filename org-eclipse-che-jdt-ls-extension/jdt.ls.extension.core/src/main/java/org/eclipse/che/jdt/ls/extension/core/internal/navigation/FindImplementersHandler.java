@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017 Red Hat, Inc.
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,11 +14,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.dto.navigation.ImplementersResponse;
+import org.eclipse.che.jdt.ls.extension.api.dto.ImplementersResponse;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.ICodeAssist;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
@@ -37,6 +35,11 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
+/**
+ * Command to find implementers of a type or a method
+ *
+ * @author dbocharo
+ */
 public class FindImplementersHandler {
   private static final Gson gson =
       new GsonBuilder()
@@ -45,6 +48,15 @@ public class FindImplementersHandler {
           .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
           .create();
 
+  /**
+   * Finds implementers for an element defined by position
+   *
+   * @param parameters first parameter must be of type {@link TextDocumentPositionParams}, which
+   *     defines a position of an element which search implementers for
+   * @param pm a progress monitor
+   * @return an object of type {@link ImplementersResponse}, which contains description of a
+   *     searched element and implementers
+   */
   @SuppressWarnings("restriction")
   public static Object getImplementers(List<Object> parameters, IProgressMonitor pm) {
     TextDocumentPositionParams param =
@@ -53,8 +65,8 @@ public class FindImplementersHandler {
     ITypeRoot typeRoot = JDTUtils.resolveTypeRoot(param.getTextDocument().getUri());
 
     ImplementersResponse implementersResponse = new ImplementersResponse();
-    List<SymbolInformation> implementations = new ArrayList<>();
-    implementersResponse.setImplementations(implementations);
+    List<SymbolInformation> implementers = new ArrayList<>();
+    implementersResponse.setImplementers(implementers);
     try {
       IJavaElement elementToSearch =
           JDTUtils.findElementAtSelection(
@@ -65,12 +77,12 @@ public class FindImplementersHandler {
               pm);
 
       switch (elementToSearch.getElementType()) {
-        case IJavaElement.TYPE: // type
-          findSubTypes(elementToSearch, implementations, pm);
+        case IJavaElement.TYPE:
+          findSubTypes(elementToSearch, implementers, pm);
           implementersResponse.setSearchedElement(elementToSearch.getElementName());
           break;
-        case IJavaElement.METHOD: // method
-          findTypesWithSubMethods(elementToSearch, implementations, pm);
+        case IJavaElement.METHOD:
+          findTypesWithSubMethods(elementToSearch, implementers, pm);
           implementersResponse.setSearchedElement(elementToSearch.getElementName());
           break;
         default:
@@ -83,30 +95,8 @@ public class FindImplementersHandler {
     return implementersResponse;
   }
 
-  private static IJavaElement getJavaElement(IJavaProject project, String fqn, int offset)
-      throws JavaModelException {
-    IJavaElement originalElement = null;
-    IType type = project.findType(fqn);
-    ICodeAssist codeAssist;
-    if (type.isBinary()) {
-      codeAssist = type.getClassFile();
-    } else {
-      codeAssist = type.getCompilationUnit();
-    }
-
-    IJavaElement[] elements = null;
-    if (codeAssist != null) {
-      elements = codeAssist.codeSelect(offset, 0);
-    }
-
-    if (elements != null && elements.length > 0) {
-      originalElement = elements[0];
-    }
-    return originalElement;
-  }
-
   private static void findSubTypes(
-      IJavaElement element, List<SymbolInformation> implementations, IProgressMonitor pm)
+      IJavaElement element, List<SymbolInformation> implementers, IProgressMonitor pm)
       throws JavaModelException {
     IType type = (IType) element;
     ITypeHierarchy typeHierarchy = type.newTypeHierarchy(pm);
@@ -114,13 +104,13 @@ public class FindImplementersHandler {
 
     for (IType implType : implTypes) {
       SymbolInformation dto = convertToSymbolInformation(implType);
-      implementations.add(dto);
+      implementers.add(dto);
     }
   }
 
   @SuppressWarnings("restriction")
   private static void findTypesWithSubMethods(
-      IJavaElement element, List<SymbolInformation> implementations, IProgressMonitor pm)
+      IJavaElement element, List<SymbolInformation> implementers, IProgressMonitor pm)
       throws JavaModelException {
     IMethod selectedMethod = (IMethod) element;
     IType parentType = selectedMethod.getDeclaringType();
@@ -138,7 +128,7 @@ public class FindImplementersHandler {
         continue;
       }
       SymbolInformation openDeclaration = convertToSymbolInformation(method);
-      implementations.add(openDeclaration);
+      implementers.add(openDeclaration);
     }
   }
 

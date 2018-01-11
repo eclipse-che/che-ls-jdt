@@ -4,6 +4,5 @@ Bundle-Name: jdt.ls extension API
 Bundle-SymbolicName: jdt.ls.extension.api
 Bundle-Version: 0.0.1.qualifier
 Export-Package: org.eclipse.che.jdt.ls.extension.api,
- org.eclipse.che.jdt.ls.extension.api.dto,
- org.eclipse.che.jdt.ls.extension.api.dto.navigation
+ org.eclipse.che.jdt.ls.extension.api.dto
 Import-Package: org.eclipse.lsp4j

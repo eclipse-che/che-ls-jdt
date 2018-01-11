@@ -72,8 +72,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
-    commands.put(Commands.FIND_IMPLEMENTORS_COMMAND, FindImplementersHandler::getImplementers);
-
+    commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
   }
 
   @Override
