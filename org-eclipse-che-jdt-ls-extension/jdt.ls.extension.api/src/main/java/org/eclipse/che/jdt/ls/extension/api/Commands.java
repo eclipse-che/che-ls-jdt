@@ -62,5 +62,12 @@ public class Commands {
       "che.jdt.ls.extension.plain.updateClasspath";
   public static final String GET_SOURCE_FOLDERS = "che.jdt.ls.extension.plain.sourceFolders";
 
+  // configuration
+
+  public static final String GET_CONFIGURATION_СOMMAND = "che.jdt.ls.extension.getConfiguration";
+  public static final String SET_CONFIGURATION_СOMMAND = "che.jdt.ls.extension.setConfiguration";
+  public static final String UPDATE_CONFIGURATION_СOMMAND =
+      "che.jdt.ls.extension.updateConfiguration";
+
   private Commands() {}
 }

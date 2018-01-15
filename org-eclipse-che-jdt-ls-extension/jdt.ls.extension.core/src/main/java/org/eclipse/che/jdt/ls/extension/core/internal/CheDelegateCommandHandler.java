@@ -71,6 +71,9 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
+    commands.put(Commands.GET_CONFIGURATION_СOMMAND, GetConfigurationCommand::execute);
+    commands.put(Commands.SET_CONFIGURATION_СOMMAND, SetConfigurationCommand::execute);
+    commands.put(Commands.UPDATE_CONFIGURATION_СOMMAND, UpdateConfigurationCommand::execute);
   }
 
   @Override

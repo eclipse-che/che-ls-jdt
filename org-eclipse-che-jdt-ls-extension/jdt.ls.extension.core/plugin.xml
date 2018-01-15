@@ -29,6 +29,9 @@
             <command id="che.jdt.ls.extension.plain.createProject"/>
             <command id="che.jdt.ls.extension.plain.updateClasspath"/>
             <command id="che.jdt.ls.extension.plain.sourceFolders"/>
+            <command id="che.jdt.ls.extension.getConfiguration"/>
+            <command id="che.jdt.ls.extension.setConfiguration"/>
+            <command id="che.jdt.ls.extension.updateConfiguration"/>
        </delegateCommandHandler>
    </extension>
 </plugin>
