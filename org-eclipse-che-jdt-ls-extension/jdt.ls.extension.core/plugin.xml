@@ -37,4 +37,14 @@
             <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
        </delegateCommandHandler>
    </extension>
+    <extension
+          point="org.eclipse.jdt.ls.core.contentProvider">
+       <contentProvider
+             cacheable="false"
+             class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
+             id="che.lib.contentProvider"
+             priority="10000"
+             uriPattern="chelib://.*">
+       </contentProvider>
+    </extension>
 </plugin>

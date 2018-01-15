@@ -17,6 +17,8 @@ import static org.eclipse.jdt.ls.core.internal.JDTUtils.PERIOD;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +44,6 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarEntryDirectory;
 import org.eclipse.jdt.internal.core.JarEntryFile;
-import org.eclipse.jdt.internal.core.JarEntryResource;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.internal.core.JavaModelStatus;
@@ -531,7 +532,8 @@ public class LibraryNavigation {
             new JarEntry(
                 getSpecificText((IJavaElement) root),
                 packageFragment.getElementName(),
-                PACKAGE_ENTRY_TYPE);
+                PACKAGE_ENTRY_TYPE,
+                null);
         result.add(entry);
       }
 
@@ -541,28 +543,48 @@ public class LibraryNavigation {
             new JarEntry(
                 classFile.getElementName(),
                 classFile.findPrimaryType().getFullyQualifiedName(),
-                CLASS_FILE_ENTRY_TYPE);
+                CLASS_FILE_ENTRY_TYPE,
+                JDTUtils.toUri(classFile));
         result.add(entry);
       }
 
-      if (root instanceof JarEntryResource) {
-        result.add(getJarEntryResource((JarEntryResource) root));
+      if (root instanceof IJarEntryResource) {
+        result.add(getJarEntryResource((IJarEntryResource) root));
       }
     }
     result.sort(COMPARATOR);
     return result;
   }
 
-  private static JarEntry getJarEntryResource(JarEntryResource resource) {
+  private static JarEntry getJarEntryResource(IJarEntryResource resource) {
+    String path = resource.getName();
+    Object parent = resource.getParent();
+
+    while (parent instanceof IJarEntryResource) {
+      IJarEntryResource p = (IJarEntryResource) parent;
+      path = p.getName() + "/" + path;
+      parent = p.getParent();
+    }
+
     JarEntry entry = new JarEntry();
-    if (resource instanceof JarEntryDirectory) {
+    if (resource.isFile()) {
+      entry.setEntryType(FILE_ENTRY_TYPE);
+    } else {
       entry.setEntryType(FOLDER_ENTRY_TYPE);
     }
-    if (resource instanceof JarEntryFile) {
-      entry.setEntryType(FILE_ENTRY_TYPE);
-    }
+
     entry.setName(resource.getName());
     entry.setPath(resource.getFullPath().toOSString());
+    try {
+      entry.setUri(
+          "chelib://"
+              + URLEncoder.encode(((IJavaElement) parent).getHandleIdentifier(), "UTF-8")
+              + "/"
+              + path);
+    } catch (UnsupportedEncodingException e) {
+      // utf-8 is mandatory
+      throw new RuntimeException("Should not happen", e);
+    }
     return entry;
   }
 
