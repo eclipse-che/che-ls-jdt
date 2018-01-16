@@ -15,8 +15,6 @@ import static java.util.Collections.emptyList;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.PATH_SEPARATOR;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.PERIOD;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -26,7 +24,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JarEntry;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
@@ -46,12 +43,8 @@ import org.eclipse.jdt.internal.core.JarEntryDirectory;
 import org.eclipse.jdt.internal.core.JarEntryFile;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaModelManager;
-import org.eclipse.jdt.internal.core.JavaModelStatus;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
-import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
-import org.eclipse.jdt.ls.core.internal.managers.ContentProviderManager;
-import org.eclipse.lsp4j.Location;
 
 /**
  * Utilities for working with External libraries.
@@ -283,99 +276,6 @@ public class LibraryNavigation {
     return emptyList();
   }
 
-  /**
-   * Computes content of node by path.
-   *
-   * @param projectUri project URI
-   * @param rootId id of root node
-   * @param path path of the node
-   * @param pm a progress monitor
-   * @return content of the library's node
-   * @throws CoreException if an exception occurs while accessing its corresponding resource
-   */
-  public static String getContent(
-      String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
-    IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
-    if (project == null) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
-    }
-
-    if (rootId == null) {
-      return getContent(project, path, pm);
-    }
-
-    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(rootId);
-    if (root == null) {
-      return null;
-    }
-
-    if (path.startsWith(PATH_SEPARATOR)) {
-      // non java file
-      if (root instanceof JarPackageFragmentRoot) {
-        JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot) root;
-        ZipFile jar = null;
-        try {
-          jar = jarPackageFragmentRoot.getJar();
-          ZipEntry entry = jar.getEntry(path.substring(1));
-          if (entry != null) {
-            try (InputStream stream = jar.getInputStream(entry)) {
-              return IOUtils.toString(stream, "UTF-8");
-            } catch (IOException e) {
-              JavaLanguageServerPlugin.logException(
-                  "Can't read file content: " + entry.getName(), e);
-            }
-          }
-        } finally {
-          if (jar != null) {
-            JavaModelManager.getJavaModelManager().closeZipFile(jar);
-          }
-        }
-      }
-      Object[] resources = root.getNonJavaResources();
-
-      for (Object resource : resources) {
-        if (resource instanceof JarEntryFile) {
-          JarEntryFile file = (JarEntryFile) resource;
-          if (file.getFullPath().toOSString().equals(path)) {
-            return readFileContent(file);
-          }
-        }
-        if (resource instanceof JarEntryDirectory) {
-          JarEntryDirectory directory = (JarEntryDirectory) resource;
-          JarEntryFile file = findJarFile(directory, path);
-          if (file != null) {
-            return readFileContent(file);
-          }
-        }
-      }
-    } else {
-      return getContent(project, path, pm);
-    }
-    return null;
-  }
-
-  /**
-   * Computes content of java file by fqn.
-   *
-   * @param project project
-   * @param path path of the node
-   * @param pm progress monitor
-   * @return content of the library's node
-   * @throws JavaModelException if an exception occurs while accessing its corresponding resource
-   */
-  private static String getContent(IJavaProject project, String path, IProgressMonitor pm)
-      throws JavaModelException {
-    IType type = project.findType(path);
-    if (type == null) {
-      throw new JavaModelException(new JavaModelStatus(0, "Can't find type: " + path));
-    }
-
-    Location location = JDTUtils.toLocation(type);
-
-    ContentProviderManager handler = JavaLanguageServerPlugin.getContentProviderManager();
-    return handler.getContent(JDTUtils.toURI(location.getUri()), pm);
-  }
-
   private static Object[] getPackageContent(IPackageFragment fragment, IProgressMonitor pm)
       throws JavaModelException {
     // hierarchical package mode
@@ -409,15 +309,6 @@ public class LibraryNavigation {
           return file;
         }
       }
-    }
-    return null;
-  }
-
-  private static String readFileContent(JarEntryFile file) {
-    try (InputStream stream = (file.getContents())) {
-      return IOUtils.toString(stream, "UTF-8");
-    } catch (IOException | CoreException e) {
-      JavaLanguageServerPlugin.logException("Can't read file content: " + file.getFullPath(), e);
     }
     return null;
   }

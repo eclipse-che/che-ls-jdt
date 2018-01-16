@@ -21,7 +21,6 @@ import org.eclipse.che.jdt.ls.extension.core.internal.configuration.GetPreferenc
 import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdateJavaCoreOptionsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdatePreferencesCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover;
-import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByPathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLibrariesChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
@@ -69,7 +68,6 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
         ExternalLibrariesChildrenCommand::execute);
     commands.put(Commands.GET_LIBRARY_CHILDREN_COMMAND, LibraryChildrenCommand::execute);
     commands.put(Commands.GET_LIBRARY_ENTRY_COMMAND, LibraryEntryCommand::execute);
-    commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND, ContentByPathCommand::execute);
     commands.put(Commands.IDENTIFY_FQN_IN_RESOURCE, FqnDiscover::identifyFqnInResource);
     commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
     commands.put(Commands.UPDATE_WORKSPACE, UpdateWorkspaceCommand::execute);

@@ -43,8 +43,6 @@ public class Commands {
       "che.jdt.ls.extension.externalLibrariesChildren";
   public static final String GET_LIBRARY_CHILDREN_COMMAND = "che.jdt.ls.extension.libraryChildren";
   public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
-  public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
-      "che.jdt.ls.extension.libraryContentByPath";
 
   // debug
 
