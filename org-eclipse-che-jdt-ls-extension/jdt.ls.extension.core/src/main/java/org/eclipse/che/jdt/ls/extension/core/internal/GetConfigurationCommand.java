@@ -10,24 +10,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.eclipse.jdt.ls.core.internal.preferences.MemberSortOrder;
-import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
-import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static org.eclipse.jdt.ls.core.internal.handlers.MapFlattener.getBoolean;
-import static org.eclipse.jdt.ls.core.internal.handlers.MapFlattener.getList;
-import static org.eclipse.jdt.ls.core.internal.handlers.MapFlattener.getString;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.CONFIGURATION_UPDATE_BUILD_CONFIGURATION_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.ERRORS_INCOMPLETE_CLASSPATH_SEVERITY_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.EXECUTE_COMMAND_ENABLED_KEY;
@@ -43,6 +25,20 @@ import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.PREFERRED
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.REFERENCES_CODE_LENS_ENABLED_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.RENAME_ENABLED_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.SIGNATURE_HELP_ENABLED_KEY;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.ls.core.internal.preferences.MemberSortOrder;
+import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
+import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
 
 /** @author Anatolii Bazko */
 public class GetConfigurationCommand {

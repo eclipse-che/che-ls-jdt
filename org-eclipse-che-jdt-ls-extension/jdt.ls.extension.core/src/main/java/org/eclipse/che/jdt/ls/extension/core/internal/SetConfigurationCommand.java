@@ -12,7 +12,10 @@ package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
-
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -21,11 +24,6 @@ import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
-
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /** @author Anatolii Bazko */
 public class SetConfigurationCommand {

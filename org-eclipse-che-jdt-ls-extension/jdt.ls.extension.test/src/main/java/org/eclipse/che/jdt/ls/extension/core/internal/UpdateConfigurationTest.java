@@ -10,15 +10,14 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.junit.Test;
-
-import java.util.List;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertFalse;
+
+import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.junit.Test;
 
 /** @author Anatolii Bazko */
 public class UpdateConfigurationTest extends AbstractProjectsManagerBasedTest {
