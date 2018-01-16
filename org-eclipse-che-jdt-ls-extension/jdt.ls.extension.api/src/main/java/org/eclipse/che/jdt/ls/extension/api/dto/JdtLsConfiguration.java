@@ -15,20 +15,20 @@ import java.util.Map;
 
 /** @author Anatolii Bazko */
 public class JdtLsConfiguration {
-  private Map<String, String> preferences;
+  private Map<String, String> jdtLsPreferences;
   private Map<String, String> javaCoreOptions;
 
   public JdtLsConfiguration() {
-    this.preferences = new HashMap<>();
+    this.jdtLsPreferences = new HashMap<>();
     this.javaCoreOptions = new HashMap<>();
   }
 
-  public Map<String, String> getPreferences() {
-    return preferences;
+  public Map<String, String> getJdtLsPreferences() {
+    return jdtLsPreferences;
   }
 
-  public void setPreferences(Map<String, String> preferences) {
-    this.preferences = preferences;
+  public void setJdtLsPreferences(Map<String, String> jdtLsPreferences) {
+    this.jdtLsPreferences = jdtLsPreferences;
   }
 
   public Map<String, String> getJavaCoreOptions() {

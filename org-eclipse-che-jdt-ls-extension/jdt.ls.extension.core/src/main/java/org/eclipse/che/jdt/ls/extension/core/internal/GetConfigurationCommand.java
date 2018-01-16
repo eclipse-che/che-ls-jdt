@@ -27,6 +27,7 @@ import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.RENAME_EN
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.SIGNATURE_HELP_ENABLED_KEY;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -43,30 +44,57 @@ import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
 /** @author Anatolii Bazko */
 public class GetConfigurationCommand {
 
-  /** Returns JDT LS configuration. */
+  /**
+   * Returns JDT LS configuration.
+   *
+   * @see JavaCore#getOptions()
+   * @see JavaCore#getOption(String)
+   * @see PreferenceManager#getPreferences()
+   * @param params list of specific java options to return. If list is empty then all java options
+   *     will be returned
+   */
   public static JdtLsConfiguration execute(List<Object> params, IProgressMonitor pm) {
     ensureNotCancelled(pm);
 
+    PreferenceManager preferencesManager = JavaLanguageServerPlugin.getPreferencesManager();
+    Preferences prefs = preferencesManager.getPreferences();
+
     JdtLsConfiguration configuration = new JdtLsConfiguration();
-    configuration.setJavaCoreOptions(JavaCore.getOptions());
-    configuration.setPreferences(prefsAsMap());
+    configuration.setJavaCoreOptions(getJavaCoreOptions(params));
+    configuration.setJdtLsPreferences(toMap(prefs));
 
     return configuration;
   }
 
-  private static Map<String, String> prefsAsMap() {
-    PreferenceManager preferencesManager = JavaLanguageServerPlugin.getPreferencesManager();
-    Preferences prefs = preferencesManager.getPreferences();
+  private static Hashtable<String, String> getJavaCoreOptions(List<Object> filters) {
+    if (filters.isEmpty()) {
+      return JavaCore.getOptions();
+    } else {
+      Hashtable<String, String> javaCoreOptions = new Hashtable<>(filters.size());
+      filters.forEach(
+          key -> {
+            String keyAsStr = key.toString();
 
+            String option = JavaCore.getOption(keyAsStr);
+            if (option != null) {
+              javaCoreOptions.put(keyAsStr, option);
+            }
+          });
+      return javaCoreOptions;
+    }
+  }
+
+  private static Map<String, String> toMap(Preferences prefs) {
     Map<String, Object> prefsAsMap = prefs.asMap();
     if (prefsAsMap == null) {
       prefsAsMap = new HashMap<>();
 
-      putNotNullValues(
+      putNotNullValue(
           prefsAsMap,
           ERRORS_INCOMPLETE_CLASSPATH_SEVERITY_KEY,
           prefs::getIncompleteClasspathSeverity);
-      putNotNullValues(
+
+      putNotNullValue(
           prefsAsMap,
           CONFIGURATION_UPDATE_BUILD_CONFIGURATION_KEY,
           prefs::getUpdateBuildConfigurationStatus);
@@ -81,8 +109,8 @@ public class GetConfigurationCommand {
       prefsAsMap.put(RENAME_ENABLED_KEY, prefs.isRenameEnabled());
       prefsAsMap.put(EXECUTE_COMMAND_ENABLED_KEY, prefs.isExecuteCommandEnabled());
 
-      putNotNullValues(prefsAsMap, JAVA_IMPORT_EXCLUSIONS_KEY, prefs::getJavaImportExclusions);
-      putNotNullValues(prefsAsMap, MAVEN_USER_SETTINGS_KEY, prefs::getMavenUserSettings);
+      putNotNullValue(prefsAsMap, JAVA_IMPORT_EXCLUSIONS_KEY, prefs::getJavaImportExclusions);
+      putNotNullValue(prefsAsMap, MAVEN_USER_SETTINGS_KEY, prefs::getMavenUserSettings);
 
       MemberSortOrder memberSortOrder = prefs.getMemberSortOrder();
       if (memberSortOrder != null) {
@@ -94,8 +122,8 @@ public class GetConfigurationCommand {
         prefsAsMap.put(MEMBER_SORT_ORDER, sortOrder.toString());
       }
 
-      putNotNullValues(prefsAsMap, FAVORITE_STATIC_MEMBERS, prefs::getFavoriteStaticMembers);
-      putNotNullValues(
+      putNotNullValue(prefsAsMap, FAVORITE_STATIC_MEMBERS, prefs::getFavoriteStaticMembers);
+      putNotNullValue(
           prefsAsMap, PREFERRED_CONTENT_PROVIDER_KEY, prefs::getPreferredContentProviderIds);
     }
 
@@ -111,7 +139,7 @@ public class GetConfigurationCommand {
     }
   }
 
-  private static void putNotNullValues(
+  private static void putNotNullValue(
       Map<String, Object> prefsAsMap, String key, Supplier<Object> value) {
 
     Object obj = value.get();

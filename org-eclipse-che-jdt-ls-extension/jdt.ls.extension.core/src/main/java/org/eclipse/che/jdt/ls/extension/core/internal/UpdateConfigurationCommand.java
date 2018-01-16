@@ -10,6 +10,8 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import static java.util.Collections.emptyList;
+
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import java.util.Hashtable;
@@ -34,21 +36,36 @@ public class UpdateConfigurationCommand {
     validateParams(params);
     ensureNotCancelled(pm);
 
-    JdtLsConfiguration configuration =
+    JdtLsConfiguration currentConf = GetConfigurationCommand.execute(emptyList(), pm);
+    JdtLsConfiguration updatedConf =
         GSON.fromJson(GSON.toJson(params.get(0)), JdtLsConfiguration.class);
 
-    updatePreferences(configuration.getPreferences());
-    updateJavaCoreOptions(configuration.getJavaCoreOptions());
+    merge(currentConf.getJavaCoreOptions(), updatedConf.getJavaCoreOptions());
+    merge(currentConf.getJdtLsPreferences(), updatedConf.getJdtLsPreferences());
+
+    updateJavaCoreOptions(currentConf.getJavaCoreOptions());
+    updatePreferences(currentConf.getJdtLsPreferences());
 
     return null;
   }
 
-  private static void updatePreferences(Map<String, String> prefsAsMap) {
+  private static void merge(Map<String, String> existedProps, Map<String, String> newProps) {
+    newProps.forEach(
+        (key, value) -> {
+          if ("NULL".equalsIgnoreCase(value)) {
+            existedProps.remove(key);
+          } else {
+            existedProps.put(key, value);
+          }
+        });
+  }
+
+  private static void updatePreferences(Map<String, String> prefs) {
     PreferenceManager preferencesManager = JavaLanguageServerPlugin.getPreferencesManager();
 
     Preferences preferences =
         Preferences.createFrom(
-            prefsAsMap
+            prefs
                 .entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
@@ -56,18 +73,8 @@ public class UpdateConfigurationCommand {
     preferencesManager.update(preferences);
   }
 
-  private static void updateJavaCoreOptions(Map<String, String> updatedOptions) {
-    Hashtable<String, String> currentOptions = JavaCore.getOptions();
-    updatedOptions.forEach(
-        (key, value) -> {
-          if ("NULL".equalsIgnoreCase(value)) {
-            currentOptions.remove(key);
-          } else {
-            currentOptions.put(key, value);
-          }
-        });
-
-    JavaCore.setOptions(new Hashtable<>(updatedOptions));
+  private static void updateJavaCoreOptions(Map<String, String> options) {
+    JavaCore.setOptions(new Hashtable<>(options));
   }
 
   private static void validateParams(List<Object> params) {

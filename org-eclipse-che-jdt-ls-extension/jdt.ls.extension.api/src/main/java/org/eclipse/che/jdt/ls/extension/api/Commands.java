@@ -65,7 +65,6 @@ public class Commands {
   // configuration
 
   public static final String GET_CONFIGURATION_СOMMAND = "che.jdt.ls.extension.getConfiguration";
-  public static final String SET_CONFIGURATION_СOMMAND = "che.jdt.ls.extension.setConfiguration";
   public static final String UPDATE_CONFIGURATION_СOMMAND =
       "che.jdt.ls.extension.updateConfiguration";
 

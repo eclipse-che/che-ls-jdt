@@ -12,7 +12,11 @@ package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
+import static org.eclipse.jdt.core.JavaCore.COMPILER_PB_UNUSED_IMPORT;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
@@ -23,14 +27,34 @@ import org.junit.Test;
 public class UpdateConfigurationTest extends AbstractProjectsManagerBasedTest {
 
   @Test
-  public void shouldUpdateConfiguration() throws Exception {
+  public void shouldGetSpecificOptions() throws Exception {
+    List<Object> params = singletonList(COMPILER_PB_UNUSED_IMPORT);
+
+    JdtLsConfiguration configuration =
+        GetConfigurationCommand.execute(params, new NullProgressMonitor());
+
+    assertFalse(configuration.getJdtLsPreferences().isEmpty());
+    assertEquals(1, configuration.getJavaCoreOptions().size());
+  }
+
+  @Test
+  public void shouldGetAllOptions() throws Exception {
     JdtLsConfiguration configuration =
         GetConfigurationCommand.execute(emptyList(), new NullProgressMonitor());
 
-    assertFalse(configuration.getPreferences().isEmpty());
-    assertFalse(configuration.getJavaCoreOptions().isEmpty());
+    assertFalse(configuration.getJdtLsPreferences().isEmpty());
+    assertTrue(configuration.getJavaCoreOptions().size() > 1);
+  }
 
-    List<Object> params = singletonList(configuration);
-    SetConfigurationCommand.execute(params, new NullProgressMonitor());
+  @Test
+  public void shouldUpdateConfiguration() throws Exception {
+    JdtLsConfiguration configuration = new JdtLsConfiguration();
+    configuration.setJavaCoreOptions(singletonMap(COMPILER_PB_UNUSED_IMPORT, "error"));
+
+    UpdateConfigurationCommand.execute(singletonList(configuration), new NullProgressMonitor());
+
+    List<Object> params = singletonList(COMPILER_PB_UNUSED_IMPORT);
+    configuration = GetConfigurationCommand.execute(params, new NullProgressMonitor());
+    assertEquals("error", configuration.getJavaCoreOptions().get(COMPILER_PB_UNUSED_IMPORT));
   }
 }
