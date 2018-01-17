@@ -53,6 +53,72 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 
 public class UsagesCommand {
+  private static final class UsagesRequestor extends SearchRequestor {
+    private final Map<IJavaElement, SearchResult> results = new HashMap<>();
+
+    @Override
+    public void acceptSearchMatch(SearchMatch match) throws CoreException {
+      Object o = match.getElement();
+      if (o instanceof IJavaElement) {
+        IJavaElement element = (IJavaElement) o;
+        SearchResult result = ensureCreated(element);
+        result.getMatches().add(new LinearRange(match.getOffset(), match.getLength()));
+      }
+    }
+
+    private SearchResult ensureCreated(IJavaElement element) throws JavaModelException {
+      try {
+        while (element != null && !isInteresting(element)) {
+          // transparent elements don't show up in result
+          element = element.getParent();
+        }
+        SearchResult r = results.get(element);
+        if (r == null) {
+          r = new SearchResult();
+          r.setChildren(new ArrayList<>());
+          r.setMatches(new ArrayList<>());
+          r.setKind(JavaModelUtil.mapKind(element));
+          r.setName(JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_DEFAULT));
+          if (element instanceof ISourceReference) {
+            Location l = JDTUtils.toLocation(element);
+            r.setUri(l.getUri());
+            SearchResult parent = ensureCreated(element.getParent());
+            parent.getChildren().add(r);
+          } else if (element instanceof IPackageFragment) {
+            IJavaElement parent = element.getParent();
+            IResource resource = parent.getCorrespondingResource();
+            if (resource != null) {
+              r.setUri(ResourceUtils.fixURI(resource.getLocationURI()));
+            } else {
+              r.setUri(
+                  new URI(
+                          "jdt",
+                          "/"
+                              + parent.getJavaProject().getElementName()
+                              + "/"
+                              + parent.getElementName(),
+                          element.getElementName())
+                      .toString());
+            }
+          }
+          results.put(element, r);
+        }
+        return r;
+      } catch (URISyntaxException e) {
+        JavaLanguageServerPlugin.logException("Uri syntax should not happen", e);
+        return null;
+      }
+    }
+
+    private boolean isInteresting(IJavaElement element) {
+      return INTERESTING_ELEMENT_TYPES.contains(element.getElementType());
+    }
+
+    public Map<IJavaElement, SearchResult> getResults() {
+      return results;
+    }
+  }
+
   private static final Set<Integer> INTERESTING_ELEMENT_TYPES;
 
   static {
@@ -70,7 +136,6 @@ public class UsagesCommand {
         JavaModelUtil.convertCommandParameter(parameters.get(0), TextDocumentPositionParams.class);
     SearchEngine engine = new SearchEngine();
 
-    Map<IJavaElement, SearchResult> results = new HashMap<IJavaElement, SearchResult>();
     try {
       ITypeRoot typeRoot = JDTUtils.resolveTypeRoot(param.getTextDocument().getUri());
       IJavaElement elementToSearch =
@@ -94,71 +159,12 @@ public class UsagesCommand {
 
       SearchPattern pattern =
           SearchPattern.createPattern(elementToSearch, IJavaSearchConstants.REFERENCES);
+      UsagesRequestor requestor = new UsagesRequestor();
       engine.search(
           pattern,
           new SearchParticipant[] {SearchEngine.getDefaultSearchParticipant()},
           scope,
-          new SearchRequestor() {
-
-            @Override
-            public void acceptSearchMatch(SearchMatch match) throws CoreException {
-              Object o = match.getElement();
-              if (o instanceof IJavaElement) {
-                IJavaElement element = (IJavaElement) o;
-                SearchResult result = ensureCreated(element);
-                result.getMatches().add(new LinearRange(match.getOffset(), match.getLength()));
-              }
-            }
-
-            private SearchResult ensureCreated(IJavaElement element) throws JavaModelException {
-              try {
-                while (element != null && !isInteresting(element)) {
-                  // transparent elements don't show up in result
-                  element = element.getParent();
-                }
-                SearchResult r = results.get(element);
-                if (r == null) {
-                  r = new SearchResult();
-                  r.setChildren(new ArrayList<>());
-                  r.setMatches(new ArrayList<>());
-                  r.setKind(JavaModelUtil.mapKind(element));
-                  r.setName(
-                      JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_DEFAULT));
-                  if (element instanceof ISourceReference) {
-                    Location l = JDTUtils.toLocation(element);
-                    r.setUri(l.getUri());
-                    SearchResult parent = ensureCreated(element.getParent());
-                    parent.getChildren().add(r);
-                  } else if (element instanceof IPackageFragment) {
-                    IJavaElement parent = element.getParent();
-                    IResource resource = parent.getCorrespondingResource();
-                    if (resource != null) {
-                      r.setUri(ResourceUtils.fixURI(resource.getLocationURI()));
-                    } else {
-                      r.setUri(
-                          new URI(
-                                  "jdt",
-                                  "/"
-                                      + parent.getJavaProject().getElementName()
-                                      + "/"
-                                      + parent.getElementName(),
-                                  element.getElementName())
-                              .toString());
-                    }
-                  }
-                  results.put(element, r);
-                }
-                return r;
-              } catch (URISyntaxException e) {
-                JavaLanguageServerPlugin.logException("Uri syntax should not happen", e);
-                return null;
-              }
-            }
-
-            private boolean isInteresting(IJavaElement element) {
-              return INTERESTING_ELEMENT_TYPES.contains(element.getElementType());
-            }
-          },
+          requestor,
           pm);
 
       String searchTerm =
@@ -168,7 +174,8 @@ public class UsagesCommand {
           new UsagesResponse(
               searchTerm,
               elementKind,
-              results
+              requestor
+                  .getResults()
                   .entrySet()
                   .stream()
                   .filter(entry -> entry.getKey() instanceof IPackageFragment)
