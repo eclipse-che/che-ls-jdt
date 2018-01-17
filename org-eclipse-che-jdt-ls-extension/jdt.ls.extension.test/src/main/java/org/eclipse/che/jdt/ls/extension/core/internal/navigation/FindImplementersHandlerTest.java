@@ -14,6 +14,7 @@ package org.eclipse.che.jdt.ls.extension.core.internal.navigation;
 import static java.util.Collections.singletonList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.navigation.FindImplementersHandler.getImplementers;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.net.URI;
 import org.eclipse.che.jdt.ls.extension.api.dto.ImplementersResponse;
@@ -24,7 +25,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,11 +43,7 @@ public class FindImplementersHandlerTest extends AbstractProjectsManagerBasedTes
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/TestInterface.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(14, 10));
-    Object result = getImplementers(singletonList(params), new NullProgressMonitor());
-
-    Assert.assertTrue(result instanceof ImplementersResponse);
-
-    ImplementersResponse impls = (ImplementersResponse) result;
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
     assertEquals(1, impls.getImplementers().size());
     assertEquals("interfaceMethod()", impls.getImplementers().get(0).getName());
     assertEquals(
@@ -60,11 +56,7 @@ public class FindImplementersHandlerTest extends AbstractProjectsManagerBasedTes
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/TestInterface.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(12, 22));
-    Object result = getImplementers(singletonList(params), new NullProgressMonitor());
-
-    Assert.assertTrue(result instanceof ImplementersResponse);
-
-    ImplementersResponse impls = (ImplementersResponse) result;
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
     assertEquals(2, impls.getImplementers().size());
     assertEquals("ParentClass", impls.getImplementers().get(0).getName());
     assertEquals("ChildClass", impls.getImplementers().get(1).getName());
@@ -75,11 +67,7 @@ public class FindImplementersHandlerTest extends AbstractProjectsManagerBasedTes
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/ParentClass.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(14, 24));
-    Object result = getImplementers(singletonList(params), new NullProgressMonitor());
-
-    Assert.assertTrue(result instanceof ImplementersResponse);
-
-    ImplementersResponse impls = (ImplementersResponse) result;
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
     assertEquals(1, impls.getImplementers().size());
     assertEquals("simpleMethod(int)", impls.getImplementers().get(0).getName());
   }
@@ -89,21 +77,19 @@ public class FindImplementersHandlerTest extends AbstractProjectsManagerBasedTes
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/ParentClass.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(12, 29));
-    Object result = getImplementers(singletonList(params), new NullProgressMonitor());
-
-    Assert.assertTrue(result instanceof ImplementersResponse);
-
-    ImplementersResponse impls = (ImplementersResponse) result;
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
     assertEquals(1, impls.getImplementers().size());
     assertEquals("ChildClass", impls.getImplementers().get(0).getName());
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void testFindImplementersWhenNoValidElementSelected() {
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/ParentClass.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(0, 0));
-    getImplementers(singletonList(params), new NullProgressMonitor());
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
+    assertEquals(0, impls.getImplementers().size());
+    assertNull(impls.getSearchedElement());
   }
 
   @Test
@@ -111,11 +97,7 @@ public class FindImplementersHandlerTest extends AbstractProjectsManagerBasedTes
     String fileURI = createFileUri("src/main/java/org/eclipse/che/examples/ChildClass.java");
     TextDocumentPositionParams params =
         new TextDocumentPositionParams(new TextDocumentIdentifier(fileURI), new Position(12, 20));
-    Object result = getImplementers(singletonList(params), new NullProgressMonitor());
-
-    Assert.assertTrue(result instanceof ImplementersResponse);
-
-    ImplementersResponse impls = (ImplementersResponse) result;
+    ImplementersResponse impls = getImplementers(singletonList(params), new NullProgressMonitor());
     assertEquals(0, impls.getImplementers().size());
   }
 

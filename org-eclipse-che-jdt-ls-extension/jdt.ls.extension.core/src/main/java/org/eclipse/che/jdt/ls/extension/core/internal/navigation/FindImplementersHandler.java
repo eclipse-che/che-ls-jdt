@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ImplementersResponse;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -58,7 +59,7 @@ public class FindImplementersHandler {
    *     searched element and implementers
    */
   @SuppressWarnings("restriction")
-  public static Object getImplementers(List<Object> parameters, IProgressMonitor pm) {
+  public static ImplementersResponse getImplementers(List<Object> parameters, IProgressMonitor pm) {
     TextDocumentPositionParams param =
         gson.fromJson(gson.toJson(parameters.get(0)), TextDocumentPositionParams.class);
 
@@ -67,6 +68,9 @@ public class FindImplementersHandler {
     ImplementersResponse implementersResponse = new ImplementersResponse();
     List<SymbolInformation> implementers = new ArrayList<>();
     implementersResponse.setImplementers(implementers);
+
+    ensureNotCancelled(pm);
+
     try {
       IJavaElement elementToSearch =
           JDTUtils.findElementAtSelection(
@@ -75,18 +79,13 @@ public class FindImplementersHandler {
               param.getPosition().getCharacter(),
               JavaLanguageServerPlugin.getPreferencesManager(),
               pm);
-
-      switch (elementToSearch.getElementType()) {
-        case IJavaElement.TYPE:
+      if (elementToSearch != null) {
+        implementersResponse.setSearchedElement(elementToSearch.getElementName());
+        if (IJavaElement.TYPE == elementToSearch.getElementType()) {
           findSubTypes(elementToSearch, implementers, pm);
-          implementersResponse.setSearchedElement(elementToSearch.getElementName());
-          break;
-        case IJavaElement.METHOD:
+        } else if (IJavaElement.METHOD == elementToSearch.getElementType()) {
           findTypesWithSubMethods(elementToSearch, implementers, pm);
-          implementersResponse.setSearchedElement(elementToSearch.getElementName());
-          break;
-        default:
-          break;
+        }
       }
     } catch (JavaModelException e) {
       throw new RuntimeException(e);
@@ -143,5 +142,11 @@ public class FindImplementersHandler {
     location.setUri(ResourceUtils.toClientUri(location.getUri()));
     symbolInformation.setLocation(location);
     return symbolInformation;
+  }
+
+  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
+    if (progressMonitor.isCanceled()) {
+      throw new OperationCanceledException();
+    }
   }
 }

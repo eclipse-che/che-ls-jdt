@@ -29,8 +29,8 @@ public class ImplementersResponse {
     return this.searchedElement;
   }
 
-  public void setSearchedElement(String earchedElement) {
-    this.searchedElement = earchedElement;
+  public void setSearchedElement(String searchedElement) {
+    this.searchedElement = searchedElement;
   }
 
   /** Returns all implementations. */
