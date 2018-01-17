@@ -22,6 +22,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLi
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.navigation.FindImplementersHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.UpdateProjectClasspathCommand;
@@ -71,6 +72,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
+    commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
   }
 
   @Override
