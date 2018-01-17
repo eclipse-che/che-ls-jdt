@@ -67,7 +67,6 @@ public class FindImplementersHandler {
 
     ImplementersResponse implementersResponse = new ImplementersResponse();
     List<SymbolInformation> implementers = new ArrayList<>();
-    implementersResponse.setImplementers(implementers);
 
     ensureNotCancelled(pm);
 
@@ -90,7 +89,7 @@ public class FindImplementersHandler {
     } catch (JavaModelException e) {
       throw new RuntimeException(e);
     }
-
+    implementersResponse.setImplementers(implementers);
     return implementersResponse;
   }
 
