@@ -8,7 +8,7 @@
  * Contributors:
  *   Red Hat, Inc. - initial API and implementation
  */
-package org.eclipse.che.jdt.ls.extension.core.internal;
+package org.eclipse.che.jdt.ls.extension.core.internal.configuration;
 
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.CONFIGURATION_UPDATE_BUILD_CONFIGURATION_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.ERRORS_INCOMPLETE_CLASSPATH_SEVERITY_KEY;
@@ -27,61 +27,33 @@ import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.RENAME_EN
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.SIGNATURE_HELP_ENABLED_KEY;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsConfiguration;
+import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.preferences.MemberSortOrder;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
 
 /** @author Anatolii Bazko */
-public class GetConfigurationCommand {
+public class GetPreferencesCommand {
 
   /**
-   * Returns JDT LS configuration.
+   * Returns JDT LS preferences.
    *
-   * @see JavaCore#getOptions()
-   * @see JavaCore#getOption(String)
    * @see PreferenceManager#getPreferences()
-   * @param params list of specific java options to return. If list is empty then all java options
-   *     will be returned
    */
-  public static JdtLsConfiguration execute(List<Object> params, IProgressMonitor pm) {
+  public static JdtLsPreferences execute(List<Object> params, IProgressMonitor pm) {
     ensureNotCancelled(pm);
 
     PreferenceManager preferencesManager = JavaLanguageServerPlugin.getPreferencesManager();
     Preferences prefs = preferencesManager.getPreferences();
 
-    JdtLsConfiguration configuration = new JdtLsConfiguration();
-    configuration.setJavaCoreOptions(getJavaCoreOptions(params));
-    configuration.setJdtLsPreferences(toMap(prefs));
-
-    return configuration;
-  }
-
-  private static Hashtable<String, String> getJavaCoreOptions(List<Object> filters) {
-    if (filters.isEmpty()) {
-      return JavaCore.getOptions();
-    } else {
-      Hashtable<String, String> javaCoreOptions = new Hashtable<>(filters.size());
-      filters.forEach(
-          key -> {
-            String keyAsStr = key.toString();
-
-            String option = JavaCore.getOption(keyAsStr);
-            if (option != null) {
-              javaCoreOptions.put(keyAsStr, option);
-            }
-          });
-      return javaCoreOptions;
-    }
+    return new JdtLsPreferences(toMap(prefs));
   }
 
   private static Map<String, String> toMap(Preferences prefs) {
@@ -130,7 +102,7 @@ public class GetConfigurationCommand {
     return prefsAsMap
         .entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, e -> String.valueOf(e.getValue())));
+        .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
   }
 
   private static void ensureNotCancelled(IProgressMonitor pm) {
