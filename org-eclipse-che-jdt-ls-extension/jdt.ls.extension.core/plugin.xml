@@ -32,6 +32,7 @@
             <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
             <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
             <command id="che.jdt.ls.extension.findImplementers"/>
+            <command id="che.jdt.ls.extension.pom.diagnostics"/>
        </delegateCommandHandler>
    </extension>
 </plugin>
