@@ -10,16 +10,30 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
+import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
+import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
+import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** Utilities for working with JDT APIs */
 public class JavaModelUtil {
+  private static final Gson gson =
+      new GsonBuilder()
+          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
+          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
+          .create();
 
   /**
    * Finds java project {@link IJavaProject} by URI
@@ -43,5 +57,17 @@ public class JavaModelUtil {
     }
 
     return JavaCore.create(project);
+  }
+
+  public static <T> T convertCommandParameter(Object param, Class<T> clazz) {
+    return gson.fromJson(gson.toJson(param), clazz);
+  }
+
+  static SymbolKind mapKind(IJavaElement element) {
+    if (element.getElementType() == IJavaElement.METHOD) {
+      // workaround for https://github.com/eclipse/eclipse.jdt.ls/issues/422
+      return SymbolKind.Method;
+    }
+    return DocumentSymbolHandler.mapKind(element);
   }
 }
