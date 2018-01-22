@@ -10,8 +10,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,14 +27,9 @@ import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
-import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /**
  * A command to compute a file structure tree.
@@ -44,13 +37,6 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
  * @author Thomas Mäder
  */
 public class FileStructureCommand {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
-
   /**
    * Compute the file structure hierarchy
    *
@@ -62,7 +48,8 @@ public class FileStructureCommand {
       List<Object> parameters, IProgressMonitor pm) {
     List<ExtendedSymbolInformation> infos = new ArrayList<ExtendedSymbolInformation>();
     FileStructureCommandParameters params =
-        gson.fromJson(gson.toJson(parameters.get(0)), FileStructureCommandParameters.class);
+        JavaModelUtil.convertCommandParameter(
+            parameters.get(0), FileStructureCommandParameters.class);
     boolean showInherited = params.getShowInherited();
     ITypeRoot typeRoot = JDTUtils.resolveTypeRoot(params.getUri());
     try {
@@ -101,7 +88,7 @@ public class FileStructureCommand {
     if (location != null) {
       SymbolInformation si = new SymbolInformation();
       si.setName(label);
-      si.setKind(mapKind(element));
+      si.setKind(JavaModelUtil.mapKind(element));
       location.setUri(ResourceUtils.toClientUri(location.getUri()));
       si.setLocation(location);
       result.setInfo(si);
@@ -145,13 +132,5 @@ public class FileStructureCommand {
     }
 
     return result;
-  }
-
-  private static SymbolKind mapKind(IJavaElement element) {
-    if (element.getElementType() == IJavaElement.METHOD) {
-      // workaround for https://github.com/eclipse/eclipse.jdt.ls/issues/422
-      return SymbolKind.Method;
-    }
-    return DocumentSymbolHandler.mapKind(element);
   }
 }
