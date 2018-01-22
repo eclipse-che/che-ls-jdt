@@ -49,8 +49,6 @@ public class RecomputePomDiagnosticsCommand {
     final String fileUri = (String) arguments.get(0);
 
     IFile file = JDTUtils.findFile(fileUri);
-
-    String uri = JDTUtils.getFileURI(file);
     IMarker[] markers = null;
 
     try {
@@ -61,6 +59,6 @@ public class RecomputePomDiagnosticsCommand {
     IDocument document = JsonRpcHelpers.toDocument(file);
 
     return new PublishDiagnosticsParams(
-        ResourceUtils.toClientUri(uri), toDiagnosticsArray(document, markers));
+        ResourceUtils.toClientUri(fileUri), toDiagnosticsArray(document, markers));
   }
 }
