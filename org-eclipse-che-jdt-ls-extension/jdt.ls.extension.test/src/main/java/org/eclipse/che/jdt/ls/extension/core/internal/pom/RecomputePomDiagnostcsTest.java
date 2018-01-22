@@ -88,7 +88,7 @@ public class RecomputePomDiagnostcsTest extends AbstractProjectsManagerBasedTest
   }
 
   @Test
-  public void diagnosticsShouldBeEmptyForGodPom() throws Exception {
+  public void diagnosticsShouldBeEmptyForGoodPom() throws Exception {
     List<Object> params = singletonList(createFileUri(GOOD_POM));
     PublishDiagnosticsParams diagnosticsParams =
         RecomputePomDiagnosticsCommand.execute(params, new NullProgressMonitor());
