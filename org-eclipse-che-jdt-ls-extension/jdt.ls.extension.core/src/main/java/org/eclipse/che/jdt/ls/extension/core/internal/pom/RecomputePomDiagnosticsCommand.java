@@ -16,7 +16,6 @@ import com.google.common.base.Preconditions;
 import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -49,11 +48,9 @@ public class RecomputePomDiagnosticsCommand {
 
     final String fileUri = (String) arguments.get(0);
 
-    IResource resource = JDTUtils.findFile(fileUri);
+    IFile file = JDTUtils.findFile(fileUri);
 
-    IFile file = (IFile) resource;
-    String uri = JDTUtils.getFileURI(resource);
-    IDocument document = null;
+    String uri = JDTUtils.getFileURI(file);
     IMarker[] markers = null;
 
     try {
@@ -61,7 +58,7 @@ public class RecomputePomDiagnosticsCommand {
     } catch (CoreException e) {
       JavaLanguageServerPlugin.logException("Can't find markers for: " + fileUri, e);
     }
-    document = JsonRpcHelpers.toDocument(file);
+    IDocument document = JsonRpcHelpers.toDocument(file);
 
     return new PublishDiagnosticsParams(
         ResourceUtils.toClientUri(uri), toDiagnosticsArray(document, markers));
