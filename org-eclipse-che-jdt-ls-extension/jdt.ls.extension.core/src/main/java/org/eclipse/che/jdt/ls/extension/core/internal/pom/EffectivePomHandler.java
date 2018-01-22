@@ -10,6 +10,8 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
@@ -19,7 +21,6 @@ import org.apache.maven.project.MavenProject;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.m2e.core.MavenPlugin;
@@ -77,11 +78,5 @@ public class EffectivePomHandler {
     }
 
     return stringWriter.toString();
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
-    if (progressMonitor.isCanceled()) {
-      throw new OperationCanceledException();
-    }
   }
 }

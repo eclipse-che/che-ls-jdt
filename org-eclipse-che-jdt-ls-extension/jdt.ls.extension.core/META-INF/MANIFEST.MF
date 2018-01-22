@@ -19,7 +19,10 @@ Import-Package: com.google.common.base;version="15.0.0",
  org.eclipse.jdt.ls.core.internal,
  org.eclipse.lsp4j,
  org.eclipse.lsp4j.jsonrpc.json.adapters,
- org.eclipse.lsp4j.jsonrpc.messages
+ org.eclipse.lsp4j.jsonrpc.messages,
+ org.eclipse.jdt.launching.sourcelookup,
+ org.eclipse.jdt.launching.sourcelookup.containers,
+ org.eclipse.debug.core.sourcelookup.containers
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.m2e.core,

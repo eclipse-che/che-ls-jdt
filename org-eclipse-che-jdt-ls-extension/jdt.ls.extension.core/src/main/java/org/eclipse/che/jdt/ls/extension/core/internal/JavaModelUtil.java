@@ -10,6 +10,9 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -43,5 +46,18 @@ public class JavaModelUtil {
     }
 
     return JavaCore.create(project);
+  }
+
+  /**
+   * Returns all user created java project which exist in current workspace. This method excludes
+   * default {@code jdt.ls-java-project} project.
+   *
+   * @return all user created java projects in current workspace
+   */
+  public static List<IJavaProject> getWorkspaceJavaProjects() {
+    return Arrays.stream(ResourcesPlugin.getWorkspace().getRoot().getProjects())
+        // .filter(project -> !project.getName().equals("jdt.ls-java-project"))
+        .map(project -> JavaCore.create((project)))
+        .collect(Collectors.toList());
   }
 }

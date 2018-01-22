@@ -11,14 +11,16 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
 import static java.lang.String.format;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getWorkspaceJavaProjects;
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 import com.google.common.base.Preconditions;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
-import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -32,12 +34,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.core.search.SearchPattern;
-import org.eclipse.jdt.core.search.TypeNameMatch;
-import org.eclipse.jdt.core.search.TypeNameMatchRequestor;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.SourceMethod;
 import org.eclipse.jdt.internal.core.SourceType;
@@ -65,7 +61,7 @@ public class FqnDiscover {
     final String fileUri = (String) params.get(0);
     final Integer lineNumber = Integer.valueOf(params.get(1).toString());
 
-    IJavaProject javaProject = JavaModelUtil.getJavaProject(fileUri);
+    IJavaProject javaProject = getJavaProject(fileUri);
 
     if (javaProject == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", fileUri));
@@ -178,30 +174,30 @@ public class FqnDiscover {
    * @return all resources are identified by the given fqn
    */
   public static List<Either<String, ResourceLocation>> findResourcesByFqn(
-      List<Object> params, IProgressMonitor pm) {
+      List<Object> params, IProgressMonitor progressMonitor) {
     Preconditions.checkArgument(params.size() >= 1, "FQN is expected.");
 
+    ensureNotCancelled(progressMonitor);
+
     String fqn = (String) params.get(0);
+    List<IJavaProject> projects = getWorkspaceJavaProjects();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
+    List<IType> types = new LinkedList<>();
+    IType aType;
+    for (IJavaProject javaProject : projects) {
+      ensureNotCancelled(progressMonitor);
+
+      try {
+        aType = javaProject.findType(fqn);
+        if (aType != null) {
+          types.add(aType);
+        }
+      } catch (JavaModelException e) {
+        // skip it and try with next project
+      }
     }
 
-    Pair<char[], char[]> fqnPair = prepareFqnToSearch(fqn);
-    List<IType> types;
-    try {
-      types =
-          findTypeByFqn(
-              fqnPair.getKey(), fqnPair.getValue(), SearchEngine.createWorkspaceScope(), pm);
-    } catch (JavaModelException e) {
-      throw new RuntimeException(e);
-    }
-
-    if (types.isEmpty()) {
-      throw new RuntimeException("Type with fully qualified name: " + fqn + " was not found");
-    }
-
-    List<Either<String, ResourceLocation>> result = new ArrayList<>();
+    List<Either<String, ResourceLocation>> result = new LinkedList<>();
     for (IType type : types) {
       if (type.isBinary()) {
         IClassFile classFile = type.getClassFile();
@@ -216,48 +212,8 @@ public class FqnDiscover {
     return result;
   }
 
-  private static List<IType> findTypeByFqn(
-      char[] packages, char[] names, IJavaSearchScope scope, IProgressMonitor pm)
-      throws JavaModelException {
-    List<IType> result = new ArrayList<>();
-
-    SearchEngine searchEngine = new SearchEngine();
-
-    searchEngine.searchAllTypeNames(
-        packages,
-        SearchPattern.R_EXACT_MATCH,
-        names,
-        SearchPattern.R_EXACT_MATCH,
-        IJavaSearchConstants.CLASS_AND_INTERFACE,
-        scope,
-        new TypeNameMatchRequestor() {
-          @Override
-          public void acceptTypeNameMatch(TypeNameMatch typeNameMatch) {
-            result.add(typeNameMatch.getType());
-          }
-        },
-        IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH,
-        pm);
-    return result;
-  }
-
-  private static Pair<char[], char[]> prepareFqnToSearch(String fqn) {
-    String outerClassFqn = extractOuterClassFqn(fqn);
-    int lastDotIndex = outerClassFqn.trim().lastIndexOf('.');
-
-    char[] packages;
-    char[] names;
-    if (lastDotIndex == -1) {
-      packages = new char[0];
-      names = outerClassFqn.toCharArray();
-    } else {
-      String packageLine = fqn.substring(0, lastDotIndex);
-      packages = packageLine.toCharArray();
-
-      String nameLine = fqn.substring(lastDotIndex + 1, outerClassFqn.length());
-      names = nameLine.toCharArray();
-    }
-    return Pair.of(packages, names);
+  private static String getChildPathByFqn(String fqn) {
+    return extractOuterClassFqn(fqn).replaceAll("\\.", "/") + ".java";
   }
 
   private static String extractOuterClassFqn(String fqn) {
