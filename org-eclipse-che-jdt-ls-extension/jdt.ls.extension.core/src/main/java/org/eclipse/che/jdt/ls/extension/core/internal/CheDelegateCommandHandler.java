@@ -16,6 +16,10 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.GetJavaCoreOptionsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.GetPreferencesCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdateJavaCoreOptionsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdatePreferencesCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByPathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLibrariesChildrenCommand;
@@ -74,6 +78,10 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
     commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
     commands.put(Commands.USAGES_COMMAND, UsagesCommand::execute);
+    commands.put(Commands.GET_JAVA_CORE_OPTIONS_СOMMAND, GetJavaCoreOptionsCommand::execute);
+    commands.put(Commands.UPDATE_JAVA_CORE_OPTIONS_СOMMAND, UpdateJavaCoreOptionsCommand::execute);
+    commands.put(Commands.GET_PREFERENCES_СOMMAND, GetPreferencesCommand::execute);
+    commands.put(Commands.UPDATE_PREFERENCES_СOMMAND, UpdatePreferencesCommand::execute);
   }
 
   @Override
