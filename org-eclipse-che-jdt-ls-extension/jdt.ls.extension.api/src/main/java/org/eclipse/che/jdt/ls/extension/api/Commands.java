@@ -52,6 +52,7 @@ public class Commands {
       "che.jdt.ls.extension.debug.findResourcesByFqn";
   public static final String IDENTIFY_FQN_IN_RESOURCE =
       "che.jdt.ls.extension.debug.identifyFqnInResource";
+  public static final String USAGES_COMMAND = "che.jdt.ls.extension.usages";
 
   public static final String UPDATE_WORKSPACE = "che.jdt.ls.extension.updateWorkspace";
 
@@ -61,6 +62,10 @@ public class Commands {
   public static final String UPDATE_PROJECT_CLASSPATH =
       "che.jdt.ls.extension.plain.updateClasspath";
   public static final String GET_SOURCE_FOLDERS = "che.jdt.ls.extension.plain.sourceFolders";
+
+  // navigation commands
+
+  public static final String FIND_IMPLEMENTERS_COMMAND = "che.jdt.ls.extension.findImplementers";
 
   // configuration
 
