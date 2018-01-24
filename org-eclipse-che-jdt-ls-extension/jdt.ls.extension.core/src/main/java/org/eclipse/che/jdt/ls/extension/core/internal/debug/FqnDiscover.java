@@ -197,7 +197,9 @@ public class FqnDiscover {
       }
     }
 
-    List<Either<String, ResourceLocation>> result = new LinkedList<>();
+    ensureNotCancelled(progressMonitor);
+
+    List<Either<String, ResourceLocation>> result = new ArrayList<>(types.size());
     for (IType type : types) {
       if (type.isBinary()) {
         IClassFile classFile = type.getClassFile();
@@ -210,20 +212,6 @@ public class FqnDiscover {
     }
 
     return result;
-  }
-
-  private static String getChildPathByFqn(String fqn) {
-    return extractOuterClassFqn(fqn).replaceAll("\\.", "/") + ".java";
-  }
-
-  private static String extractOuterClassFqn(String fqn) {
-    // handle fqn in case nested classes
-    if (fqn.contains("$")) {
-      return fqn.substring(0, fqn.indexOf("$"));
-    }
-
-    // handle fqn in case lambda expressions
-    return fqn.contains("$$") ? fqn.substring(0, fqn.indexOf("$$")) : fqn;
   }
 
   private static IMember binSearch(IType type, int start, int end) throws JavaModelException {
