@@ -29,11 +29,23 @@
             <command id="che.jdt.ls.extension.plain.createProject"/>
             <command id="che.jdt.ls.extension.plain.updateClasspath"/>
             <command id="che.jdt.ls.extension.plain.sourceFolders"/>
-            <command id="che.jdt.ls.extension.debug.findResourcesByFqn"/>
-            <command id="che.jdt.ls.extension.debug.identifyFqnInResource"/>
             <command id="che.jdt.ls.extension.findImplementers"/>
             <command id="che.jdt.ls.extension.pom.diagnostics"/>
             <command id="che.jdt.ls.extension.usages"/>
+            <command id="che.jdt.ls.extension.configuration.getJavaCoreOptions"/>
+            <command id="che.jdt.ls.extension.configuration.updateJavaCoreOptions"/>
+            <command id="che.jdt.ls.extension.configuration.getPreferences"/>
+            <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
        </delegateCommandHandler>
    </extension>
+    <extension
+          point="org.eclipse.jdt.ls.core.contentProvider">
+       <contentProvider
+             cacheable="false"
+             class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
+             id="che.lib.contentProvider"
+             priority="10000"
+             uriPattern="chelib://.*">
+       </contentProvider>
+    </extension>
 </plugin>

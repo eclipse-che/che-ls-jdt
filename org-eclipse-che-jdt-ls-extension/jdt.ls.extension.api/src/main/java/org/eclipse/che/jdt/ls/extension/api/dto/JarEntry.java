@@ -19,13 +19,15 @@ public class JarEntry {
   private String name;
   private String path;
   private String entryType;
+  private String uri;
 
   public JarEntry() {}
 
-  public JarEntry(String name, String path, String entryType) {
+  public JarEntry(String name, String path, String entryType, String uri) {
     this.name = name;
     this.path = path;
     this.entryType = entryType;
+    this.uri = uri;
   }
 
   public String getName() {
@@ -50,5 +52,13 @@ public class JarEntry {
 
   public void setEntryType(String entryType) {
     this.entryType = entryType;
+  }
+
+  public String getUri() {
+    return uri;
+  }
+
+  public void setUri(String uri) {
+    this.uri = uri;
   }
 }
