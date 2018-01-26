@@ -43,8 +43,6 @@ public class Commands {
       "che.jdt.ls.extension.externalLibrariesChildren";
   public static final String GET_LIBRARY_CHILDREN_COMMAND = "che.jdt.ls.extension.libraryChildren";
   public static final String GET_LIBRARY_ENTRY_COMMAND = "che.jdt.ls.extension.libraryEntry";
-  public static final String GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND =
-      "che.jdt.ls.extension.libraryContentByPath";
 
   // debug
 
@@ -66,6 +64,17 @@ public class Commands {
   // navigation commands
 
   public static final String FIND_IMPLEMENTERS_COMMAND = "che.jdt.ls.extension.findImplementers";
+
+  // configuration
+
+  public static final String GET_JAVA_CORE_OPTIONS_СOMMAND =
+      "che.jdt.ls.extension.configuration.getJavaCoreOptions";
+  public static final String UPDATE_JAVA_CORE_OPTIONS_СOMMAND =
+      "che.jdt.ls.extension.configuration.updateJavaCoreOptions";
+  public static final String GET_PREFERENCES_СOMMAND =
+      "che.jdt.ls.extension.configuration.getPreferences";
+  public static final String UPDATE_PREFERENCES_СOMMAND =
+      "che.jdt.ls.extension.configuration.updatePreferences";
 
   private Commands() {}
 }

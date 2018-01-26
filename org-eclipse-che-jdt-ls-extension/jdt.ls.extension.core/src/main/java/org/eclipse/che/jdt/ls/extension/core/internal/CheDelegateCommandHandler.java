@@ -16,8 +16,11 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.GetJavaCoreOptionsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.GetPreferencesCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdateJavaCoreOptionsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.configuration.UpdatePreferencesCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.debug.FqnDiscover;
-import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ContentByPathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLibrariesChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
@@ -65,7 +68,6 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
         ExternalLibrariesChildrenCommand::execute);
     commands.put(Commands.GET_LIBRARY_CHILDREN_COMMAND, LibraryChildrenCommand::execute);
     commands.put(Commands.GET_LIBRARY_ENTRY_COMMAND, LibraryEntryCommand::execute);
-    commands.put(Commands.GET_LIBRARY_NODE_CONTENT_BY_PATH_COMMAND, ContentByPathCommand::execute);
     commands.put(Commands.IDENTIFY_FQN_IN_RESOURCE, FqnDiscover::identifyFqnInResource);
     commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
     commands.put(Commands.UPDATE_WORKSPACE, UpdateWorkspaceCommand::execute);
@@ -74,6 +76,10 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
     commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
     commands.put(Commands.USAGES_COMMAND, UsagesCommand::execute);
+    commands.put(Commands.GET_JAVA_CORE_OPTIONS_СOMMAND, GetJavaCoreOptionsCommand::execute);
+    commands.put(Commands.UPDATE_JAVA_CORE_OPTIONS_СOMMAND, UpdateJavaCoreOptionsCommand::execute);
+    commands.put(Commands.GET_PREFERENCES_СOMMAND, GetPreferencesCommand::execute);
+    commands.put(Commands.UPDATE_PREFERENCES_СOMMAND, UpdatePreferencesCommand::execute);
   }
 
   @Override
