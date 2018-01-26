@@ -37,9 +37,9 @@ public class RecomputePomDiagnosticsCommand {
    *
    * @param arguments contains uri of pom.xml
    * @param progressMonitor progress monitor
-   * @return diagnostics
+   * @return true if diagnostics were published otherwise returns false
    */
-  public static PublishDiagnosticsParams execute(List<Object> arguments, IProgressMonitor pm) {
+  public static Boolean execute(List<Object> arguments, IProgressMonitor pm) {
     Preconditions.checkArgument(arguments.size() >= 1, "Resource uri is expected");
 
     if (pm.isCanceled()) {
@@ -48,7 +48,22 @@ public class RecomputePomDiagnosticsCommand {
 
     final String fileUri = (String) arguments.get(0);
 
+    PublishDiagnosticsParams diagnostics = computeDiagnostics(fileUri);
+    if (diagnostics == null) {
+      return false;
+    }
+
+    JavaLanguageServerPlugin.getInstance().getClientConnection().publishDiagnostics(diagnostics);
+
+    return true;
+  }
+
+  static PublishDiagnosticsParams computeDiagnostics(String fileUri) {
     IFile file = JDTUtils.findFile(fileUri);
+    if (file == null) {
+      return null;
+    }
+
     IMarker[] markers = null;
 
     try {

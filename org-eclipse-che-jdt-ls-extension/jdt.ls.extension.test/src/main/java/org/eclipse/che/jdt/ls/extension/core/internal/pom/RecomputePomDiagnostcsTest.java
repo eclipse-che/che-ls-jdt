@@ -10,7 +10,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
-import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,7 +22,6 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -49,9 +47,9 @@ public class RecomputePomDiagnostcsTest extends AbstractProjectsManagerBasedTest
 
   @Test
   public void shouldFindDiagnosticsForBrokenPom() throws Exception {
-    List<Object> params = singletonList(createFileUri(BROKEN_POM));
+    String uri = createFileUri(BROKEN_POM);
     PublishDiagnosticsParams diagnosticsParams =
-        RecomputePomDiagnosticsCommand.execute(params, new NullProgressMonitor());
+        RecomputePomDiagnosticsCommand.computeDiagnostics(uri);
 
     assertNotNull(diagnosticsParams);
 
@@ -89,9 +87,9 @@ public class RecomputePomDiagnostcsTest extends AbstractProjectsManagerBasedTest
 
   @Test
   public void diagnosticsShouldBeEmptyForGoodPom() throws Exception {
-    List<Object> params = singletonList(createFileUri(GOOD_POM));
+    String uri = createFileUri(GOOD_POM);
     PublishDiagnosticsParams diagnosticsParams =
-        RecomputePomDiagnosticsCommand.execute(params, new NullProgressMonitor());
+        RecomputePomDiagnosticsCommand.computeDiagnostics(uri);
 
     assertNotNull(diagnosticsParams);
 
