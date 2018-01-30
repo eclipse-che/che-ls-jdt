@@ -27,6 +27,8 @@ import org.eclipse.lsp4j.SymbolKind;
 
 /** Utilities for working with JDT APIs */
 public class JavaModelUtil {
+  public static final String JDT_LS_JAVA_PROJECT = "jdt.ls-java-project";
+
   private static final Gson gson = GsonUtils.getInstance();
 
   /**
@@ -61,7 +63,7 @@ public class JavaModelUtil {
    */
   public static List<IJavaProject> getWorkspaceJavaProjects() {
     return Arrays.stream(ResourcesPlugin.getWorkspace().getRoot().getProjects())
-        .filter(project -> !project.getName().equals("jdt.ls-java-project"))
+        .filter(project -> !JDT_LS_JAVA_PROJECT.equals(project.getName()))
         .map(project -> JavaCore.create((project)))
         .collect(Collectors.toList());
   }
