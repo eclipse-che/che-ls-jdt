@@ -13,10 +13,10 @@ package org.eclipse.che.jdt.ls.extension.core.internal.configuration;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.CONFIGURATION_UPDATE_BUILD_CONFIGURATION_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.ERRORS_INCOMPLETE_CLASSPATH_SEVERITY_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.EXECUTE_COMMAND_ENABLED_KEY;
-import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.FAVORITE_STATIC_MEMBERS;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.IMPLEMENTATIONS_CODE_LENS_ENABLED_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.IMPORT_GRADLE_ENABLED;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.IMPORT_MAVEN_ENABLED;
+import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.JAVA_COMPLETION_FAVORITE_MEMBERS_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.JAVA_FORMAT_ENABLED_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.JAVA_IMPORT_EXCLUSIONS_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.MAVEN_USER_SETTINGS_KEY;
@@ -94,7 +94,10 @@ public class GetPreferencesCommand {
         prefsAsMap.put(MEMBER_SORT_ORDER, sortOrder.toString());
       }
 
-      putNotNullValue(prefsAsMap, FAVORITE_STATIC_MEMBERS, prefs::getFavoriteStaticMembers);
+      putNotNullValue(
+          prefsAsMap,
+          JAVA_COMPLETION_FAVORITE_MEMBERS_KEY,
+          prefs::getJavaCompletionFavoriteMembers);
       putNotNullValue(
           prefsAsMap, PREFERRED_CONTENT_PROVIDER_KEY, prefs::getPreferredContentProviderIds);
     }
