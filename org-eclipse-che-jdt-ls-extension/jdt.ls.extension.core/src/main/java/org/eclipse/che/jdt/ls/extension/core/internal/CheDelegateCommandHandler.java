@@ -31,6 +31,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersComm
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.UpdateProjectClasspathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.pom.RecomputePomDiagnosticsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestDetectionHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.testdetection.TestFinderHandler;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -57,6 +58,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.RESOLVE_CLASSPATH_COMMAND, ResolveClassPathsHandler::resolveClasspaths);
     commands.put(Commands.GET_OUTPUT_DIR_COMMAND, ResolveClassPathsHandler::getOutputDirectory);
     commands.put(Commands.GET_EFFECTIVE_POM_COMMAND, EffectivePomHandler::getEffectivePom);
+    commands.put(Commands.RECOMPUTE_POM_DIAGNOSTICS, RecomputePomDiagnosticsCommand::execute);
     commands.put(
         Commands.REIMPORT_MAVEN_PROJECTS_COMMAND,
         ReImportMavenProjectsHandler::reImportMavenProjects);
