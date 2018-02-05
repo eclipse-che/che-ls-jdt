@@ -10,8 +10,9 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
+
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
+import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -33,9 +35,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /**
  * Command to update maven projects.
@@ -45,12 +44,7 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 public class ReImportMavenProjectsHandler {
   public static long REIMPORT_TIMEOUT = 60L;
 
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+  private static final Gson gson = GsonUtils.getInstance();
 
   private static final PreferenceManager preferenceManager = new PreferenceManager();
   private static final ProjectsManager projectsManager = new ProjectsManager(preferenceManager);
@@ -149,12 +143,6 @@ public class ReImportMavenProjectsHandler {
   private static void submitUpdateJobs(List<IProject> projects) {
     for (IProject project : projects) {
       projectsManager.updateProject(project);
-    }
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
-    if (progressMonitor.isCanceled()) {
-      throw new OperationCanceledException();
     }
   }
 
