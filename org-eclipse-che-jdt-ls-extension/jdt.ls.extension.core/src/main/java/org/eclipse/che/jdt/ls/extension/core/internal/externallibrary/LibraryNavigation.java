@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
@@ -31,6 +33,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJarEntryResource;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -43,8 +46,12 @@ import org.eclipse.jdt.internal.core.JarEntryDirectory;
 import org.eclipse.jdt.internal.core.JarEntryFile;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 
 /**
  * Utilities for working with External libraries.
@@ -121,8 +128,39 @@ public class LibraryNavigation {
     if (javaProject == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
+
+    IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
+    IMavenProjectFacade mavenProject = mavenProjectRegistry.getProject(javaProject.getProject());
+    if (mavenProject != null && "pom".equals(mavenProject.getPackaging())) {
+      return getDefaultJars(javaProject, pm);
+    }
+
+    return toJars(javaProject.getPackageFragmentRoots(), pm);
+  }
+
+  private static List<Jar> getDefaultJars(IJavaProject javaProject, IProgressMonitor pm)
+      throws JavaModelException {
+
+    IClasspathEntry[] classpathEntries =
+        JavaCore.getClasspathContainer(
+                JavaRuntime.getDefaultJREContainerEntry().getPath(), javaProject)
+            .getClasspathEntries();
+
+    List<IPackageFragmentRoot> fragmentRoots =
+        Stream.of(classpathEntries)
+            .map(
+                classpathEntry ->
+                    javaProject.getPackageFragmentRoot(classpathEntry.getPath().toOSString()))
+            .collect(Collectors.toList());
+
+    return toJars(fragmentRoots.toArray(new IPackageFragmentRoot[fragmentRoots.size()]), pm);
+  }
+
+  private static List<Jar> toJars(IPackageFragmentRoot[] fragmentRoots, IProgressMonitor pm)
+      throws JavaModelException {
+
     List<Jar> jars = new ArrayList<>();
-    for (IPackageFragmentRoot fragmentRoot : javaProject.getAllPackageFragmentRoots()) {
+    for (IPackageFragmentRoot fragmentRoot : fragmentRoots) {
       if (pm.isCanceled()) {
         throw new OperationCanceledException();
       }
@@ -131,7 +169,6 @@ public class LibraryNavigation {
         jars.add(jar);
       }
     }
-
     return jars;
   }
 

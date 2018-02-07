@@ -12,6 +12,7 @@
             <command id="che.jdt.ls.extension.resolveClasspath"/>
             <command id="che.jdt.ls.extension.outputDir"/>
             <command id="che.jdt.ls.extension.effectivePom"/>
+            <command id="che.jdt.ls.extension.mavenProjects"/>
             <command id="che.jdt.ls.extension.reImportMavenProject"/>
             <command id="org.eclipse.che.jdt.ls.extension.filestructure"/>
             <command id="che.jdt.ls.extension.libraryContentURL"/>
@@ -36,16 +37,16 @@
             <command id="che.jdt.ls.extension.configuration.updateJavaCoreOptions"/>
             <command id="che.jdt.ls.extension.configuration.getPreferences"/>
             <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
-       </delegateCommandHandler>
-   </extension>
+        </delegateCommandHandler>
+    </extension>
     <extension
-          point="org.eclipse.jdt.ls.core.contentProvider">
-       <contentProvider
-             cacheable="false"
-             class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
-             id="che.lib.contentProvider"
-             priority="10000"
-             uriPattern="chelib://.*">
-       </contentProvider>
+            point="org.eclipse.jdt.ls.core.contentProvider">
+        <contentProvider
+                cacheable="false"
+                class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
+                id="che.lib.contentProvider"
+                priority="10000"
+                uriPattern="chelib://.*">
+        </contentProvider>
     </extension>
 </plugin>
