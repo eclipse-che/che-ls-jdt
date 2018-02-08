@@ -14,10 +14,10 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.core.internal.Utils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
@@ -33,7 +33,7 @@ public class GetMavenProjectsCommand {
    */
   public static List<String> execute(List<Object> arguments, IProgressMonitor progressMonitor) {
     Preconditions.checkArgument(!arguments.isEmpty(), "Project uri is expected.");
-    ensureNotCancelled(progressMonitor);
+    Utils.ensureNotCancelled(progressMonitor);
 
     final String rootUri = (String) arguments.get(0);
     final IPath rootPath = ResourceUtils.filePathFromURI(rootUri);
@@ -54,11 +54,5 @@ public class GetMavenProjectsCommand {
     }
 
     return projectsUri;
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
-    if (progressMonitor.isCanceled()) {
-      throw new OperationCanceledException();
-    }
   }
 }
