@@ -47,8 +47,7 @@ public class GetMavenProjectsCommand {
     List<String> projectsUri = new ArrayList<>(mavenProjects.length);
     for (int i = 0; i < mavenProjects.length; i++) {
       IProject project = mavenProjects[i].getProject();
-
-      if (rootPath.isPrefixOf(project.getLocation())) {
+      if (project != null && rootPath.isPrefixOf(project.getLocation())) {
         projectsUri.add(ResourceUtils.fixURI(project.getLocationURI()));
       }
     }
