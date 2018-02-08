@@ -10,11 +10,12 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.configuration;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
+
 import java.util.Hashtable;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.JavaCoreOptions;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.JavaCore;
 
 /** @author Anatolii Bazko */
@@ -52,9 +53,4 @@ public class GetJavaCoreOptionsCommand {
     }
   }
 
-  private static void ensureNotCancelled(IProgressMonitor pm) {
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
-  }
 }

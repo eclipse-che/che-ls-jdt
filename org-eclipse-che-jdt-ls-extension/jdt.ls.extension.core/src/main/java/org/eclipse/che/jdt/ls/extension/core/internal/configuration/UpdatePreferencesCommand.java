@@ -11,6 +11,7 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.configuration;
 
 import static java.util.Collections.emptyList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
@@ -19,7 +20,6 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsPreferences;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
@@ -65,11 +65,5 @@ public class UpdatePreferencesCommand {
 
   private static void validateParams(List<Object> params) {
     Preconditions.checkArgument(!params.isEmpty(), JdtLsPreferences.class.getName() + " expected.");
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor pm) {
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
   }
 }

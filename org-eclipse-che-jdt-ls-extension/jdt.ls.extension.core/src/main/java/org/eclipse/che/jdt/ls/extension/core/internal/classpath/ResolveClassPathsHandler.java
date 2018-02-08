@@ -22,6 +22,7 @@ package org.eclipse.che.jdt.ls.extension.core.internal.classpath;
 
 import static java.util.Collections.emptyList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -32,7 +33,6 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -72,9 +72,7 @@ public class ResolveClassPathsHandler {
   public static String getOutputDirectory(List<Object> arguments, IProgressMonitor pm) {
     String projectUri = (String) arguments.get(0);
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     IJavaProject javaProject = getJavaProject(projectUri);
 
@@ -102,9 +100,7 @@ public class ResolveClassPathsHandler {
       List<Object> params, IProgressMonitor pm) {
     String projectUri = (String) params.get(0);
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     IJavaProject javaProject = getJavaProject(projectUri);
 
@@ -156,9 +152,8 @@ public class ResolveClassPathsHandler {
       IClasspathEntry[] resolvedClasspath = javaProject.getResolvedClasspath(false);
       List<String> result = new LinkedList<>();
       for (IClasspathEntry classpathEntry : resolvedClasspath) {
-        if (pm.isCanceled()) {
-          throw new OperationCanceledException();
-        }
+        ensureNotCancelled(pm);
+
         switch (classpathEntry.getEntryKind()) {
           case IClasspathEntry.CPE_LIBRARY:
             IPath path = classpathEntry.getPath();

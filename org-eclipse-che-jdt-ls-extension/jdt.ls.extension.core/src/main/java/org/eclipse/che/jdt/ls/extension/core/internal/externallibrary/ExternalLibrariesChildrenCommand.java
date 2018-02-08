@@ -11,15 +11,12 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ExternalLibrariesParameters;
 import org.eclipse.che.jdt.ls.extension.api.dto.JarEntry;
+import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /**
  * A command to compute an external library nodes.
@@ -27,12 +24,7 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
  * @author Valeriy Svydenko
  */
 public class ExternalLibrariesChildrenCommand {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+  private static final Gson gson = GsonUtils.getInstance();
 
   /**
    * Gets children of external library.
