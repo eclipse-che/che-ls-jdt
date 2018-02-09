@@ -52,5 +52,4 @@ public class GetJavaCoreOptionsCommand {
       return javaCoreOptions;
     }
   }
-
 }

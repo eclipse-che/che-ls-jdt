@@ -65,5 +65,4 @@ public class UpdateJavaCoreOptionsCommand {
   private static void validateParams(List<Object> params) {
     Preconditions.checkArgument(!params.isEmpty(), JavaCoreOptions.class.getName() + " expected.");
   }
-
 }
