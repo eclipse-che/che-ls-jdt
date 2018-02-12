@@ -10,13 +10,14 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.navigation;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
+
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ImplementersResponse;
+import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -32,9 +33,6 @@ import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /**
  * Command to find implementers of a type or a method
@@ -42,12 +40,7 @@ import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
  * @author dbocharo
  */
 public class FindImplementersHandler {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+  private static final Gson gson = GsonUtils.getInstance();
 
   /**
    * Finds implementers for an element defined by position
@@ -141,11 +134,5 @@ public class FindImplementersHandler {
     location.setUri(ResourceUtils.toClientUri(location.getUri()));
     symbolInformation.setLocation(location);
     return symbolInformation;
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor progressMonitor) {
-    if (progressMonitor.isCanceled()) {
-      throw new OperationCanceledException();
-    }
   }
 }

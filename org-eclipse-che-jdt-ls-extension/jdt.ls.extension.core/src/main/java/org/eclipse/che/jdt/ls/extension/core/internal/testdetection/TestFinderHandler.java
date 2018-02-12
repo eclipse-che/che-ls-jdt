@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.testdetection;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassDeclaration;
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassesInPackage;
 import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaTestFinder.findTestClassesInProject;
@@ -17,24 +18,15 @@ import static org.eclipse.che.jdt.ls.extension.core.internal.testdetection.JavaT
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.resolveCompilationUnit;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.TestFindParameters;
+import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapterFactory;
-import org.eclipse.lsp4j.jsonrpc.json.adapters.EnumTypeAdapterFactory;
 
 /** Class for finding test methods in the different areas. */
 public class TestFinderHandler {
-  private static final Gson gson =
-      new GsonBuilder()
-          .registerTypeAdapterFactory(new CollectionTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EitherTypeAdapterFactory())
-          .registerTypeAdapterFactory(new EnumTypeAdapterFactory())
-          .create();
+  private static final Gson gson = GsonUtils.getInstance();
 
   /**
    * Returns test class declaration by file uri.
@@ -51,9 +43,7 @@ public class TestFinderHandler {
     String methodAnnotation = parameters.getTestMethodAnnotation();
     String classAnnotation = parameters.getTestClassAnnotation();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     ICompilationUnit unit = resolveCompilationUnit(uriString);
     return findTestClassDeclaration(unit, methodAnnotation, classAnnotation);
@@ -75,9 +65,7 @@ public class TestFinderHandler {
     String testMethodAnnotation = parameters.getTestMethodAnnotation();
     String testClassAnnotation = parameters.getTestClassAnnotation();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     return findTestClassesInPackage(folderUri, testMethodAnnotation, testClassAnnotation);
   }
@@ -98,9 +86,7 @@ public class TestFinderHandler {
     String testMethodAnnotation = parameters.getTestMethodAnnotation();
     String testClassAnnotation = parameters.getTestClassAnnotation();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     return findTestClassesInProject(projectUri, testMethodAnnotation, testClassAnnotation);
   }
@@ -119,9 +105,7 @@ public class TestFinderHandler {
     String fileUri = parameters.getSourceUri();
     int cursorOffset = parameters.getCursorOffset();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     ICompilationUnit unit = resolveCompilationUnit(fileUri);
     return findTestMethodDeclaration(unit, cursorOffset);
@@ -140,9 +124,7 @@ public class TestFinderHandler {
 
     List<String> classes = parameters.getEntryClasses();
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     return JavaTestFinder.getFqns(classes);
   }
