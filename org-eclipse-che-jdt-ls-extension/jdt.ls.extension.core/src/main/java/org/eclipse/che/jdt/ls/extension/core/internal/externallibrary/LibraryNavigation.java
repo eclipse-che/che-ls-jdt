@@ -222,6 +222,7 @@ public class LibraryNavigation {
         entry.setEntryType(CLASS_FILE_ENTRY_TYPE);
         entry.setName(classFile.getElementName());
         entry.setPath(classFile.findPrimaryType().getFullyQualifiedName());
+        entry.setUri(JDTUtils.toUri(classFile));
         return entry;
       }
     }
