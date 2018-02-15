@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.Severity;
@@ -24,7 +23,7 @@ import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateWorkspaceParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
-import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetMavenProjectsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetProjectsCommand;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +33,7 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
 
   @Before
   public void setUp() throws Exception {
-    URI addedProjectUri = addProject("maven/multimodule");
+    URI addedProjectUri = copyFiles("maven/multimodule", true).toURI();
 
     UpdateWorkspaceParameters parameters = new UpdateWorkspaceParameters();
     parameters.setAddedProjectsUri(singletonList(addedProjectUri.toString()));
@@ -51,7 +50,7 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
     assertTrue(rootModule.exists());
 
     List<String> projectsUri =
-        GetMavenProjectsCommand.execute(
+        GetProjectsCommand.execute(
             singletonList(rootModule.toURI().toString()), new NullProgressMonitor());
 
     assertEquals(2, projectsUri.size());
@@ -81,9 +80,5 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
         ProjectExternalLibraryCommand.execute(singletonList(params), new NullProgressMonitor());
 
     assertTrue(!libs.isEmpty());
-  }
-
-  private URI addProject(String path) throws IOException {
-    return copyFiles(path, true).toURI();
   }
 }
