@@ -23,7 +23,7 @@ import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateWorkspaceParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
-import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetProjectsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetMavenProjectsCommand;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
     assertTrue(rootModule.exists());
 
     List<String> projectsUri =
-        GetProjectsCommand.execute(
+        GetMavenProjectsCommand.execute(
             singletonList(rootModule.toURI().toString()), new NullProgressMonitor());
 
     assertEquals(2, projectsUri.size());
