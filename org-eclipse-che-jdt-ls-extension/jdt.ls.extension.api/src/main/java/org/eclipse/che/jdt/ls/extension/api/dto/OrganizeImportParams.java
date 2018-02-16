@@ -14,25 +14,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** @author Anatolii Bazko */
-public class OrganizeImports {
+public class OrganizeImportParams {
+  /**
+   * The resource uri to organize import upon.<br>
+   * Might point to a single file as well as to a directory.
+   */
   private String resourceUri;
+
+  /**
+   * List of chose FQNs in importing ambiguous types.<br>
+   * If there are ambiguous types to import then this list might be used to resolve import conflict.
+   */
   private List<String> choices;
 
-  public OrganizeImports() {
+  public OrganizeImportParams() {
     this.choices = new ArrayList<>();
   }
 
-  public OrganizeImports(String resourceUri) {
+  public OrganizeImportParams(String resourceUri) {
     this.resourceUri = resourceUri;
     this.choices = new ArrayList<>();
   }
 
-  public OrganizeImports(String resourceUri, List<String> choices) {
+  public OrganizeImportParams(String resourceUri, List<String> choices) {
     this.resourceUri = resourceUri;
     this.choices = choices;
   }
 
-  /** The resource {@link java.net.URI} */
   public String getResourceUri() {
     return resourceUri;
   }
@@ -41,7 +49,6 @@ public class OrganizeImports {
     this.resourceUri = resourceUri;
   }
 
-  /** Returns choices to resolve import conflicts. */
   public List<String> getChoices() {
     return choices;
   }

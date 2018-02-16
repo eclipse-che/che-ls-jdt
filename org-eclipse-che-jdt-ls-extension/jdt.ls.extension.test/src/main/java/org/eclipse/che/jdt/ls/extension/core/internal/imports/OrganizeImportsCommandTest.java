@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
-import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImports;
+import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImportParams;
 import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImportsResult;
 import org.eclipse.che.jdt.ls.extension.core.internal.AbstractProjectsManagerBasedTest;
 import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
@@ -45,31 +45,30 @@ public class OrganizeImportsCommandTest extends AbstractProjectsManagerBasedTest
     assertNotNull(file);
 
     URI uri = file.getLocationURI();
-    OrganizeImports organizeImports = new OrganizeImports(ResourceUtils.fixURI(uri));
+    OrganizeImportParams organizeImports = new OrganizeImportParams(ResourceUtils.fixURI(uri));
 
     OrganizeImportsResult importsResult =
         OrganizeImportsCommand.execute(singletonList(organizeImports), new NullProgressMonitor());
 
-    assertTrue(!importsResult.getImportConflicts().isEmpty());
-    assertEquals(2, importsResult.getImportConflicts().size());
+    assertEquals(2, importsResult.getAmbiguousTypes().size());
     assertTrue(!importsResult.getWorkspaceEdit().getChanges().isEmpty());
 
-    organizeImports = new OrganizeImports(ResourceUtils.fixURI(uri), asList("java.util.List"));
+    organizeImports = new OrganizeImportParams(ResourceUtils.fixURI(uri), asList("java.util.List"));
 
     importsResult =
         OrganizeImportsCommand.execute(singletonList(organizeImports), new NullProgressMonitor());
 
-    assertTrue(!importsResult.getImportConflicts().isEmpty());
-    assertEquals(1, importsResult.getImportConflicts().size());
+    assertEquals(1, importsResult.getAmbiguousTypes().size());
     assertTrue(!importsResult.getWorkspaceEdit().getChanges().isEmpty());
 
     organizeImports =
-        new OrganizeImports(ResourceUtils.fixURI(uri), asList("java.util.List", "java.util.Map"));
+        new OrganizeImportParams(
+            ResourceUtils.fixURI(uri), asList("java.util.List", "java.util.Map"));
 
     importsResult =
         OrganizeImportsCommand.execute(singletonList(organizeImports), new NullProgressMonitor());
 
-    assertTrue(importsResult.getImportConflicts().isEmpty());
+    assertTrue(importsResult.getAmbiguousTypes().isEmpty());
     assertTrue(!importsResult.getWorkspaceEdit().getChanges().isEmpty());
   }
 }

@@ -10,34 +10,32 @@
  */
 package org.eclipse.che.jdt.ls.extension.api.dto;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.lsp4j.WorkspaceEdit;
 
 /** @author Anatolii Bazko */
 public class OrganizeImportsResult {
-  private List<ImportConflicts> importConflicts;
+  private List<List<String>> ambiguousTypes;
   private WorkspaceEdit workspaceEdit;
 
   public OrganizeImportsResult() {}
 
   public OrganizeImportsResult(WorkspaceEdit workspaceEdit) {
     this.workspaceEdit = workspaceEdit;
-    this.importConflicts = new ArrayList<>();
   }
 
-  public OrganizeImportsResult(WorkspaceEdit workspaceEdit, List<ImportConflicts> importConflicts) {
-    this.importConflicts = importConflicts;
+  public OrganizeImportsResult(WorkspaceEdit workspaceEdit, List<List<String>> ambiguousTypes) {
+    this.ambiguousTypes = ambiguousTypes;
     this.workspaceEdit = workspaceEdit;
   }
 
-  /** Returns conflicted imports that can't be apply automatically but require user interaction. */
-  public List<ImportConflicts> getImportConflicts() {
-    return importConflicts;
+  /** Returns ambiguousTypes that can't be imported automatically and require user's interaction. */
+  public List<List<String>> getAmbiguousTypes() {
+    return ambiguousTypes;
   }
 
-  public void setImportConflicts(List<ImportConflicts> importConflicts) {
-    this.importConflicts = importConflicts;
+  public void setAmbiguousTypes(List<List<String>> ambiguousTypes) {
+    this.ambiguousTypes = ambiguousTypes;
   }
 
   /** Returns workspace changes to apply. */

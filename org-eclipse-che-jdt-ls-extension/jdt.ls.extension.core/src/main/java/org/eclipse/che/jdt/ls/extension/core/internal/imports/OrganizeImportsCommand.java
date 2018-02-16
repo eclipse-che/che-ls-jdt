@@ -14,27 +14,20 @@ import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCanc
 
 import com.google.common.base.Preconditions;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.eclipse.che.jdt.ls.extension.api.dto.ImportConflicts;
-import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImports;
+import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImportParams;
 import org.eclipse.che.jdt.ls.extension.api.dto.OrganizeImportsResult;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.search.TypeNameMatch;
 import org.eclipse.jdt.ls.core.internal.JDTDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.TextEditConverter;
 import org.eclipse.jdt.ls.core.internal.corext.codemanipulation.OrganizeImportsOperation;
-import org.eclipse.jdt.ls.core.internal.corext.codemanipulation.OrganizeImportsOperation.IChooseImportQuery;
 import org.eclipse.jdt.ls.core.internal.corrections.InnovationContext;
 import org.eclipse.jdt.ls.core.internal.corrections.proposals.CUCorrectionProposal;
 import org.eclipse.jdt.ls.core.internal.corrections.proposals.IProposalRelevance;
@@ -47,32 +40,28 @@ import org.eclipse.text.edits.TextEdit;
 public class OrganizeImportsCommand {
 
   /**
-   * Organizes imports either in a folder or in a specific file.
+   * Organizes imports either in a folder or in a specific file. In case of the file the ambiguous
+   * importing types won't be ignored but rather returned to take decision on the client.
    *
    * @see org.eclipse.jdt.ls.core.internal.commands.OrganizeImportsCommand
+   * @param arguments {@link OrganizeImportParams} expected
    */
   public static OrganizeImportsResult execute(List<Object> arguments, IProgressMonitor pm) {
     validateArguments(arguments);
     ensureNotCancelled(pm);
 
-    final OrganizeImports organizeImports =
-        JavaModelUtil.convertCommandParameter(arguments.get(0), OrganizeImports.class);
+    final OrganizeImportParams organizeImportsParams =
+        JavaModelUtil.convertCommandParameter(arguments.get(0), OrganizeImportParams.class);
 
-    File file = new File(JDTUtils.toURI(organizeImports.getResourceUri()));
+    File file = new File(JDTUtils.toURI(organizeImportsParams.getResourceUri()));
     if (!file.exists()) {
       return new OrganizeImportsResult();
     }
 
     if (file.isDirectory()) {
       return doOrganizeImportsInDirectory(arguments, pm);
-    } else {
-      ICompilationUnit cu = JDTUtils.resolveCompilationUnit(organizeImports.getResourceUri());
-      if (cu != null) {
-        ConflictResolverChooseImportQuery query =
-            new ConflictResolverChooseImportQuery(organizeImports.getChoices());
-
-        return doOrganizeImportsInCompilationUnit(cu, query);
-      }
+    } else if (file.isFile()) {
+      return doOrganizeImportsInFile(organizeImportsParams);
     }
 
     return new OrganizeImportsResult();
@@ -80,10 +69,16 @@ public class OrganizeImportsCommand {
 
   private static void validateArguments(List<Object> arguments) {
     Preconditions.checkArgument(
-        !arguments.isEmpty(), OrganizeImports.class.getName() + " is expected.");
+        !arguments.isEmpty(), OrganizeImportParams.class.getName() + " is expected.");
   }
 
-  /** Organizes imports in all files of the given directory. Conflicts will be ignored. */
+  /**
+   * Organizes imports in all files of the underlying directory.
+   *
+   * <p>{@link
+   * org.eclipse.jdt.ls.core.internal.commands.OrganizeImportsCommand#organizeImportsInDirectory(String,
+   * IProject)}
+   */
   private static OrganizeImportsResult doOrganizeImportsInDirectory(
       List<Object> arguments, IProgressMonitor pm) {
 
@@ -101,32 +96,43 @@ public class OrganizeImportsCommand {
     return new OrganizeImportsResult();
   }
 
-  /** Organize imports in the specific unit. All exposed conflicts require user's interaction. */
-  private static OrganizeImportsResult doOrganizeImportsInCompilationUnit(
-      ICompilationUnit unit, ConflictResolverChooseImportQuery query) {
+  /**
+   * Organize imports in the file.
+   *
+   * <p>{@link
+   * org.eclipse.jdt.ls.core.internal.commands.OrganizeImportsCommand#organizeImportsInFile(String)}
+   */
+  private static OrganizeImportsResult doOrganizeImportsInFile(
+      OrganizeImportParams organizeImportParams) {
 
-    WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+    ICompilationUnit cu = JDTUtils.resolveCompilationUnit(organizeImportParams.getResourceUri());
+    if (cu == null) {
+      return new OrganizeImportsResult();
+    }
+
+    ConflictResolver conflictResolver = new ConflictResolver(organizeImportParams.getChoices());
+    WorkspaceEdit rootEdit = new WorkspaceEdit();
 
     try {
-      InnovationContext context = new InnovationContext(unit, 0, unit.getBuffer().getLength() - 1);
+      InnovationContext context = new InnovationContext(cu, 0, cu.getBuffer().getLength() - 1);
       CUCorrectionProposal proposal =
-          new CUCorrectionProposal("OrganizeImports", unit, IProposalRelevance.ORGANIZE_IMPORTS) {
+          new CUCorrectionProposal("OrganizeImports", cu, IProposalRelevance.ORGANIZE_IMPORTS) {
             @Override
             protected void addEdits(IDocument document, TextEdit editRoot) throws CoreException {
               CompilationUnit astRoot = context.getASTRoot();
               OrganizeImportsOperation op =
-                  new OrganizeImportsOperation(unit, astRoot, true, false, true, query);
+                  new OrganizeImportsOperation(cu, astRoot, true, false, true, conflictResolver);
 
               editRoot.addChild(op.createTextEdit(null));
             }
           };
 
-      addWorkspaceEdit(unit, proposal, workspaceEdit);
+      addWorkspaceEdit(cu, proposal, rootEdit);
     } catch (CoreException e) {
       JavaLanguageServerPlugin.logException("Problem organize imports ", e);
     }
 
-    return new OrganizeImportsResult(workspaceEdit, query.getRemainedConflicts());
+    return new OrganizeImportsResult(rootEdit, conflictResolver.getRemainingConflicts());
   }
 
   private static void addWorkspaceEdit(
@@ -137,48 +143,5 @@ public class OrganizeImportsCommand {
     TextEdit edit = textChange.getEdit();
     TextEditConverter converter = new TextEditConverter(cu, edit);
     rootEdit.getChanges().put(JDTUtils.toURI(cu), converter.convert());
-  }
-
-  /** It is designed to preserve and resolve exposed conflicts. */
-  private static class ConflictResolverChooseImportQuery implements IChooseImportQuery {
-    private List<ImportConflicts> remainedConflicts;
-    private final List<String> choices;
-
-    private ConflictResolverChooseImportQuery(List<String> choices) {
-      this.choices = choices;
-      this.remainedConflicts = new ArrayList<>();
-    }
-
-    @Override
-    public TypeNameMatch[] chooseImports(
-        TypeNameMatch[][] typeNameMatches, ISourceRange[] iSourceRanges) {
-
-      List<TypeNameMatch> resolvedConflicts = new LinkedList<>();
-
-      outer:
-      for (int i = 0; i < typeNameMatches.length; i++) {
-        for (int j = 0; j < typeNameMatches[i].length; j++) {
-          TypeNameMatch typeNameMatch = typeNameMatches[i][j];
-          if (choices.contains(typeNameMatch.getFullyQualifiedName())) {
-            resolvedConflicts.add(typeNameMatch);
-            continue outer;
-          }
-        }
-
-        List<String> matches =
-            Stream.of(typeNameMatches[i])
-                .map(TypeNameMatch::getFullyQualifiedName)
-                .collect(Collectors.toList());
-
-        ImportConflicts importConflicts = new ImportConflicts(matches);
-        remainedConflicts.add(importConflicts);
-      }
-
-      return resolvedConflicts.toArray(new TypeNameMatch[resolvedConflicts.size()]);
-    }
-
-    public List<ImportConflicts> getRemainedConflicts() {
-      return remainedConflicts;
-    }
   }
 }
