@@ -36,16 +36,17 @@
             <command id="che.jdt.ls.extension.configuration.updateJavaCoreOptions"/>
             <command id="che.jdt.ls.extension.configuration.getPreferences"/>
             <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
-       </delegateCommandHandler>
-   </extension>
+            <command id="che.jdt.ls.extension.import.organizeImports"/>
+        </delegateCommandHandler>
+    </extension>
     <extension
-          point="org.eclipse.jdt.ls.core.contentProvider">
-       <contentProvider
-             cacheable="false"
-             class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
-             id="che.lib.contentProvider"
-             priority="10000"
-             uriPattern="chelib://.*">
-       </contentProvider>
+            point="org.eclipse.jdt.ls.core.contentProvider">
+        <contentProvider
+                cacheable="false"
+                class="org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryContentProvider"
+                id="che.lib.contentProvider"
+                priority="10000"
+                uriPattern="chelib://.*">
+        </contentProvider>
     </extension>
 </plugin>
