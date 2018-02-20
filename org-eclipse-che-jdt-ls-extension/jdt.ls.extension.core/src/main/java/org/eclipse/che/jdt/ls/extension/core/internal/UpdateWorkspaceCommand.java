@@ -15,6 +15,7 @@ import static org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin.getProje
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.eclipse.che.jdt.ls.extension.api.Severity;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
@@ -55,11 +56,13 @@ public class UpdateWorkspaceCommand {
                 .getAddedProjectsUri()
                 .stream()
                 .map(ResourceUtils::filePathFromURI)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList()),
             updateWorkspaceParameters
                 .getRemovedProjectsUri()
                 .stream()
                 .map(ResourceUtils::filePathFromURI)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList()));
 
     try {

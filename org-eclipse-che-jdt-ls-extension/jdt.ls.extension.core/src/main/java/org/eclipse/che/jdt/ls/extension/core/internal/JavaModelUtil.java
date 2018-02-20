@@ -14,9 +14,7 @@ import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -39,20 +37,12 @@ public class JavaModelUtil {
    *     a Java project
    */
   public static IJavaProject getJavaProject(String resourceUri) {
-    IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-    IContainer[] containers = root.findContainersForLocationURI(JDTUtils.toURI(resourceUri));
+    IResource resource =
+        JDTUtils.findResource(
+            JDTUtils.toURI(resourceUri),
+            ResourcesPlugin.getWorkspace().getRoot()::findContainersForLocationURI);
 
-    if (containers.length == 0) {
-      return null;
-    }
-
-    IContainer container = containers[0];
-    IProject project = container.getProject();
-    if (!project.exists()) {
-      return null;
-    }
-
-    return JavaCore.create(project);
+    return resource != null ? JavaCore.create(resource.getProject()) : null;
   }
 
   /**
