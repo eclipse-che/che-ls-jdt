@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.configuration;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.CONFIGURATION_UPDATE_BUILD_CONFIGURATION_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.ERRORS_INCOMPLETE_CLASSPATH_SEVERITY_KEY;
 import static org.eclipse.jdt.ls.core.internal.preferences.Preferences.EXECUTE_COMMAND_ENABLED_KEY;
@@ -33,7 +34,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.preferences.MemberSortOrder;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
@@ -106,12 +106,6 @@ public class GetPreferencesCommand {
         .entrySet()
         .stream()
         .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
-  }
-
-  private static void ensureNotCancelled(IProgressMonitor pm) {
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
   }
 
   private static void putNotNullValue(

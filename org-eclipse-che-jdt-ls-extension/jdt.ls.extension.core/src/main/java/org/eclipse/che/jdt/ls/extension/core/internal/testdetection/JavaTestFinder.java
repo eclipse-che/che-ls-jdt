@@ -245,7 +245,7 @@ public class JavaTestFinder {
         result.add(candidate.getFullyQualifiedName());
       }
     } catch (Exception e) {
-      emptyList();
+      return emptyList();
     }
 
     return result;

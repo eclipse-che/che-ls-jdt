@@ -12,6 +12,7 @@ package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.PATH_SEPARATOR;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.PERIOD;
 
@@ -31,7 +32,6 @@ import org.eclipse.che.jdt.ls.extension.api.dto.JarEntry;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJarEntryResource;
@@ -161,9 +161,7 @@ public class LibraryNavigation {
 
     List<Jar> jars = new ArrayList<>();
     for (IPackageFragmentRoot fragmentRoot : fragmentRoots) {
-      if (pm.isCanceled()) {
-        throw new OperationCanceledException();
-      }
+      ensureNotCancelled(pm);
       if (fragmentRoot instanceof JarPackageFragmentRoot) {
         Jar jar = new Jar(fragmentRoot.getElementName(), fragmentRoot.getHandleIdentifier());
         jars.add(jar);
@@ -206,9 +204,7 @@ public class LibraryNavigation {
   public static JarEntry getEntry(
       String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
     IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
     if (project == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
@@ -263,6 +259,7 @@ public class LibraryNavigation {
         entry.setEntryType(CLASS_FILE_ENTRY_TYPE);
         entry.setName(classFile.getElementName());
         entry.setPath(classFile.findPrimaryType().getFullyQualifiedName());
+        entry.setUri(JDTUtils.toUri(classFile));
         return entry;
       }
     }
@@ -290,9 +287,8 @@ public class LibraryNavigation {
       // jar file and folders
       Object[] resources = root.getNonJavaResources();
       for (Object resource : resources) {
-        if (pm.isCanceled()) {
-          throw new OperationCanceledException();
-        }
+        ensureNotCancelled(pm);
+
         if (resource instanceof JarEntryDirectory) {
           JarEntryDirectory directory = (JarEntryDirectory) resource;
           Object[] children = findJarDirectoryChildren(directory, path);
@@ -396,9 +392,7 @@ public class LibraryNavigation {
     String prefix = fragment != null ? fragment.getElementName() + PERIOD : ""; // $NON-NLS-1$
     int prefixLen = prefix.length();
     for (IJavaElement child : children) {
-      if (pm.isCanceled()) {
-        throw new OperationCanceledException();
-      }
+      ensureNotCancelled(pm);
       IPackageFragment curr = (IPackageFragment) child;
       String name = curr.getElementName();
       if (name.startsWith(prefix)

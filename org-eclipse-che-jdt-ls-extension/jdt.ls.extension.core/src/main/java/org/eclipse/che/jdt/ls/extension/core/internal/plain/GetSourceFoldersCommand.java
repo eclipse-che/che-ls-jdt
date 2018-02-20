@@ -25,9 +25,6 @@ import org.eclipse.jdt.core.JavaModelException;
 /**
  * Computes source folders of the project.
  *
- * @param arguments a list contains project URI
- * @param pm a progress monitor
- * @return source folders
  * @author Valeriy Svydenko
  */
 public class GetSourceFoldersCommand {

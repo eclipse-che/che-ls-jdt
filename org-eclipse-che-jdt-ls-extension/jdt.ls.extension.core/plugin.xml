@@ -37,6 +37,7 @@
             <command id="che.jdt.ls.extension.configuration.updateJavaCoreOptions"/>
             <command id="che.jdt.ls.extension.configuration.getPreferences"/>
             <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
+            <command id="che.jdt.ls.extension.import.organizeImports"/>
         </delegateCommandHandler>
     </extension>
     <extension

@@ -78,5 +78,9 @@ public class Commands {
   public static final String UPDATE_PREFERENCES_СOMMAND =
       "che.jdt.ls.extension.configuration.updatePreferences";
 
+  // import
+
+  public static final String ORGANIZE_IMPORTS = "che.jdt.ls.extension.import.organizeImports";
+
   private Commands() {}
 }

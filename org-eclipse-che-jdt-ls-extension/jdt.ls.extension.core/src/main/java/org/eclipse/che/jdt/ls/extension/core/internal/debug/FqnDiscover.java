@@ -23,7 +23,6 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -54,9 +53,7 @@ public class FqnDiscover {
   public static String identifyFqnInResource(List<Object> params, IProgressMonitor pm) {
     Preconditions.checkArgument(params.size() >= 2, "Resource uri and line number are expected");
 
-    if (pm.isCanceled()) {
-      throw new OperationCanceledException();
-    }
+    ensureNotCancelled(pm);
 
     final String fileUri = (String) params.get(0);
     final Integer lineNumber = Integer.valueOf(params.get(1).toString());

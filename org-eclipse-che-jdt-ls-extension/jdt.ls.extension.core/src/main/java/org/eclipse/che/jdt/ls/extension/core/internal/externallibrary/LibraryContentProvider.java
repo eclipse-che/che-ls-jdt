@@ -83,7 +83,7 @@ public class LibraryContentProvider implements IContentProvider {
         }
       }
     }
-    ;
+
     return null;
   }
 }

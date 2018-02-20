@@ -25,6 +25,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ExternalLi
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryChildrenCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEntryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.imports.OrganizeImportsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.navigation.FindImplementersHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
@@ -84,6 +85,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.UPDATE_JAVA_CORE_OPTIONS_СOMMAND, UpdateJavaCoreOptionsCommand::execute);
     commands.put(Commands.GET_PREFERENCES_СOMMAND, GetPreferencesCommand::execute);
     commands.put(Commands.UPDATE_PREFERENCES_СOMMAND, UpdatePreferencesCommand::execute);
+    commands.put(Commands.ORGANIZE_IMPORTS, OrganizeImportsCommand::execute);
   }
 
   @Override
