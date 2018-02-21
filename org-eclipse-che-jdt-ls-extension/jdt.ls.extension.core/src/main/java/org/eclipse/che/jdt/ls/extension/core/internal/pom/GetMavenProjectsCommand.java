@@ -11,11 +11,11 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.pom;
 
 import com.google.common.base.Preconditions;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.Utils;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.m2e.core.MavenPlugin;
@@ -33,10 +33,8 @@ public class GetMavenProjectsCommand {
     Preconditions.checkArgument(!arguments.isEmpty(), "Project uri is expected.");
     Utils.ensureNotCancelled(progressMonitor);
 
-    String rootUri = (String) arguments.get(0);
-    if (rootUri.endsWith("/")) {
-      rootUri = rootUri.substring(0, rootUri.length() - 1);
-    }
+    final String rootUri = (String) arguments.get(0);
+    final IPath rootPath = ResourceUtils.filePathFromURI(rootUri);
 
     List<String> projectsUris = new LinkedList<>();
 
@@ -46,9 +44,8 @@ public class GetMavenProjectsCommand {
         continue;
       }
 
-      URI projectUri = project.getLocationURI();
-      if (projectUri.toString().startsWith(rootUri)) {
-        projectsUris.add(ResourceUtils.fixURI(projectUri));
+      if (rootPath.isPrefixOf(project.getLocation())) {
+        projectsUris.add(ResourceUtils.fixURI(project.getLocationURI()));
       }
     }
 
