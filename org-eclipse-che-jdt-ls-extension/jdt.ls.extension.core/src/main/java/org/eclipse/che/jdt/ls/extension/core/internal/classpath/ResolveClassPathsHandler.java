@@ -107,7 +107,7 @@ public class ResolveClassPathsHandler {
 
       return convertClasspathEntriesToDTO(javaProject, entries);
     } catch (JavaModelException e) {
-      throw new RuntimeException(e);
+      return emptyList();
     }
   }
 

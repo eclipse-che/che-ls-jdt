@@ -18,10 +18,12 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.Severity;
+import org.eclipse.che.jdt.ls.extension.api.dto.ClasspathEntry;
 import org.eclipse.che.jdt.ls.extension.api.dto.ExternalLibrariesParameters;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JobResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateWorkspaceParameters;
+import org.eclipse.che.jdt.ls.extension.core.internal.classpath.ResolveClassPathsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetMavenProjectsCommand;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -45,7 +47,7 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
   }
 
   @Test
-  public void shouldReturnValidMavenModules() throws Exception {
+  public void shouldReturnValidMavenModulesForParentModule() throws Exception {
     File rootModule = new File(getWorkingProjectDirectory(), "maven/multimodule");
     assertTrue(rootModule.exists());
 
@@ -54,6 +56,18 @@ public class MultiModuleProjectTest extends AbstractProjectsManagerBasedTest {
             singletonList(rootModule.toURI().toString()), new NullProgressMonitor());
 
     assertEquals(2, projectsUri.size());
+  }
+
+  @Test
+  public void shouldNotReturnClasspathsEntriesForParentModule() throws Exception {
+    File rootModule = new File(getWorkingProjectDirectory(), "maven/multimodule");
+    assertTrue(rootModule.exists());
+
+    List<ClasspathEntry> classpathEntries =
+        ResolveClassPathsHandler.getClasspathModelTree(
+            singletonList(rootModule.toURI().toString()), new NullProgressMonitor());
+
+    assertTrue(classpathEntries.isEmpty());
   }
 
   @Test
