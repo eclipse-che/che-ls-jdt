@@ -13,7 +13,6 @@ package org.eclipse.che.jdt.ls.extension.core.internal.externallibrary;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.PATH_SEPARATOR;
 import static org.eclipse.jdt.ls.core.internal.JDTUtils.PERIOD;
 
 import java.io.UnsupportedEncodingException;
@@ -25,12 +24,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import org.eclipse.che.jdt.ls.extension.api.dto.Jar;
 import org.eclipse.che.jdt.ls.extension.api.dto.JarEntry;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -39,13 +35,10 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JarEntryDirectory;
-import org.eclipse.jdt.internal.core.JarEntryFile;
 import org.eclipse.jdt.internal.core.JarPackageFragmentRoot;
-import org.eclipse.jdt.internal.core.JavaModelManager;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.hover.JavaElementLabels;
@@ -59,10 +52,10 @@ import org.eclipse.m2e.core.project.IMavenProjectRegistry;
  * @author Valeriy Svydenko
  */
 public class LibraryNavigation {
-  private static final String PACKAGE_ENTRY_TYPE = "PACKAGE";
-  private static final String FOLDER_ENTRY_TYPE = "FOLDER";
-  private static final String CLASS_FILE_ENTRY_TYPE = "CLASS_FILE";
-  private static final String FILE_ENTRY_TYPE = "FILE";
+  public static final String PACKAGE_ENTRY_TYPE = "PACKAGE";
+  public static final String FOLDER_ENTRY_TYPE = "FOLDER";
+  public static final String CLASS_FILE_ENTRY_TYPE = "CLASS_FILE";
+  public static final String FILE_ENTRY_TYPE = "FILE";
 
   private static final Comparator<JarEntry> COMPARATOR =
       (o1, o2) -> {
@@ -192,82 +185,6 @@ public class LibraryNavigation {
   }
 
   /**
-   * Returns library's entry by path.
-   *
-   * @param projectUri project URI
-   * @param rootId id of root node
-   * @param path path to the library
-   * @param pm a progress monitor
-   * @return instance of {@link JarEntry}
-   * @throws CoreException if an exception occurs while accessing its corresponding resource
-   */
-  public static JarEntry getEntry(
-      String projectUri, String rootId, String path, IProgressMonitor pm) throws CoreException {
-    IJavaProject project = JavaModelUtil.getJavaProject(projectUri);
-    ensureNotCancelled(pm);
-    if (project == null) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
-    }
-    IPackageFragmentRoot root = (IPackageFragmentRoot) JavaCore.create(rootId);
-    if (root == null) {
-      return null;
-    }
-    if (path.startsWith(PATH_SEPARATOR)) {
-      JarPackageFragmentRoot jarPackageFragmentRoot = (JarPackageFragmentRoot) root;
-      ZipFile jar = null;
-      try {
-        jar = jarPackageFragmentRoot.getJar();
-        ZipEntry entry = jar.getEntry(path.substring(1));
-        if (entry != null) {
-          JarEntry result = new JarEntry();
-          result.setEntryType(FILE_ENTRY_TYPE);
-          result.setPath(path);
-          result.setName(
-              entry.getName().substring(entry.getName().lastIndexOf(PATH_SEPARATOR) + 1));
-          return result;
-        }
-      } finally {
-        if (jar != null) {
-          JavaModelManager.getJavaModelManager().closeZipFile(jar);
-        }
-      }
-
-      Object[] resources = root.getNonJavaResources();
-
-      for (Object resource : resources) {
-        if (resource instanceof JarEntryFile) {
-          JarEntryFile file = (JarEntryFile) resource;
-          if (file.getFullPath().toOSString().equals(path)) {
-            return getJarEntryResource(file);
-          }
-        }
-        if (resource instanceof JarEntryDirectory) {
-          JarEntryDirectory directory = (JarEntryDirectory) resource;
-          JarEntryFile file = findJarFile(directory, path);
-          if (file != null) {
-            return getJarEntryResource(file);
-          }
-        }
-      }
-
-    } else {
-      // java class or file
-      IType type = project.findType(path);
-      if (type != null && type.isBinary()) {
-        IClassFile classFile = type.getClassFile();
-        JarEntry entry = new JarEntry();
-        entry.setEntryType(CLASS_FILE_ENTRY_TYPE);
-        entry.setName(classFile.getElementName());
-        entry.setPath(classFile.findPrimaryType().getFullyQualifiedName());
-        entry.setUri(JDTUtils.toUri(classFile));
-        return entry;
-      }
-    }
-
-    return null;
-  }
-
-  /**
    * Computes children of library.
    *
    * @param rootId id of root node
@@ -329,21 +246,6 @@ public class LibraryNavigation {
     }
     Collections.addAll(result, nonPackages);
     return result.toArray();
-  }
-
-  private static JarEntryFile findJarFile(JarEntryDirectory directory, String path) {
-    for (IJarEntryResource children : directory.getChildren()) {
-      if (children.isFile() && children.getFullPath().toOSString().equals(path)) {
-        return (JarEntryFile) children;
-      }
-      if (!children.isFile()) {
-        JarEntryFile file = findJarFile((JarEntryDirectory) children, path);
-        if (file != null) {
-          return file;
-        }
-      }
-    }
-    return null;
   }
 
   private static Object[] findJarDirectoryChildren(JarEntryDirectory directory, String path) {
