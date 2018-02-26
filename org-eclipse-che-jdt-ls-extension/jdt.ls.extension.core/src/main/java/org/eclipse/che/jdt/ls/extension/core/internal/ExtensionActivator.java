@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import org.eclipse.jdt.core.JavaCore;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -21,12 +22,15 @@ public class ExtensionActivator implements BundleActivator {
 
   // The shared instance
   private static ExtensionActivator plugin;
+  private static final JavaModelEventProvider javaModelEventProvider = new JavaModelEventProvider();
 
   public void start(BundleContext context) throws Exception {
     plugin = this;
+    JavaCore.addElementChangedListener(javaModelEventProvider);
   }
 
   public void stop(BundleContext context) throws Exception {
+    JavaCore.removeElementChangedListener(javaModelEventProvider);
     plugin = null;
   }
 
