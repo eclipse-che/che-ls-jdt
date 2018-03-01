@@ -147,7 +147,7 @@
                         <artifact>
                             <groupId>org.eclipse.jdt.ls</groupId>
                             <artifactId>org.eclipse.jdt.ls.tp</artifactId>
-                            <version>0.14.0-SNAPSHOT</version>
+                            <version>0.15.0-SNAPSHOT</version>
                         </artifact>
                     </target>
                     <environments>
