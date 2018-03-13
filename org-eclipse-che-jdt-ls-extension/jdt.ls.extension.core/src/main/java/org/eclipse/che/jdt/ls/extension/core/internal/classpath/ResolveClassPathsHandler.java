@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
 /**
  * Class for resolving class path and getting location of the output directory for a java project.
@@ -75,6 +76,7 @@ public class ResolveClassPathsHandler {
       IPath outputFolderLocation = getOutputFolderLocation(outputLocation);
       return outputFolderLocation == null ? "" : outputFolderLocation.toOSString();
     } catch (JavaModelException e) {
+      JavaLanguageServerPlugin.logException(e.getMessage(), e);
       return "";
     }
   }
@@ -107,7 +109,8 @@ public class ResolveClassPathsHandler {
 
       return convertClasspathEntriesToDTO(javaProject, entries);
     } catch (JavaModelException e) {
-      throw new RuntimeException(e);
+      JavaLanguageServerPlugin.logException(e.getMessage(), e);
+      return emptyList();
     }
   }
 
@@ -171,6 +174,7 @@ public class ResolveClassPathsHandler {
       }
       return result;
     } catch (JavaModelException e) {
+      JavaLanguageServerPlugin.logException(e.getMessage(), e);
       return emptyList();
     }
   }
