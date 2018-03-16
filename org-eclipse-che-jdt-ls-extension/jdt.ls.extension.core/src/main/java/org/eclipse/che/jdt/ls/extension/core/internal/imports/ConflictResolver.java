@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.eclipse.jdt.core.ISourceRange;
+import org.eclipse.jdt.core.manipulation.OrganizeImportsOperation;
 import org.eclipse.jdt.core.search.TypeNameMatch;
-import org.eclipse.jdt.ls.core.internal.corext.codemanipulation.OrganizeImportsOperation;
 
 /**
  * Resolves conflicts of importing ambiguous types.
