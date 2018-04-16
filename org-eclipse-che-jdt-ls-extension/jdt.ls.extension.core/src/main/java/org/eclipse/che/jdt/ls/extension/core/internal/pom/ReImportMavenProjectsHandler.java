@@ -142,7 +142,7 @@ public class ReImportMavenProjectsHandler {
    */
   private static void submitUpdateJobs(List<IProject> projects) {
     for (IProject project : projects) {
-      projectsManager.updateProject(project);
+      projectsManager.updateProject(project, true);
     }
   }
 
