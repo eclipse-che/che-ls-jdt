@@ -49,14 +49,14 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.ls.core.internal.DocumentAdapter;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaClientConnection.JavaLanguageClient;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ProjectUtils;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
-import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
 import org.junit.After;
 import org.junit.Before;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 
 public abstract class AbstractProjectsManagerBasedTest {
 
@@ -64,8 +64,7 @@ public abstract class AbstractProjectsManagerBasedTest {
 
   protected IProgressMonitor monitor = new NullProgressMonitor();
   protected ProjectsManager projectsManager;
-  @Mock protected PreferenceManager preferenceManager;
-  protected Preferences preferences;
+  protected PreferenceManager preferenceManager;
 
   protected SimpleLogListener logListener;
 
@@ -98,10 +97,9 @@ public abstract class AbstractProjectsManagerBasedTest {
 
     logListener = new SimpleLogListener();
     Platform.addLogListener(logListener);
-    preferences = new Preferences();
-    if (preferenceManager != null) {
-      when(preferenceManager.getPreferences()).thenReturn(preferences);
-    }
+    preferenceManager = Mockito.spy(new PreferenceManager());
+    JavaLanguageServerPlugin.setPreferencesManager(preferenceManager);
+    when(preferenceManager.isClientSupportsClassFileContent()).thenReturn(true);
     projectsManager = new ProjectsManager(preferenceManager);
 
     WorkingCopyOwner.setPrimaryBufferProvider(
