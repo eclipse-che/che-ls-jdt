@@ -6,4 +6,6 @@ Bundle-Version: 0.0.1.qualifier
 Export-Package: org.eclipse.che.jdt.ls.extension.api,
  org.eclipse.che.jdt.ls.extension.api.dto
 Import-Package: org.eclipse.lsp4j,
- org.eclipse.lsp4j.jsonrpc.messages
+ org.eclipse.lsp4j.jsonrpc.messages,
+ org.eclipse.xtext.xbase.lib;version="2.13.0",
+ org.eclipse.xtext.xbase.lib.util;version="2.13.0"
