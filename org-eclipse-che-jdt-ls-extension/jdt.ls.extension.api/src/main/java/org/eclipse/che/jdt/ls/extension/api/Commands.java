@@ -82,5 +82,15 @@ public class Commands {
 
   public static final String ORGANIZE_IMPORTS = "che.jdt.ls.extension.import.organizeImports";
 
+  // Refactoring
+
+  public static final String RENAME_COMMAND = "che.jdt.ls.extension.refactoring.rename";
+  public static final String GET_RENAME_TYPE_COMMAND =
+      "che.jdt.ls.extension.refactoring.get.rename.type";
+  public static final String VALIDATE_RENAMED_NAME_COMMAND =
+      "che.jdt.ls.extension.refactoring.validate.renamed.name";
+  public static final String GET_LINKED_ELEMENTS_COMMAND =
+      "che.jdt.ls.extension.refactoring.get.linked.elements";
+
   private Commands() {}
 }

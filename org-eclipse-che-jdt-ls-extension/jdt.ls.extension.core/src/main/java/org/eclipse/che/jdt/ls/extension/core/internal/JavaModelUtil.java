@@ -14,13 +14,20 @@ import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SymbolKind;
 
 /** Utilities for working with JDT APIs */
@@ -68,5 +75,35 @@ public class JavaModelUtil {
       return SymbolKind.Method;
     }
     return DocumentSymbolHandler.mapKind(element);
+  }
+
+  public static IJavaElement getJavaElement(Position position, String uri, IProgressMonitor pm)
+      throws CoreException {
+    ICompilationUnit unit = JDTUtils.resolveCompilationUnit(uri);
+    IJavaElement[] elements =
+        JDTUtils.findElementsAtSelection(
+            unit,
+            position.getLine(),
+            position.getCharacter(),
+            JavaLanguageServerPlugin.getPreferencesManager(),
+            pm);
+    if (elements == null || elements.length == 0) {
+      return null;
+    }
+    IJavaElement element = null;
+    if (elements.length != 1) {
+      IPackageFragment packageFragment = (IPackageFragment) unit.getParent();
+      IJavaElement found =
+          Stream.of(elements).filter(e -> e.equals(packageFragment)).findFirst().orElse(null);
+      if (found == null) {
+        // this would be a binary package fragment
+        element = elements[0];
+      } else {
+        element = found;
+      }
+    } else {
+      element = elements[0];
+    }
+    return element;
   }
 }
