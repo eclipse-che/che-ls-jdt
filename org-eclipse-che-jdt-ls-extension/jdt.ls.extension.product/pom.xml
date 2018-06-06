@@ -149,6 +149,23 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>1.9.1</version>
+                        <executions>
+                            <execution>
+                                <id>parse-version</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>parse-version</goal>
+                                </goals>
+                                <configuration>
+                                    <versionString>${project.version}</versionString>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!-- generate .sha256 file -->
                     <plugin>
                         <groupId>net.ju-n.maven.plugins</groupId>
@@ -202,7 +219,7 @@
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/distro</outputDirectory>
                                     <!-- define custom output filename -->
-                                    <finalName>che-jdt-language-server-latest</finalName>
+                                    <finalName>che-jdt-language-server--${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}-${timestamp}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <descriptors>
                                         <descriptor>publish-assembly.xml</descriptor>
