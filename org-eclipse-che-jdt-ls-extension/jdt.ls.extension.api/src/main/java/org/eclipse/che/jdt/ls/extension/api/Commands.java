@@ -92,5 +92,9 @@ public class Commands {
   public static final String GET_LINKED_ELEMENTS_COMMAND =
       "che.jdt.ls.extension.refactoring.get.linked.elements";
 
+  // CLASSPATH updater
+  public static final String CLIENT_UPDATE_PROJECTS_CLASSPATH =
+      "che.jdt.ls.extension.workspace.clientUpdateProjectsClasspath";
+
   private Commands() {}
 }
