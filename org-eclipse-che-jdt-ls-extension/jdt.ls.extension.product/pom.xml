@@ -202,7 +202,7 @@
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/distro</outputDirectory>
                                     <!-- define custom output filename -->
-                                    <finalName>jdt-language-server-latest</finalName>
+                                    <finalName>che-jdt-language-server-latest</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <descriptors>
                                         <descriptor>publish-assembly.xml</descriptor>
