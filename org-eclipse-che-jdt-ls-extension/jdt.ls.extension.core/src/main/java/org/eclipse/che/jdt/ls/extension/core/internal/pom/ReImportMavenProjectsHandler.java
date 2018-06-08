@@ -16,25 +16,19 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
-import org.eclipse.jdt.ls.core.internal.managers.ProjectsManager;
-import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
 
 /**
  * Command to update maven projects.
@@ -42,21 +36,10 @@ import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
  * @author Mykola Morhun
  */
 public class ReImportMavenProjectsHandler {
-  public static long REIMPORT_TIMEOUT = 60L;
-
   private static final Gson gson = GsonUtils.getInstance();
 
-  private static final PreferenceManager preferenceManager = new PreferenceManager();
-  private static final ProjectsManager projectsManager = new ProjectsManager(preferenceManager);
-  private static final IJobManager jobManager = Job.getJobManager();
-  private static final JobChangedListener jobChangedListener = new JobChangedListener();
-  private static final Lock lock = new ReentrantLock();
-
-  private static CountDownLatch jobsToBeFinished;
   // name -> path
   private static Map<String, String> projectsToBeUpdated = new ConcurrentHashMap<>();
-  // set of paths to updated projects; path -> ""
-  private static Map<String, String> updatedProjectsPaths = new ConcurrentHashMap<>();
 
   /**
    * Updates given maven projects.
@@ -68,43 +51,19 @@ public class ReImportMavenProjectsHandler {
   public static List<String> reImportMavenProjects(
       List<Object> arguments, IProgressMonitor progressMonitor) {
 
-    if (lock.tryLock()) {
-      try {
-        updatedProjectsPaths.clear();
+    ReImportMavenProjectsCommandParameters parameters =
+        gson.fromJson(gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
 
-        ReImportMavenProjectsCommandParameters parameters =
-            gson.fromJson(
-                gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
+    ensureNotCancelled(progressMonitor);
+    doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor);
 
-        ensureNotCancelled(progressMonitor);
-        return new ArrayList<>(
-            doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor));
-      } catch (InterruptedException e) {
-        throw new OperationCanceledException(e.getMessage());
-      } finally {
-        lock.unlock();
-      }
-    }
-
-    throw new RuntimeException("Reimport is already in progress.");
+    return parameters.getProjectsToUpdate();
   }
 
-  // TODO this is temporary solution.
-  // It shouldn't block response but send back projects to which a job was submitted.
-  // Then progress should be send separately.
-  // For details see https://github.com/eclipse/eclipse.jdt.ls/issues/404
-  private static Set<String> doReImportMavenProjects(
-      List<String> projectsUri, IProgressMonitor progressMonitor) throws InterruptedException {
+  private static void doReImportMavenProjects(
+      List<String> projectsUri, IProgressMonitor progressMonitor) {
     final List<IProject> projects = validateProjects(projectsUri, progressMonitor);
-    jobManager.addJobChangeListener(jobChangedListener);
-    try {
-      jobsToBeFinished = new CountDownLatch(projects.size());
-      submitUpdateJobs(projects);
-      jobsToBeFinished.await(REIMPORT_TIMEOUT, TimeUnit.SECONDS);
-    } finally {
-      jobManager.removeJobChangeListener(jobChangedListener);
-    }
-    return updatedProjectsPaths.keySet();
+    updateProjects(projects);
   }
 
   /**
@@ -136,18 +95,21 @@ public class ReImportMavenProjectsHandler {
   }
 
   /**
-   * Submits jobs to update given maven projects.
+   * Updates maven projects.
    *
    * @param projects list of projects to be updated
+   * @return list of jobs to update projects. It is needed for tests
    */
-  private static void submitUpdateJobs(List<IProject> projects) {
+  public static List<Job> updateProjects(List<IProject> projects) {
+    List<Job> updatedJobs = new ArrayList<>();
     for (IProject project : projects) {
-      projectsManager.updateProject(project, true);
+      Job job = JavaLanguageServerPlugin.getProjectsManager().updateProject(project, true);
+      job.addJobChangeListener(new JobChangedListener());
+      updatedJobs.add(job);
     }
+    return updatedJobs;
   }
 
-  // TODO temporary solution.
-  // Should be reworked when https://github.com/eclipse/eclipse.jdt.ls/issues/506 will be fixed.
   private static class JobChangedListener extends JobChangeAdapter {
     private static final String UPDATE_PROJECT_JOB_NAME_PREFIX = "Update project ";
 
@@ -155,17 +117,20 @@ public class ReImportMavenProjectsHandler {
     @Override
     public void done(IJobChangeEvent event) {
       String jobName = event.getJob().getName();
-      if (jobName.startsWith(UPDATE_PROJECT_JOB_NAME_PREFIX)) {
-        String projectName = jobName.substring(UPDATE_PROJECT_JOB_NAME_PREFIX.length());
-        if (projectsToBeUpdated.containsKey(projectName)) {
-          if (event.getResult().isOK()) {
-            updatedProjectsPaths.put(projectsToBeUpdated.remove(projectName), "");
-          } else {
-            projectsToBeUpdated.remove(projectName);
-          }
-
-          jobsToBeFinished.countDown();
-        }
+      if (!jobName.startsWith(UPDATE_PROJECT_JOB_NAME_PREFIX)) {
+        return;
+      }
+      String projectName = jobName.substring(UPDATE_PROJECT_JOB_NAME_PREFIX.length());
+      if (!event.getResult().isOK()) {
+        return;
+      }
+      String projectPath = projectsToBeUpdated.get(projectName);
+      try {
+        JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
+        ls.getClientConnection().executeClientCommand(Commands.CLIENT_UPDATE_PROJECT, projectPath);
+      } catch (Exception e) {
+        JavaLanguageServerPlugin.logException(
+            "An exception occured while reporting project updating", e);
       }
     }
   }

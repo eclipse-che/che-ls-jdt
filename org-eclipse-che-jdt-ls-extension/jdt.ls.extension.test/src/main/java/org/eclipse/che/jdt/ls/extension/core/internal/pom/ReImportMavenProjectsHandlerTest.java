@@ -29,6 +29,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.WorkspaceHelper;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.m2e.core.internal.MavenPluginActivator;
@@ -46,7 +47,7 @@ public class ReImportMavenProjectsHandlerTest extends AbstractProjectsManagerBas
   }
 
   @Test
-  public void shouldRespondAfterUpdateWithListOfUpdatedProjects() throws Exception {
+  public void shouldRespondAfterUpdateWithListOfUpdatedProjects() {
     final String uriToProject = "file://" + project.getLocation().toString();
     final List<Object> arguments = getReImportArguments(uriToProject);
 
@@ -59,8 +60,6 @@ public class ReImportMavenProjectsHandlerTest extends AbstractProjectsManagerBas
 
   @Test
   public void shouldUpdateMavenDependenciesDuringProjectUpdate() throws Exception {
-    final String uriToProject = "file://" + project.getLocation().toString();
-    final List<Object> arguments = getReImportArguments(uriToProject);
     final IJavaProject javaProject =
         getJavaProject(getResourceUriAsString(project.getRawLocationURI()));
 
@@ -71,10 +70,15 @@ public class ReImportMavenProjectsHandlerTest extends AbstractProjectsManagerBas
     final List<String> jarsBeforeReimport =
         getExternalJars(javaProject.getResolvedClasspath(false));
     addDependencyIntoPom(pom);
-    reImportMavenProjects(arguments, new NullProgressMonitor());
+    List<Job> jobs =
+        ReImportMavenProjectsHandler.updateProjects(singletonList(javaProject.getProject()));
+    Job job = jobs.get(0);
+    job.join(0L, new NullProgressMonitor());
     final List<String> jarsAfterReimport = getExternalJars(javaProject.getResolvedClasspath(false));
     FileUtils.writeStringToFile(pom.getLocation().toFile(), originalPomContent);
-    reImportMavenProjects(arguments, new NullProgressMonitor());
+    jobs = ReImportMavenProjectsHandler.updateProjects(singletonList(javaProject.getProject()));
+    job = jobs.get(0);
+    job.join(0L, new NullProgressMonitor());
     final List<String> jarsOriginal = getExternalJars(javaProject.getResolvedClasspath(false));
 
     assertTrue(jarsAfterReimport.containsAll(jarsBeforeReimport));
