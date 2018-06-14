@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.RefactoringSeverity;
 import org.eclipse.che.jdt.ls.extension.api.RenameKind;
-import org.eclipse.che.jdt.ls.extension.api.dto.NameValidationStatus;
+import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus;
 import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatusEntry;
 import org.eclipse.che.jdt.ls.extension.api.dto.RenameSelectionParams;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
@@ -31,7 +31,6 @@ import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.corext.refactoring.rename.JavaRenameProcessor;
 import org.eclipse.jdt.ls.core.internal.corext.refactoring.rename.RenameSupport;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 
 /**
  * The command to validate new name.
@@ -48,14 +47,14 @@ public class ValidateNewNameCommand {
    * @param pm progress monitor
    * @return satus of validation
    */
-  public static NameValidationStatus execute(List<Object> arguments, IProgressMonitor pm) {
+  public static RefactoringStatus execute(List<Object> arguments, IProgressMonitor pm) {
     validateArguments(arguments);
     ensureNotCancelled(pm);
 
     RenameSelectionParams params =
         GSON.fromJson(GSON.toJson(arguments.get(0)), RenameSelectionParams.class);
 
-    NameValidationStatus status = new NameValidationStatus();
+    RefactoringStatus status = new RefactoringStatus();
 
     try {
       RenameKind renameType = params.getRenameKind();
@@ -83,7 +82,8 @@ public class ValidateNewNameCommand {
       RenameSupport renameSupport =
           RenameSupport.create(curr, params.getNewName(), RenameSupport.UPDATE_REFERENCES);
       JavaRenameProcessor processor = renameSupport.getJavaRenameProcessor();
-      RefactoringStatus result = processor.checkNewElementName(params.getNewName());
+      org.eclipse.ltk.core.refactoring.RefactoringStatus result =
+          processor.checkNewElementName(params.getNewName());
 
       status.setRefactoringSeverity(RefactoringSeverity.valueOf(result.getSeverity()));
 

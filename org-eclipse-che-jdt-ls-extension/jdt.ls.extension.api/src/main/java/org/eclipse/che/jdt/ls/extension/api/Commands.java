@@ -86,11 +86,18 @@ public class Commands {
 
   public static final String RENAME_COMMAND = "che.jdt.ls.extension.refactoring.rename";
   public static final String GET_RENAME_TYPE_COMMAND =
-      "che.jdt.ls.extension.refactoring.get.rename.type";
+      "che.jdt.ls.extension.refactoring.rename.get.type";
   public static final String VALIDATE_RENAMED_NAME_COMMAND =
-      "che.jdt.ls.extension.refactoring.validate.renamed.name";
+      "che.jdt.ls.extension.refactoring.rename.validate.new.name";
   public static final String GET_LINKED_ELEMENTS_COMMAND =
-      "che.jdt.ls.extension.refactoring.get.linked.elements";
+      "che.jdt.ls.extension.refactoring.rename.get.linked.elements";
+  public static final String VALIDATE_MOVE_COMMAND =
+      "che.jdt.ls.extension.refactoring.move.validate";
+  public static final String GET_DESTINATIONS_COMMAND =
+      "che.jdt.ls.extension.refactoring.move.get.destinations.command";
+  public static final String MOVE_COMMAND = "che.jdt.ls.extension.refactoring.move.command";
+  public static final String VERIFY_MOVE_DESTINATION_COMMAND =
+      "che.jdt.ls.extension.refactoring.move.verify.destination";
 
   // CLASSPATH updater
   public static final String CLIENT_UPDATE_PROJECTS_CLASSPATH =

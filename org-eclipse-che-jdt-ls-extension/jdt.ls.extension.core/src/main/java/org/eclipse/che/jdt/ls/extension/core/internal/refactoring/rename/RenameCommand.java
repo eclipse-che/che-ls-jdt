@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.RenameKind;
 import org.eclipse.che.jdt.ls.extension.api.dto.CheWorkspaceEdit;
 import org.eclipse.che.jdt.ls.extension.api.dto.RenameSettings;
+import org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.CoreException;
