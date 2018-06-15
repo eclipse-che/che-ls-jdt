@@ -34,6 +34,10 @@ import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.GetMavenProjectsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.ReImportMavenProjectsHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.RecomputePomDiagnosticsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.move.GetDestinationsCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.move.MoveCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.move.ValidateMoveCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.move.VerifyMoveDestinationCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.rename.GetLinkedElementsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.rename.GetRenamingElementInfoCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.refactoring.rename.RenameCommand;
@@ -94,6 +98,10 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.GET_RENAME_TYPE_COMMAND, GetRenamingElementInfoCommand::execute);
     commands.put(Commands.VALIDATE_RENAMED_NAME_COMMAND, ValidateNewNameCommand::execute);
     commands.put(Commands.GET_LINKED_ELEMENTS_COMMAND, GetLinkedElementsCommand::execute);
+    commands.put(Commands.GET_DESTINATIONS_COMMAND, GetDestinationsCommand::execute);
+    commands.put(Commands.MOVE_COMMAND, MoveCommand::execute);
+    commands.put(Commands.VALIDATE_MOVE_COMMAND, ValidateMoveCommand::execute);
+    commands.put(Commands.VERIFY_MOVE_DESTINATION_COMMAND, VerifyMoveDestinationCommand::execute);
   }
 
   @Override

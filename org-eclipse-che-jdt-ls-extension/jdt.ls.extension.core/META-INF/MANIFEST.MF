@@ -5,6 +5,7 @@ Bundle-SymbolicName: jdt.ls.extension.core;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-Activator: org.eclipse.che.jdt.ls.extension.core.internal.ExtensionActivator
 Import-Package: com.google.common.base;version="15.0.0",
+ com.google.common.reflect;version="15.0.0",
  com.google.gson,
  org.apache.commons.io,
  org.apache.commons.lang3.tuple;version="3.1.0",
@@ -24,9 +25,7 @@ Import-Package: com.google.common.base;version="15.0.0",
  org.eclipse.ltk.core.refactoring,
  org.eclipse.ltk.core.refactoring.participants,
  org.eclipse.ltk.core.refactoring.resource,
- org.eclipse.ltk.internal.core.refactoring,
- org.eclipse.search.core.text,
- org.eclipse.jface.text
+ org.eclipse.ltk.internal.core.refactoring
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.m2e.core,

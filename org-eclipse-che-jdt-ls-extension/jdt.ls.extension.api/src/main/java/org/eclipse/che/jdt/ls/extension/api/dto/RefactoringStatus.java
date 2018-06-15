@@ -18,7 +18,7 @@ import org.eclipse.che.jdt.ls.extension.api.RefactoringSeverity;
  *
  * @author Valeriy Svydenko
  */
-public class NameValidationStatus {
+public class RefactoringStatus {
   private List<RefactoringStatusEntry> refactoringStatusEntries;
   private RefactoringSeverity refactoringSeverity;
 
