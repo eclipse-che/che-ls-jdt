@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.eclipse.che.jdt.ls.extension.api.RefactoringSeverity;
 import org.eclipse.che.jdt.ls.extension.api.ResourceKind;
 import org.eclipse.che.jdt.ls.extension.api.dto.CheResourceChange;
 import org.eclipse.che.jdt.ls.extension.api.dto.CheWorkspaceEdit;
+import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatusEntry;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -51,6 +53,7 @@ import org.eclipse.jdt.ls.core.internal.corext.refactoring.util.RefactoringASTPa
 import org.eclipse.jdt.ls.core.internal.corext.util.JavaElementUtil;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.CompositeChange;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.ltk.core.refactoring.resource.ResourceChange;
 import org.eclipse.text.edits.TextEdit;
@@ -86,6 +89,31 @@ public class ChangeUtil {
         convertCompositeChange(ch, edit);
       }
     }
+  }
+
+  /**
+   * Converts {@link RefactoringStatus} to dto object {@link
+   * org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus}.
+   *
+   * @param status the object to be converted
+   * @return dto object which describes status of the refactoring
+   */
+  public static org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus convertRefactoringStatus(
+      RefactoringStatus status) {
+    org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus result =
+        new org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus();
+    result.setRefactoringSeverity(RefactoringSeverity.valueOf(status.getSeverity()));
+
+    List<RefactoringStatusEntry> entries = new ArrayList<>();
+    for (org.eclipse.ltk.core.refactoring.RefactoringStatusEntry entry : status.getEntries()) {
+      RefactoringStatusEntry newEntry = new RefactoringStatusEntry();
+      newEntry.setMessage(entry.getMessage());
+      newEntry.setRefactoringSeverity(RefactoringSeverity.valueOf(entry.getSeverity()));
+      entries.add(newEntry);
+    }
+
+    result.setRefactoringStatusEntries(entries);
+    return result;
   }
 
   private static void convertCompositeChange(Change change, CheWorkspaceEdit edit)

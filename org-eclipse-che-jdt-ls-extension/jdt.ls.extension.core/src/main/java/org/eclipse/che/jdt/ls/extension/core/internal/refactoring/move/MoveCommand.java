@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.refactoring.move;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil.convertRefactoringStatus;
 import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 import com.google.common.base.Preconditions;
@@ -19,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.CheWorkspaceEdit;
 import org.eclipse.che.jdt.ls.extension.api.dto.MoveSettings;
+import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.Resource;
 import org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
@@ -58,51 +60,53 @@ public class MoveCommand {
    * @param arguments {@link MoveSettings} expected
    * @return information about changes
    */
-  public static CheWorkspaceEdit execute(List<Object> arguments, IProgressMonitor pm) {
+  public static RefactoringResult execute(List<Object> arguments, IProgressMonitor pm) {
     validateArguments(arguments);
 
     ensureNotCancelled(pm);
 
+    RefactoringResult result = new RefactoringResult();
     CheWorkspaceEdit edit = new CheWorkspaceEdit();
+    result.setCheWorkspaceEdit(edit);
 
     MoveSettings moveSettings = GSON.fromJson(GSON.toJson(arguments.get(0)), MoveSettings.class);
 
     String destinationUri = moveSettings.getDestination();
     if (destinationUri == null || destinationUri.isEmpty()) {
-      return edit;
+      return result;
     }
 
     List<IJavaElement> elements = convertToJavaElements(moveSettings.getElements());
     IJavaElement[] javaElements = new IJavaElement[elements.size()];
     javaElements = elements.toArray(javaElements);
-    ;
     IResource[] resources = {};
 
     try {
       IMovePolicy policy = ReorgPolicyFactory.createMovePolicy(resources, javaElements);
       JavaMoveProcessor processor = policy.canEnable() ? new JavaMoveProcessor(policy) : null;
       if (processor == null) {
-        return edit;
+        return result;
       }
 
       IPackageFragment resolvePackage = getDestination(JDTUtils.toURI(destinationUri));
       if (resolvePackage == null) {
-        return edit;
+        return result;
       }
 
       IReorgDestination destination = ReorgDestinationFactory.createDestination(resolvePackage);
       org.eclipse.ltk.core.refactoring.RefactoringStatus status =
           processor.setDestination(destination);
 
+      result.setRefactoringStatus(convertRefactoringStatus(status));
       if (status == null || !status.isOK()) {
-        return edit;
+        return result;
       }
 
       setMoveSettings(processor, moveSettings);
 
       Change changes = processor.createChange(pm);
       if (changes == null) {
-        return edit;
+        return result;
       }
 
       ChangeUtil.convertChanges(changes, edit);
@@ -110,7 +114,7 @@ public class MoveCommand {
     } catch (CoreException e) {
       JavaLanguageServerPlugin.logException(e.getMessage(), e);
     }
-    return edit;
+    return result;
   }
 
   private static IPackageFragment getDestination(URI destinationUri) throws JavaModelException {

@@ -10,6 +10,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.refactoring.rename;
 
+import static org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil.convertRefactoringStatus;
 import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 import com.google.common.base.Preconditions;
@@ -17,6 +18,7 @@ import com.google.gson.Gson;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.RenameKind;
 import org.eclipse.che.jdt.ls.extension.api.dto.CheWorkspaceEdit;
+import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringResult;
 import org.eclipse.che.jdt.ls.extension.api.dto.RenameSettings;
 import org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
@@ -56,12 +58,14 @@ public class RenameCommand {
    * @param arguments {@link RenameParams} expected
    * @return information about changes
    */
-  public static CheWorkspaceEdit execute(List<Object> arguments, IProgressMonitor pm) {
+  public static RefactoringResult execute(List<Object> arguments, IProgressMonitor pm) {
     validateArguments(arguments);
 
     ensureNotCancelled(pm);
 
+    RefactoringResult result = new RefactoringResult();
     CheWorkspaceEdit edit = new CheWorkspaceEdit();
+    result.setCheWorkspaceEdit(edit);
 
     RenameSettings renameSettings =
         GSON.fromJson(GSON.toJson(arguments.get(0)), RenameSettings.class);
@@ -87,7 +91,7 @@ public class RenameCommand {
       }
 
       if (curr == null) {
-        return edit;
+        return result;
       }
 
       RenameSupport renameSupport =
@@ -101,18 +105,20 @@ public class RenameCommand {
                   renameRefactoring, CheckConditionsOperation.ALL_CONDITIONS),
               RefactoringStatus.FATAL);
       create.run(pm);
+      result.setRefactoringStatus(convertRefactoringStatus(create.getConditionCheckingStatus()));
       Change change = create.getChange();
       if (change == null) {
-        return edit;
+        return result;
       }
 
       ChangeUtil.convertChanges(change, edit);
+      result.setCheWorkspaceEdit(edit);
     } catch (CoreException ex) {
       JavaLanguageServerPlugin.logException(
           "Problem with rename for " + params.getTextDocument().getUri(), ex);
     }
 
-    return edit;
+    return result;
   }
 
   private static void setSettings(RenameSettings settings, RenameRefactoring refactoring) {
