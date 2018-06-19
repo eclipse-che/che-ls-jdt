@@ -98,7 +98,7 @@ public class MoveCommand {
           processor.setDestination(destination);
 
       result.setRefactoringStatus(convertRefactoringStatus(status));
-      if (status == null || !status.isOK()) {
+      if (status == null || status.hasFatalError()) {
         return result;
       }
 
