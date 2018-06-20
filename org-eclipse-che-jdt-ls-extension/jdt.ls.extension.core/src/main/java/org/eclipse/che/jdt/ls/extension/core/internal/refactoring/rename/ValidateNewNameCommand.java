@@ -14,13 +14,11 @@ import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCanc
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
-import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.RefactoringSeverity;
 import org.eclipse.che.jdt.ls.extension.api.RenameKind;
 import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus;
-import org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatusEntry;
 import org.eclipse.che.jdt.ls.extension.api.dto.RenameSelectionParams;
+import org.eclipse.che.jdt.ls.extension.core.internal.ChangeUtil;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.CoreException;
@@ -85,17 +83,7 @@ public class ValidateNewNameCommand {
       org.eclipse.ltk.core.refactoring.RefactoringStatus result =
           processor.checkNewElementName(params.getNewName());
 
-      status.setRefactoringSeverity(RefactoringSeverity.valueOf(result.getSeverity()));
-
-      List<RefactoringStatusEntry> entries = new ArrayList<>();
-      for (org.eclipse.ltk.core.refactoring.RefactoringStatusEntry entry : result.getEntries()) {
-        RefactoringStatusEntry e = new RefactoringStatusEntry();
-        e.setMessage(entry.getMessage());
-        e.setRefactoringSeverity(RefactoringSeverity.valueOf(entry.getSeverity()));
-        entries.add(e);
-      }
-
-      status.setRefactoringStatusEntries(entries);
+      status = ChangeUtil.convertRefactoringStatus(result);
 
     } catch (CoreException ex) {
       JavaLanguageServerPlugin.logException("Can't validate new name: " + params.getNewName(), ex);
