@@ -14,9 +14,9 @@ import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCanc
 
 import com.google.gson.Gson;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
@@ -38,9 +38,6 @@ import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
 public class ReImportMavenProjectsHandler {
   private static final Gson gson = GsonUtils.getInstance();
 
-  // name -> path
-  private static Map<String, String> projectsToBeUpdated = new ConcurrentHashMap<>();
-
   /**
    * Updates given maven projects.
    *
@@ -55,15 +52,11 @@ public class ReImportMavenProjectsHandler {
         gson.fromJson(gson.toJson(arguments.get(0)), ReImportMavenProjectsCommandParameters.class);
 
     ensureNotCancelled(progressMonitor);
-    doReImportMavenProjects(parameters.getProjectsToUpdate(), progressMonitor);
+    final Map<String, IProject> projects =
+        validateProjects(parameters.getProjectsToUpdate(), progressMonitor);
+    updateProjects(projects);
 
     return parameters.getProjectsToUpdate();
-  }
-
-  private static void doReImportMavenProjects(
-      List<String> projectsUri, IProgressMonitor progressMonitor) {
-    final List<IProject> projects = validateProjects(projectsUri, progressMonitor);
-    updateProjects(projects);
   }
 
   /**
@@ -71,13 +64,11 @@ public class ReImportMavenProjectsHandler {
    *
    * @param projectsUri list of URIs to projects which should be updated
    * @param progressMonitor progress monitor
-   * @return list of valid projects to reimport
+   * @return map where the key is project's uri and the value valid project to reimport
    */
-  private static List<IProject> validateProjects(
+  private static Map<String, IProject> validateProjects(
       List<String> projectsUri, IProgressMonitor progressMonitor) {
-    projectsToBeUpdated.clear();
-
-    List<IProject> projectsToUpdate = new ArrayList<>(projectsUri.size());
+    Map<String, IProject> projectsToUpdate = new HashMap<>(projectsUri.size());
     IFile pomFile;
     for (String pathToProject : projectsUri) {
       ensureNotCancelled(progressMonitor);
@@ -87,8 +78,7 @@ public class ReImportMavenProjectsHandler {
         continue;
       }
 
-      projectsToUpdate.add(pomFile.getProject());
-      projectsToBeUpdated.put(pomFile.getProject().getName(), pathToProject);
+      projectsToUpdate.put(pathToProject, pomFile.getProject());
     }
 
     return projectsToUpdate;
@@ -97,37 +87,35 @@ public class ReImportMavenProjectsHandler {
   /**
    * Updates maven projects.
    *
-   * @param projects list of projects to be updated
+   * @param projects projects to be updated
    * @return list of jobs to update projects. It is needed for tests
    */
-  public static List<Job> updateProjects(List<IProject> projects) {
-    List<Job> updatedJobs = new ArrayList<>();
-    for (IProject project : projects) {
-      Job job = JavaLanguageServerPlugin.getProjectsManager().updateProject(project, true);
-      job.addJobChangeListener(new JobChangedListener());
+  public static List<Job> updateProjects(Map<String, IProject> projects) {
+    List<Job> updatedJobs = new ArrayList<>(projects.size());
+    for (String uri : projects.keySet()) {
+      Job job =
+          JavaLanguageServerPlugin.getProjectsManager().updateProject(projects.get(uri), true);
+      job.addJobChangeListener(new JobChangedListener(uri));
       updatedJobs.add(job);
     }
     return updatedJobs;
   }
 
   private static class JobChangedListener extends JobChangeAdapter {
-    private static final String UPDATE_PROJECT_JOB_NAME_PREFIX = "Update project ";
+    private String projectUri;
 
-    /** Listens to jobs changes events to get information about updated projects. */
+    JobChangedListener(String projectUri) {
+      this.projectUri = projectUri;
+    }
+
     @Override
     public void done(IJobChangeEvent event) {
-      String jobName = event.getJob().getName();
-      if (!jobName.startsWith(UPDATE_PROJECT_JOB_NAME_PREFIX)) {
-        return;
-      }
-      String projectName = jobName.substring(UPDATE_PROJECT_JOB_NAME_PREFIX.length());
       if (!event.getResult().isOK()) {
         return;
       }
-      String projectPath = projectsToBeUpdated.get(projectName);
       try {
         JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-        ls.getClientConnection().executeClientCommand(Commands.CLIENT_UPDATE_PROJECT, projectPath);
+        ls.getClientConnection().executeClientCommand(Commands.CLIENT_UPDATE_PROJECT, projectUri);
       } catch (Exception e) {
         JavaLanguageServerPlugin.logException(
             "An exception occured while reporting project updating", e);
