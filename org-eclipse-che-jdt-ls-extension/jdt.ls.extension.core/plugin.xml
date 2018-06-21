@@ -39,9 +39,13 @@
             <command id="che.jdt.ls.extension.configuration.updatePreferences"/>
             <command id="che.jdt.ls.extension.import.organizeImports"/>
             <command id="che.jdt.ls.extension.refactoring.rename"/>
-            <command id="che.jdt.ls.extension.refactoring.get.rename.type"/>
-            <command id="che.jdt.ls.extension.refactoring.validate.renamed.name"/>
-            <command id="che.jdt.ls.extension.refactoring.get.linked.elements"/>
+            <command id="che.jdt.ls.extension.refactoring.rename.get.type"/>
+            <command id="che.jdt.ls.extension.refactoring.rename.validate.new.name"/>
+            <command id="che.jdt.ls.extension.refactoring.rename.get.linked.elements"/>
+            <command id="che.jdt.ls.extension.refactoring.move.validate"/>
+            <command id="che.jdt.ls.extension.refactoring.move.get.destinations.command"/>
+            <command id="che.jdt.ls.extension.refactoring.move.command"/>
+            <command id="che.jdt.ls.extension.refactoring.move.verify.destination"/>
         </delegateCommandHandler>
     </extension>
     <extension
