@@ -41,11 +41,9 @@ public class UpdateProjectClasspathCommandTest extends AbstractProjectsManagerBa
 
   @Test
   public void classpathShouldBeUpdated() throws Exception {
-    String sourcePath = "/plain/src3";
-    String libPath = "/plain/a.jar";
-    String projectPath = "/plain/NewProject";
-
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
+    String projectUri = getResourceUriAsString(project.getLocationURI());
+    String sourcePath = projectUri + "/plain/src3";
+    String libPath = projectUri + "/plain/a.jar";
 
     ClasspathEntry newSrc = new ClasspathEntry();
     newSrc.setEntryKind(IClasspathEntry.CPE_SOURCE);
@@ -55,11 +53,7 @@ public class UpdateProjectClasspathCommandTest extends AbstractProjectsManagerBa
     newLib.setEntryKind(IClasspathEntry.CPE_LIBRARY);
     newLib.setPath(libPath);
 
-    ClasspathEntry newProject = new ClasspathEntry();
-    newProject.setEntryKind(IClasspathEntry.CPE_PROJECT);
-    newProject.setPath(projectPath);
-
-    List<ClasspathEntry> entries = asList(newLib, newSrc, newProject);
+    List<ClasspathEntry> entries = asList(newLib, newSrc);
     UpdateClasspathParameters classpathParams = new UpdateClasspathParameters();
     classpathParams.setEntries(entries);
     classpathParams.setProjectUri(projectUri);
@@ -71,14 +65,10 @@ public class UpdateProjectClasspathCommandTest extends AbstractProjectsManagerBa
     IJavaProject jProject = JavaCore.create(project);
     IClasspathEntry[] newClasspath = jProject.getRawClasspath();
 
-    assertEquals(3, newClasspath.length);
+    assertEquals(2, newClasspath.length);
 
-    List<String> expectedPathes = asList(sourcePath, libPath, projectPath);
-    assertThat(
-        expectedPathes,
-        hasItems(
-            newClasspath[0].getPath().toString(),
-            newClasspath[1].getPath().toString(),
-            newClasspath[2].getPath().toString()));
+    List<String> newPaths =
+        asList(newClasspath[0].getPath().toString(), newClasspath[1].getPath().toString());
+    assertThat(newPaths, hasItems("/plain/plain/src3", libPath.substring(7)));
   }
 }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ClasspathEntry;
+import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -28,6 +29,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 
 /**
  * Class for resolving class path and getting location of the output directory for a java project.
@@ -118,20 +120,39 @@ public class ResolveClassPathsHandler {
       IJavaProject javaProject, IClasspathEntry[] entries) throws JavaModelException {
     List<ClasspathEntry> entriesDTO = new ArrayList<>(entries.length);
     for (IClasspathEntry entry : entries) {
-      ClasspathEntry entryDTO = new ClasspathEntry();
-      entryDTO.setEntryKind(entry.getEntryKind());
-      entryDTO.setPath(entry.getPath().toOSString());
       if (IClasspathEntry.CPE_CONTAINER == entry.getEntryKind()) {
-
+        ClasspathEntry container = new ClasspathEntry();
         IClasspathEntry[] subEntries =
             JavaCore.getClasspathContainer(entry.getPath(), javaProject).getClasspathEntries();
-
-        entryDTO.setChildren(convertClasspathEntriesToDTO(javaProject, subEntries));
+        container.setPath(entry.getPath().toOSString());
+        container.setChildren(convertClasspathEntriesToDTO(javaProject, subEntries));
+        entriesDTO.add(container);
+      } else {
+        entriesDTO.add(convertSimpleEntry(entry));
       }
-      entriesDTO.add(entryDTO);
     }
 
     return entriesDTO;
+  }
+
+  private static ClasspathEntry convertSimpleEntry(IClasspathEntry entry) {
+    ClasspathEntry entryDTO = new ClasspathEntry();
+    entryDTO.setEntryKind(entry.getEntryKind());
+    switch (entry.getEntryKind()) {
+      case IClasspathEntry.CPE_SOURCE:
+      case IClasspathEntry.CPE_PROJECT:
+        entryDTO.setPath(JavaModelUtil.getFolderLocation(entry.getPath()));
+        break;
+      case IClasspathEntry.CPE_LIBRARY:
+        entryDTO.setPath(ResourceUtils.fixURI(entry.getPath().toFile().toURI()));
+        break;
+      case IClasspathEntry.CPE_VARIABLE:
+        entryDTO.setPath(entry.getPath().toString());
+        break;
+      default:
+        throw new IllegalArgumentException("Unexpected CPE-Kind: " + entry.getEntryKind());
+    }
+    return entryDTO;
   }
 
   /**

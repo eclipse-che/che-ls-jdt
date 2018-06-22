@@ -54,9 +54,8 @@ public class GetSourceFoldersCommand {
       throw new RuntimeException(e);
     }
     for (IClasspathEntry entry : classpath) {
-      String entryPath = entry.getPath().toOSString();
       if (CPE_SOURCE == entry.getEntryKind()) {
-        sourceFolders.add(entryPath);
+        sourceFolders.add(JavaModelUtil.getFolderLocation(entry.getPath()));
       }
     }
     return sourceFolders;

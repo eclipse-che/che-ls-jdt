@@ -11,7 +11,6 @@
 package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
 import static java.lang.String.format;
-import static org.eclipse.core.runtime.Path.fromOSString;
 import static org.eclipse.jdt.core.IClasspathEntry.CPE_CONTAINER;
 import static org.eclipse.jdt.core.IClasspathEntry.CPE_LIBRARY;
 import static org.eclipse.jdt.core.IClasspathEntry.CPE_PROJECT;
@@ -25,14 +24,19 @@ import static org.eclipse.jdt.core.JavaCore.newVariableEntry;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ClasspathEntry;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateClasspathParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
-import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -80,23 +84,47 @@ public class UpdateProjectClasspathCommand {
   private static IClasspathEntry[] createModifiedEntry(List<ClasspathEntry> entries) {
     List<IClasspathEntry> coreClasspathEntries = new ArrayList<>(entries.size());
     for (ClasspathEntry entry : entries) {
-      IPath path = fromOSString(entry.getPath());
-      switch (entry.getEntryKind()) {
-        case CPE_LIBRARY:
-          coreClasspathEntries.add(newLibraryEntry(path, null, null));
-          break;
-        case CPE_SOURCE:
-          coreClasspathEntries.add(newSourceEntry(path));
-          break;
-        case CPE_VARIABLE:
-          coreClasspathEntries.add(newVariableEntry(path, null, null));
-          break;
-        case CPE_CONTAINER:
-          coreClasspathEntries.add(newContainerEntry(path));
-          break;
-        case CPE_PROJECT:
-          coreClasspathEntries.add(newProjectEntry(path));
-          break;
+      try {
+        switch (entry.getEntryKind()) {
+          case CPE_LIBRARY:
+            {
+              String absolutePath = new File(new URI(entry.getPath())).getAbsolutePath();
+              coreClasspathEntries.add(
+                  newLibraryEntry(Path.fromOSString(absolutePath), null, null));
+              break;
+            }
+          case CPE_SOURCE:
+            {
+              IContainer[] folders =
+                  ResourcesPlugin.getWorkspace()
+                      .getRoot()
+                      .findContainersForLocationURI(new URI(entry.getPath()));
+              if (folders.length == 0) {
+                throw new IllegalArgumentException("no folders found for " + entry.getPath());
+              }
+              coreClasspathEntries.add(newSourceEntry(folders[0].getFullPath()));
+              break;
+            }
+          case CPE_VARIABLE:
+            coreClasspathEntries.add(
+                newVariableEntry(Path.fromOSString(entry.getPath()), null, null));
+            break;
+          case CPE_CONTAINER:
+            coreClasspathEntries.add(newContainerEntry(Path.fromOSString(entry.getPath())));
+            break;
+          case CPE_PROJECT:
+            IContainer[] folders =
+                ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .findContainersForLocationURI(new URI(entry.getPath()));
+            if (folders.length == 0) {
+              throw new IllegalArgumentException("no folders found for " + entry.getPath());
+            }
+            coreClasspathEntries.add(newProjectEntry(folders[0].getFullPath()));
+            break;
+        }
+      } catch (URISyntaxException e1) {
+        throw new IllegalArgumentException("could not parse URI " + entry.getPath());
       }
     }
     return coreClasspathEntries.toArray(new IClasspathEntry[coreClasspathEntries.size()]);
