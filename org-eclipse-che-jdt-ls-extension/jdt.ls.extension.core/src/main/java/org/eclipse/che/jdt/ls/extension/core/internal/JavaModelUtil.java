@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -26,6 +27,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SymbolKind;
@@ -50,6 +52,11 @@ public class JavaModelUtil {
             ResourcesPlugin.getWorkspace().getRoot()::findContainersForLocationURI);
 
     return resource != null ? JavaCore.create(resource.getProject()) : null;
+  }
+
+  public static String getFolderLocation(IPath folderPath) {
+    return ResourceUtils.fixURI(
+        ResourcesPlugin.getWorkspace().getRoot().getFolder(folderPath).getLocationURI());
   }
 
   /**

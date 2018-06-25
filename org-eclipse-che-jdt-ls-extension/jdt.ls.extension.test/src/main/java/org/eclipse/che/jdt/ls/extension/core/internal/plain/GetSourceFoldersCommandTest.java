@@ -10,7 +10,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
@@ -36,14 +35,13 @@ public class GetSourceFoldersCommandTest extends AbstractProjectsManagerBasedTes
 
   @Test
   public void sourceFoldersShouldBeReturned() throws Exception {
-    String projectUri = getResourceUriAsString(project.getRawLocationURI());
+    String projectUri = getResourceUriAsString(project.getLocationURI());
 
     List<Object> arguments = singletonList(projectUri);
 
     List<String> result = GetSourceFoldersCommand.execute(arguments, new NullProgressMonitor());
 
     assertEquals(2, result.size());
-    List<String> sourceFolders = asList("/plain/src", "/plain/src2");
-    assertThat(sourceFolders, hasItems(result.get(0), result.get(1)));
+    assertThat(result, hasItems(projectUri + "/src", projectUri + "/src2"));
   }
 }
