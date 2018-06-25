@@ -35,6 +35,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IClasspathEntry;
@@ -84,49 +85,44 @@ public class UpdateProjectClasspathCommand {
   private static IClasspathEntry[] createModifiedEntry(List<ClasspathEntry> entries) {
     List<IClasspathEntry> coreClasspathEntries = new ArrayList<>(entries.size());
     for (ClasspathEntry entry : entries) {
+      String uri = entry.getPath();
       try {
         switch (entry.getEntryKind()) {
           case CPE_LIBRARY:
             {
-              String absolutePath = new File(new URI(entry.getPath())).getAbsolutePath();
+              String absolutePath = new File(new URI(uri)).getAbsolutePath();
               coreClasspathEntries.add(
                   newLibraryEntry(Path.fromOSString(absolutePath), null, null));
               break;
             }
           case CPE_SOURCE:
             {
-              IContainer[] folders =
-                  ResourcesPlugin.getWorkspace()
-                      .getRoot()
-                      .findContainersForLocationURI(new URI(entry.getPath()));
-              if (folders.length == 0) {
-                throw new IllegalArgumentException("no folders found for " + entry.getPath());
-              }
-              coreClasspathEntries.add(newSourceEntry(folders[0].getFullPath()));
+              coreClasspathEntries.add(newSourceEntry(getWSPathForContainer(uri)));
               break;
             }
           case CPE_VARIABLE:
-            coreClasspathEntries.add(
-                newVariableEntry(Path.fromOSString(entry.getPath()), null, null));
+            coreClasspathEntries.add(newVariableEntry(Path.fromOSString(uri), null, null));
             break;
           case CPE_CONTAINER:
-            coreClasspathEntries.add(newContainerEntry(Path.fromOSString(entry.getPath())));
+            coreClasspathEntries.add(newContainerEntry(Path.fromOSString(uri)));
             break;
           case CPE_PROJECT:
-            IContainer[] folders =
-                ResourcesPlugin.getWorkspace()
-                    .getRoot()
-                    .findContainersForLocationURI(new URI(entry.getPath()));
-            if (folders.length == 0) {
-              throw new IllegalArgumentException("no folders found for " + entry.getPath());
-            }
-            coreClasspathEntries.add(newProjectEntry(folders[0].getFullPath()));
+            coreClasspathEntries.add(newProjectEntry(getWSPathForContainer(uri)));
             break;
         }
       } catch (URISyntaxException e1) {
-        throw new IllegalArgumentException("could not parse URI " + entry.getPath());
+        throw new IllegalArgumentException("could not parse URI " + uri);
       }
     }
     return coreClasspathEntries.toArray(new IClasspathEntry[coreClasspathEntries.size()]);
+  }
+
+  private static IPath getWSPathForContainer(String uri) throws URISyntaxException {
+    IContainer[] folders =
+        ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(new URI(uri));
+    if (folders.length == 0) {
+      throw new IllegalArgumentException("no folders found for " + uri);
+    }
+    return folders[0].getFullPath();
   }
 }
