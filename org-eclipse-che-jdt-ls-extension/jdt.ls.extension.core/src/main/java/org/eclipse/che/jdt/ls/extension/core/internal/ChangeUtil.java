@@ -69,25 +69,6 @@ import org.eclipse.text.edits.TextEdit;
 public class ChangeUtil {
 
   /**
-   * Converts changes to resource changes if resource changes are supported by the client otherwise
-   * converts to TextEdit changes.
-   *
-   * @param change changes after Refactoring operation
-   * @param edit instance of workspace edit changes
-   * @throws CoreException
-   */
-  public static void convertChanges(Change change, CheWorkspaceEdit edit, IProgressMonitor pm)
-      throws CoreException {
-    if (change == null || !(change instanceof CompositeChange)) {
-      return;
-    }
-
-    if (change instanceof CompositeChange) {
-      convertCompositeChange(change, edit, pm);
-    }
-  }
-
-  /**
    * Converts {@link RefactoringStatus} to dto object {@link
    * org.eclipse.che.jdt.ls.extension.api.dto.RefactoringStatus}.
    *
@@ -112,11 +93,19 @@ public class ChangeUtil {
     return result;
   }
 
-  private static void convertCompositeChange(
-      Change change, CheWorkspaceEdit edit, IProgressMonitor pm) throws CoreException {
+  /**
+   * Converts changes to resource changes if resource changes are supported by the client otherwise
+   * converts to TextEdit changes.
+   *
+   * @param change changes after Refactoring operation
+   * @param edit instance of workspace edit changes
+   * @throws CoreException
+   */
+  public static void convertChanges(Change change, CheWorkspaceEdit edit, IProgressMonitor pm)
+      throws CoreException {
     if (change instanceof CompositeChange) {
       for (Change child : ((CompositeChange) change).getChildren()) {
-        convertCompositeChange(child, edit, pm);
+        convertChanges(child, edit, pm);
       }
     }
     if (change instanceof TextFileChange) {
