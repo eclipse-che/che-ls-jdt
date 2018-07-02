@@ -124,15 +124,11 @@ public class ChangeUtil {
       return;
     }
 
-    Object modifiedElement = change.getModifiedElement();
-    if (modifiedElement == null) {
-      return;
-    }
-    if (!(modifiedElement instanceof IJavaElement)) {
-      return;
-    }
-
     if (change instanceof TextChange) {
+      Object modifiedElement = change.getModifiedElement();
+      if (!(modifiedElement instanceof IJavaElement)) {
+        return;
+      }
       convertTextChange(edit, (IJavaElement) modifiedElement, (TextChange) change);
     } else if (change instanceof ResourceChange) {
       ResourceChange resourceChange = (ResourceChange) change;
@@ -145,8 +141,8 @@ public class ChangeUtil {
     IFile file = change.getFile();
     IDocument textDocument = change.getCurrentDocument(pm);
     TextEdit textEdit = change.getEdit();
-    FileTextEditConverter converter = new FileTextEditConverter(textDocument, textEdit);
-    edit.getChanges().put(JDTUtils.getFileURI(file), converter.convert());
+    edit.getChanges()
+        .put(JDTUtils.getFileURI(file), FileTextEditConverter.convert(textDocument, textEdit));
   }
 
   private static void convertResourceChange(CheWorkspaceEdit edit, ResourceChange resourceChange)
@@ -214,8 +210,8 @@ public class ChangeUtil {
       CheWorkspaceEdit edit, RenamePackageChange packageChange) throws CoreException {
     IPackageFragment pack = (IPackageFragment) packageChange.getModifiedElement();
     List<ICompilationUnit> units = new ArrayList<>();
+    IPackageFragment[] allPackages = JavaElementUtil.getPackageAndSubpackages(pack);
     if (packageChange.getRenameSubpackages()) {
-      IPackageFragment[] allPackages = JavaElementUtil.getPackageAndSubpackages(pack);
       for (int i = 0; i < allPackages.length; i++) {
         IPackageFragment currentPackage = allPackages[i];
         units.addAll(Arrays.asList(currentPackage.getCompilationUnits()));
@@ -244,30 +240,73 @@ public class ChangeUtil {
             .removeLastSegments(oldPackageFragment.segmentCount())
             .append(newPackageFragment);
     String newUri = ResourceUtils.fixURI(newPackagePath.toFile().toURI());
+    IPackageFragment packageFragment = JDTUtils.resolvePackage(newUri);
+    boolean isExisted = packageFragment == null ? false : packageFragment.exists();
     rc.setNewUri(newUri);
     rc.setResourceKind(ResourceKind.FOLDER);
     rc.setDescription(packageChange.getName());
     String current = ResourceUtils.fixURI(pack.getResource().getRawLocationURI());
     if (packageChange.getRenameSubpackages() || !pack.hasSubpackages()) {
       rc.setCurrent(current);
-      edit.getCheResourceChanges().add(rc);
-    } else {
-      for (ICompilationUnit unit : units) {
-        CheResourceChange cuResourceChange = new CheResourceChange();
-        cuResourceChange.setResourceKind(ResourceKind.FILE);
-        cuResourceChange.setCurrent(ResourceUtils.fixURI(unit.getResource().getLocationURI()));
-        IPath newCUPath = newPackagePath.append(unit.getPath().lastSegment());
-        cuResourceChange.setNewUri(ResourceUtils.fixURI(newCUPath.toFile().toURI()));
+      if (!isExisted) {
+        edit.getCheResourceChanges().add(rc);
+      } else {
+        for (ICompilationUnit unit : pack.getCompilationUnits()) {
+          CheResourceChange cuResourceChange =
+              createMoveCUChange(unit, newPackagePath, packageChange.getNewName());
 
-        String description =
-            Messages.format(
-                RefactoringCoreMessages.MoveCompilationUnitChange_name,
-                new String[] {BasicElementLabels.getFileName(unit), packageChange.getNewName()});
-        cuResourceChange.setDescription(description);
+          edit.getCheResourceChanges().add(cuResourceChange);
+        }
+        for (IPackageFragment currentPackage : allPackages) {
+          if (currentPackage.equals(pack)) {
+            continue;
+          }
+          CheResourceChange packageToMove = new CheResourceChange();
+          packageToMove.setResourceKind(ResourceKind.FOLDER);
+          packageToMove.setCurrent(
+              ResourceUtils.fixURI(currentPackage.getResource().getRawLocationURI()));
+          packageToMove.setNewUri(
+              newUri
+                  + JDTUtils.PATH_SEPARATOR
+                  + currentPackage.getResource().getLocation().lastSegment());
+          edit.getCheResourceChanges().add(packageToMove);
+        }
+        rc.setNewUri(null);
+        edit.getCheResourceChanges().add(rc);
+      }
+    } else {
+      if (!isExisted) {
+        edit.getCheResourceChanges().add(rc);
+      }
+      for (ICompilationUnit unit : units) {
+        CheResourceChange cuResourceChange =
+            createMoveCUChange(unit, newPackagePath, packageChange.getNewName());
 
         edit.getCheResourceChanges().add(cuResourceChange);
       }
+      if (!pack.hasSubpackages()) {
+        CheResourceChange deleteResourceChange = new CheResourceChange();
+        deleteResourceChange.setResourceKind(ResourceKind.FOLDER);
+        deleteResourceChange.setCurrent(current);
+        edit.getCheResourceChanges().add(deleteResourceChange);
+      }
     }
+  }
+
+  private static CheResourceChange createMoveCUChange(
+      ICompilationUnit unit, IPath parentPath, String parentNewName) {
+    CheResourceChange cuResourceChange = new CheResourceChange();
+    cuResourceChange.setResourceKind(ResourceKind.FILE);
+    cuResourceChange.setCurrent(ResourceUtils.fixURI(unit.getResource().getLocationURI()));
+    IPath newCUPath = parentPath.append(unit.getPath().lastSegment());
+    cuResourceChange.setNewUri(ResourceUtils.fixURI(newCUPath.toFile().toURI()));
+
+    String description =
+        Messages.format(
+            RefactoringCoreMessages.MoveCompilationUnitChange_name,
+            new String[] {BasicElementLabels.getFileName(unit), parentNewName});
+    cuResourceChange.setDescription(description);
+    return cuResourceChange;
   }
 
   private static void convertCUResourceChange(

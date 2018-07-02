@@ -39,7 +39,7 @@ public class FileTextEditConverter extends TextEditVisitor {
   private IDocument document;
   private List<org.eclipse.lsp4j.TextEdit> converted;
 
-  public FileTextEditConverter(IDocument document, TextEdit edit) {
+  private FileTextEditConverter(IDocument document, TextEdit edit) {
     this.source = edit;
     this.converted = new ArrayList<>();
     if (document == null) {
@@ -48,7 +48,12 @@ public class FileTextEditConverter extends TextEditVisitor {
     this.document = document;
   }
 
-  public List<org.eclipse.lsp4j.TextEdit> convert() {
+  public static List<org.eclipse.lsp4j.TextEdit> convert(IDocument document, TextEdit edit) {
+    FileTextEditConverter converter = new FileTextEditConverter(document, edit);
+    return converter.convert();
+  }
+
+  private List<org.eclipse.lsp4j.TextEdit> convert() {
     if (this.source != null) {
       this.source.accept(this);
     }

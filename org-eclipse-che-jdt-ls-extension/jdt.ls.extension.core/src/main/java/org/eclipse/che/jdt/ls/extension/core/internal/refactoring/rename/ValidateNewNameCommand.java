@@ -24,10 +24,8 @@ import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.eclipse.jdt.ls.core.internal.corext.refactoring.RefactoringCoreMessages;
 import org.eclipse.jdt.ls.core.internal.corext.refactoring.rename.JavaRenameProcessor;
 import org.eclipse.jdt.ls.core.internal.corext.refactoring.rename.RenameSupport;
 import org.eclipse.lsp4j.Position;
@@ -84,16 +82,6 @@ public class ValidateNewNameCommand {
       JavaRenameProcessor processor = renameSupport.getJavaRenameProcessor();
       org.eclipse.ltk.core.refactoring.RefactoringStatus result =
           processor.checkNewElementName(params.getNewName());
-
-      Object newElement = processor.getNewElement();
-      if (newElement instanceof IPackageFragment) {
-        IPackageFragment newPackageFragment = (IPackageFragment) newElement;
-        if (newPackageFragment.exists()) {
-          result =
-              org.eclipse.ltk.core.refactoring.RefactoringStatus.createFatalErrorStatus(
-                  RefactoringCoreMessages.RenamePackageRefactoring_package_exists);
-        }
-      }
 
       status = ChangeUtil.convertRefactoringStatus(result);
 
