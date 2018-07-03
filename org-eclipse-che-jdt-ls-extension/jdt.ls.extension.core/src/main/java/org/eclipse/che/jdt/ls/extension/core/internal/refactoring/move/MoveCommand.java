@@ -109,7 +109,7 @@ public class MoveCommand {
         return result;
       }
 
-      ChangeUtil.convertChanges(changes, edit);
+      ChangeUtil.convertChanges(changes, edit, pm);
 
     } catch (CoreException e) {
       JavaLanguageServerPlugin.logException(e.getMessage(), e);

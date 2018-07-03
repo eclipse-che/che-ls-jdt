@@ -111,7 +111,7 @@ public class RenameCommand {
         return result;
       }
 
-      ChangeUtil.convertChanges(change, edit);
+      ChangeUtil.convertChanges(change, edit, pm);
       result.setCheWorkspaceEdit(edit);
     } catch (CoreException ex) {
       JavaLanguageServerPlugin.logException(
