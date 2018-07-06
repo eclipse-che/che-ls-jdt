@@ -120,6 +120,35 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.25.2</version>
+                <configuration>
+                    <images>
+                        <image>
+                            <alias>che-jdt-ls</alias>
+                            <name>che-jdt-ls/java-ls:latest</name>
+                            <build>
+                                <from>adoptopenjdk/openjdk10-openj9:alpine-nightly</from>
+                                <assembly>
+                                    <mode>dir</mode>
+                                    <name>/jdtls/</name>
+                                    <descriptor>/publish-assembly.xml</descriptor>
+                                </assembly>
+                                <runCmds>
+                                    <runCmd>apk add --update socat</runCmd>
+                                </runCmds>
+                                <ports>
+                                    <port>5555</port>
+                                </ports>
+                                <workdir>/jdtls</workdir>
+                                <cmd>socat TCP4-LISTEN:5555,reuseaddr,fork EXEC:"java -Declipse.application=org.eclipse.jdt.ls.core.id1     -Dosgi.bundles.defaultStartLevel=4     -Declipse.product=org.eclipse.jdt.ls.core.product -noverify     -Xmx1G     -jar /jdtls/plugins/org.eclipse.equinox.launcher_*    -configuration ./config_linux     -data /home/user/jdtls/data"</cmd>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
