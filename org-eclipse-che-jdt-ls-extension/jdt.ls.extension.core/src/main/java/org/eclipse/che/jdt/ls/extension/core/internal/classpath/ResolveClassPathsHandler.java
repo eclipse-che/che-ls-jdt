@@ -124,6 +124,7 @@ public class ResolveClassPathsHandler {
         ClasspathEntry container = new ClasspathEntry();
         IClasspathEntry[] subEntries =
             JavaCore.getClasspathContainer(entry.getPath(), javaProject).getClasspathEntries();
+        container.setEntryKind(entry.getEntryKind());
         container.setPath(entry.getPath().toOSString());
         container.setChildren(convertClasspathEntriesToDTO(javaProject, subEntries));
         entriesDTO.add(container);
