@@ -33,5 +33,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.ls.core,
  org.eclipse.jface.text,
  org.eclipse.jdt.core.manipulation
+Bundle-ClassPath: lib/com.microsoft.java.debug.plugin-0.10.0.jar,
+ .
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
