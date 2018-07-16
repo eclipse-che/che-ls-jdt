@@ -10,17 +10,8 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.debug;
 
-import static java.lang.String.format;
-import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
-import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getWorkspaceJavaProjects;
-import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
-
 import com.google.common.base.Preconditions;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.dto.ResourceLocation;
+
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClassFile;
@@ -29,7 +20,6 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMember;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -40,7 +30,16 @@ import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import static java.lang.String.format;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
+import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getWorkspaceJavaProjects;
+import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
 /** @author Anatolii Bazko */
 public class FqnDiscover {
@@ -170,7 +169,7 @@ public class FqnDiscover {
    * @param params contains fqn
    * @return all resources are identified by the given fqn
    */
-  public static List<Either<String, ResourceLocation>> findResourcesByFqn(
+  public static List<String> findResourcesByFqn(
       List<Object> params, IProgressMonitor progressMonitor) {
     Preconditions.checkArgument(params.size() >= 1, "FQN is expected.");
 
@@ -196,15 +195,13 @@ public class FqnDiscover {
 
     ensureNotCancelled(progressMonitor);
 
-    List<Either<String, ResourceLocation>> result = new ArrayList<>(types.size());
+    List<String> result = new ArrayList<>(types.size());
     for (IType type : types) {
       if (type.isBinary()) {
         IClassFile classFile = type.getClassFile();
-        String libId =
-            classFile.getAncestor(IPackageFragmentRoot.PACKAGE_FRAGMENT_ROOT).getHandleIdentifier();
-        result.add(Either.forRight(new ResourceLocation(fqn, libId)));
+        result.add(JDTUtils.toUri(classFile));
       } else {
-        result.add(Either.forLeft(JDTUtils.toURI(type.getCompilationUnit())));
+        result.add(JDTUtils.toURI(type.getCompilationUnit()));
       }
     }
 
