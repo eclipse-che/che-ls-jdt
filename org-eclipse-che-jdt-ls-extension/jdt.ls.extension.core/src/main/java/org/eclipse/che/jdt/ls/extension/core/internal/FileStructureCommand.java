@@ -60,7 +60,8 @@ public class FileStructureCommand {
               createSymbolInfo(
                   element,
                   null,
-                  JavaElementLabels.getElementLabel(element, JavaElementLabels.ALL_DEFAULT),
+                  JavaElementLabels.getElementLabel(
+                      element, JavaElementLabels.ALL_DEFAULT + JavaElementLabels.M_APP_RETURNTYPE),
                   showInherited,
                   pm));
         }
@@ -101,7 +102,8 @@ public class FileStructureCommand {
                 createSymbolInfo(
                     child,
                     element,
-                    JavaElementLabels.getElementLabel(child, JavaElementLabels.ALL_DEFAULT),
+                    JavaElementLabels.getElementLabel(
+                        child, JavaElementLabels.ALL_DEFAULT + JavaElementLabels.M_APP_RETURNTYPE),
                     showInherited,
                     pm));
           }
