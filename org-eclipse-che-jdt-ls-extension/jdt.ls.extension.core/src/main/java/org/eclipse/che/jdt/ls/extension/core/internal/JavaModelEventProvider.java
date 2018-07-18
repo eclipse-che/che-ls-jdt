@@ -11,6 +11,12 @@
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import static org.eclipse.che.jdt.ls.extension.api.Commands.CLIENT_UPDATE_PROJECTS_CLASSPATH;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_ADDED_TO_CLASSPATH;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_ARCHIVE_CONTENT_CHANGED;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_CLASSPATH_CHANGED;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_REMOVED_FROM_CLASSPATH;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_REORDER;
+import static org.eclipse.jdt.core.IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +25,7 @@ import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
@@ -32,31 +39,29 @@ import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
 public class JavaModelEventProvider implements IElementChangedListener {
 
   private static final int CLASSPATH_CHANGED_MASK =
-      IJavaElementDelta.F_ADDED_TO_CLASSPATH
-          | IJavaElementDelta.F_CLASSPATH_CHANGED
-          | IJavaElementDelta.F_REORDER
-          | IJavaElementDelta.F_REMOVED_FROM_CLASSPATH
-          | IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGED
-          | IJavaElementDelta.F_ARCHIVE_CONTENT_CHANGED;
+      F_ADDED_TO_CLASSPATH
+          | F_CLASSPATH_CHANGED
+          | F_REMOVED_FROM_CLASSPATH
+          | F_RESOLVED_CLASSPATH_CHANGED
+          | F_ARCHIVE_CONTENT_CHANGED;
 
   public JavaModelEventProvider() {}
 
   @Override
   public void elementChanged(ElementChangedEvent event) {
-    Set<IProject> projects = getAffectedProjects(event.getDelta(), new HashSet<IProject>());
+    Set<IProject> projects = getAffectedProjects(event.getDelta(), new HashSet<>());
     if (projects.isEmpty()) {
       return;
     }
 
     try {
-      Set<String> projectLocations = new HashSet<String>();
+      Set<String> projectLocations = new HashSet<>();
       for (IProject project : projects) {
         projectLocations.add(ResourceUtils.fixURI(project.getLocationURI()));
       }
 
       JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-      ((JDTLanguageServer) ls)
-          .getClientConnection()
+      ls.getClientConnection()
           .executeClientCommand(
               CLIENT_UPDATE_PROJECTS_CLASSPATH,
               (Object[]) projectLocations.toArray(new String[projectLocations.size()]));
@@ -69,7 +74,8 @@ public class JavaModelEventProvider implements IElementChangedListener {
 
   private Set<IProject> getAffectedProjects(
       IJavaElementDelta delta, Set<IProject> affectedProjects) {
-    if ((delta.getFlags() & CLASSPATH_CHANGED_MASK) != 0) {
+    if (((delta.getFlags() & CLASSPATH_CHANGED_MASK) != 0)
+        || (delta.getFlags() == F_REORDER && delta.getElement() instanceof IPackageFragmentRoot)) {
       IJavaProject javaProject = delta.getElement().getJavaProject();
       if (javaProject != null) {
         affectedProjects.add(javaProject.getProject());
