@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.eclipse.che.jdt.ls.extension.api.dto.JdtLsPreferences;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.eclipse.jdt.ls.core.internal.preferences.MemberSortOrder;
 import org.eclipse.jdt.ls.core.internal.preferences.PreferenceManager;
 import org.eclipse.jdt.ls.core.internal.preferences.Preferences;
 
@@ -84,15 +83,7 @@ public class GetPreferencesCommand {
       putNotNullValue(prefsAsMap, JAVA_IMPORT_EXCLUSIONS_KEY, prefs::getJavaImportExclusions);
       putNotNullValue(prefsAsMap, MAVEN_USER_SETTINGS_KEY, prefs::getMavenUserSettings);
 
-      MemberSortOrder memberSortOrder = prefs.getMemberSortOrder();
-      if (memberSortOrder != null) {
-        StringBuilder sortOrder = new StringBuilder(MemberSortOrder.N_CATEGORIES);
-
-        for (int kind = 0; kind < MemberSortOrder.N_CATEGORIES; kind++) {
-          sortOrder.append(memberSortOrder.getCategoryIndex(kind));
-        }
-        prefsAsMap.put(MEMBER_SORT_ORDER, sortOrder.toString());
-      }
+      prefsAsMap.put(MEMBER_SORT_ORDER, JavaLanguageServerPlugin.DEFAULT_MEMBER_SORT_ORDER);
 
       putNotNullValue(
           prefsAsMap,
