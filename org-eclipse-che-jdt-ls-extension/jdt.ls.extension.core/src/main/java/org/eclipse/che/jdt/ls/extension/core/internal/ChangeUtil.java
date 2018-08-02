@@ -188,7 +188,7 @@ public class ChangeUtil {
     updatePackageStatement(
         unit,
         destinationPackage.getElementName(),
-        unit.getPackage().getName().getFullyQualifiedName(),
+        unit.getPackage() != null ? unit.getPackage().getName().getFullyQualifiedName() : null,
         rewrite,
         modifiedCU);
     TextEdit textEdit = rewrite.rewriteAST();
