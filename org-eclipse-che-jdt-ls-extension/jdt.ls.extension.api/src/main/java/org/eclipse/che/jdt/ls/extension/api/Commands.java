@@ -106,6 +106,8 @@ public class Commands {
   // Project updater
   public static final String CLIENT_UPDATE_PROJECT =
       "che.jdt.ls.extension.workspace.clientUpdateProject";
+  public static final String CLIENT_UPDATE_ON_PROJECT_CLASSPATH_CHANGED =
+      "che.jdt.ls.extension.workspace.clientUpdateOnProjectClasspathChanged";
 
   private Commands() {}
 }
