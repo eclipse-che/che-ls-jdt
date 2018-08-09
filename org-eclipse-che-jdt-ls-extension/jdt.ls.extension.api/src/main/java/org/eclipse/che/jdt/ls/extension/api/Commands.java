@@ -109,6 +109,8 @@ public class Commands {
       "che.jdt.ls.extension.workspace.clientUpdateProject";
   public static final String CLIENT_UPDATE_ON_PROJECT_CLASSPATH_CHANGED =
       "che.jdt.ls.extension.workspace.clientUpdateOnProjectClasspathChanged";
+  public static final String CLIENT_UPDATE_MAVEN_MODULE =
+      "che.jdt.ls.extension.workspace.clientUpdateMavenModule";
   public static final String CLIENT_UPDATE_PROJECT_CONFIG =
       "che.jdt.ls.extension.workspace.clientUpdateProjectConfig";
 
