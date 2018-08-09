@@ -12,6 +12,7 @@
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.m2e.core.MavenPlugin;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -24,13 +25,18 @@ public class ExtensionActivator implements BundleActivator {
   // The shared instance
   private static ExtensionActivator plugin;
   private static final JavaModelEventProvider javaModelEventProvider = new JavaModelEventProvider();
+  private static final MavenProjectConfigurator mavenProjectConfigurator =
+      new MavenProjectConfigurator();
 
   public void start(BundleContext context) throws Exception {
     plugin = this;
     JavaCore.addElementChangedListener(javaModelEventProvider);
+    MavenPlugin.getMavenProjectRegistry().addMavenProjectChangedListener(mavenProjectConfigurator);
   }
 
   public void stop(BundleContext context) throws Exception {
+    MavenPlugin.getMavenProjectRegistry()
+        .removeMavenProjectChangedListener(mavenProjectConfigurator);
     JavaCore.removeElementChangedListener(javaModelEventProvider);
     plugin = null;
   }
