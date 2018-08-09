@@ -12,6 +12,7 @@
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import java.util.List;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.api.dto.MavenProjectUpdateInfo;
@@ -20,6 +21,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
@@ -62,27 +65,66 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   private void updateModules(MavenProjectChangedEvent event, IProgressMonitor monitor)
       throws CoreException {
     IMavenProjectFacade updatedProject = event.getMavenProject();
-    if (updatedProject == null) {
-      return;
-    }
-    MavenProject mavenProject = updatedProject.getMavenProject(monitor);
-    if (mavenProject == null) {
+    IMavenProjectFacade oldMavenProjectFacade = event.getOldMavenProject();
+    if (updatedProject == null || oldMavenProjectFacade == null) {
       return;
     }
 
-    MavenProject parent = mavenProject.getParent();
-    if (parent == null) {
+    List<String> newModules = updatedProject.getMavenProjectModules();
+    List<String> oldModules = oldMavenProjectFacade.getMavenProjectModules();
+
+    if (newModules.isEmpty() && oldModules.isEmpty()) {
       return;
     }
 
-    String projectUri = getNormalizedProjectPath(updatedProject);
+    for (String artifactId : newModules) {
+      if (!oldModules.contains(artifactId)) {
+        sendUpdateModuleEvent(artifactId, updatedProject.getArtifactKey(), true, monitor);
+      }
+    }
 
-    List<String> modules = parent.getModules();
+    for (String artifactId : oldModules) {
+      if (!newModules.contains(artifactId)) {
+        sendUpdateModuleEvent(artifactId, updatedProject.getArtifactKey(), false, monitor);
+      }
+    }
+  }
+
+  private void sendUpdateModuleEvent(
+      String artifactId, ArtifactKey artifactKey, boolean isCreated, IProgressMonitor monitor)
+      throws CoreException {
     MavenProjectUpdateInfo updateInfo = new MavenProjectUpdateInfo();
-    updateInfo.setProjectUri(projectUri);
-    updateInfo.setCreated(modules.contains(updatedProject.getArtifactKey().getArtifactId()));
+    updateInfo.setCreated(isCreated);
 
+    IMavenProjectFacade updatedModule = getUpdatedModule(artifactId, artifactKey, monitor);
+    if (updatedModule == null) {
+      return;
+    }
+    updateInfo.setProjectUri(getNormalizedProjectPath(updatedModule));
     notifyClient(Commands.CLIENT_UPDATE_MAVEN_MODULE, updateInfo);
+  }
+
+  private IMavenProjectFacade getUpdatedModule(
+      String artifactId, ArtifactKey parentArtifact, IProgressMonitor monitor)
+      throws CoreException {
+    IMavenProjectFacade[] projects = MavenPlugin.getMavenProjectRegistry().getProjects();
+    for (IMavenProjectFacade project : projects) {
+      if (!artifactId.equals(project.getArtifactKey().getArtifactId())) {
+        continue;
+      }
+      MavenProject mavenProject = project.getMavenProject(monitor);
+      if (mavenProject == null || !mavenProject.hasParent()) {
+        continue;
+      }
+
+      Artifact artifact = mavenProject.getParent().getArtifact();
+      if (parentArtifact.getArtifactId().equals(artifact.getArtifactId())
+          && parentArtifact.getGroupId().equals(artifact.getGroupId())
+          && parentArtifact.getVersion().equals(artifact.getVersion())) {
+        return project;
+      }
+    }
+    return null;
   }
 
   private void notifyClient(String commandId, Object parameters) {
