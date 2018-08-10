@@ -20,20 +20,32 @@ import java.util.List;
  * @author Valeriy Svydenko
  */
 public class UpdateMavenModulesInfo {
-  private List<String> created;
+  /** List of added modules. */
+  private List<String> added;
+  /** List of removed modules. */
   private List<String> removed;
+  /** The URI of the parent project which has changes on <modules></modules>. */
+  private String projectUri;
 
   public UpdateMavenModulesInfo() {
-    this.created = new LinkedList<>();
+    this.added = new LinkedList<>();
     this.removed = new LinkedList<>();
   }
 
-  public List<String> getCreated() {
-    return created;
+  public String getProjectUri() {
+    return projectUri;
   }
 
-  public void setCreated(List<String> created) {
-    this.created = created;
+  public void setProjectUri(String projectUri) {
+    this.projectUri = projectUri;
+  }
+
+  public List<String> getAdded() {
+    return added;
+  }
+
+  public void setAdded(List<String> added) {
+    this.added = added;
   }
 
   public List<String> getRemoved() {

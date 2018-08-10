@@ -12,17 +12,12 @@
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.project.MavenProject;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateMavenModulesInfo;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
-import org.eclipse.m2e.core.MavenPlugin;
-import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
@@ -36,35 +31,25 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
 
   public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
     for (MavenProjectChangedEvent event : events) {
-      mavenProjectChanged(event, monitor);
+      mavenProjectChanged(event);
     }
   }
 
-  private void mavenProjectChanged(MavenProjectChangedEvent event, IProgressMonitor monitor) {
+  private void mavenProjectChanged(MavenProjectChangedEvent event) {
     IMavenProjectFacade mavenProject = event.getMavenProject();
     IMavenProjectFacade oldMavenProject = event.getOldMavenProject();
 
     if (mavenProject == null || oldMavenProject == null) {
       return;
     }
-    try {
-      if (isConfigurationUpdated(mavenProject, oldMavenProject)) {
-        String projectUri = getNormalizedProjectPath(mavenProject);
-        notifyClient(Commands.CLIENT_UPDATE_PROJECT_CONFIG, projectUri);
-      } else if (hasModules(mavenProject, oldMavenProject)) {
-        updateModules(mavenProject, oldMavenProject, monitor);
-      }
-    } catch (CoreException e) {
-      JavaLanguageServerPlugin.logException("An exception occurred while getting Maven project", e);
+    if (isConfigurationUpdated(mavenProject, oldMavenProject)) {
+      String projectUri = getNormalizedProjectPath(mavenProject);
+      notifyClient(Commands.CLIENT_UPDATE_PROJECT_CONFIG, projectUri);
+    } else if (!mavenProject
+        .getMavenProjectModules()
+        .equals(oldMavenProject.getMavenProjectModules())) {
+      updateModules(mavenProject, oldMavenProject);
     }
-  }
-
-  private boolean hasModules(
-      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    List<String> newModules = mavenProject.getMavenProjectModules();
-    List<String> oldModules = oldMavenProject.getMavenProjectModules();
-
-    return !newModules.isEmpty() && !oldModules.isEmpty();
   }
 
   private boolean isConfigurationUpdated(
@@ -76,59 +61,33 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   }
 
   private void updateModules(
-      IMavenProjectFacade mavenProject,
-      IMavenProjectFacade oldMavenProject,
-      IProgressMonitor monitor)
-      throws CoreException {
+      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
     UpdateMavenModulesInfo updateInfo = new UpdateMavenModulesInfo();
-
-    List<String> newModules = mavenProject.getMavenProjectModules();
-    List<String> oldModules = oldMavenProject.getMavenProjectModules();
-
-    for (String artifactId : newModules) {
-      if (!oldModules.contains(artifactId)) {
-        IMavenProjectFacade updatedModule =
-            getUpdatedModule(artifactId, mavenProject.getArtifactKey(), monitor);
-        if (updatedModule != null) {
-          updateInfo.getCreated().add(getNormalizedProjectPath(updatedModule));
-        }
-      }
-    }
-
-    for (String artifactId : oldModules) {
-      if (!newModules.contains(artifactId)) {
-        IMavenProjectFacade updatedModule =
-            getUpdatedModule(artifactId, mavenProject.getArtifactKey(), monitor);
-        if (updatedModule != null) {
-          updateInfo.getRemoved().add(getNormalizedProjectPath(updatedModule));
-        }
-      }
-    }
+    updateInfo.setProjectUri(getNormalizedProjectPath(mavenProject));
+    updateInfo.setAdded(findAddedModules(mavenProject, oldMavenProject));
+    updateInfo.setRemoved(findRemovedModules(mavenProject, oldMavenProject));
 
     notifyClient(Commands.CLIENT_UPDATE_MAVEN_MODULE, updateInfo);
   }
 
-  private IMavenProjectFacade getUpdatedModule(
-      String artifactId, ArtifactKey parentArtifact, IProgressMonitor monitor)
-      throws CoreException {
-    IMavenProjectFacade[] projects = MavenPlugin.getMavenProjectRegistry().getProjects();
-    for (IMavenProjectFacade project : projects) {
-      if (!artifactId.equals(project.getArtifactKey().getArtifactId())) {
-        continue;
-      }
-      MavenProject mavenProject = project.getMavenProject(monitor);
-      if (mavenProject == null || !mavenProject.hasParent()) {
-        continue;
-      }
+  private List<String> findRemovedModules(
+      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
+    List<String> newModules = mavenProject.getMavenProjectModules();
+    List<String> oldModules = oldMavenProject.getMavenProjectModules();
 
-      Artifact artifact = mavenProject.getParent().getArtifact();
-      if (parentArtifact.getArtifactId().equals(artifact.getArtifactId())
-          && parentArtifact.getGroupId().equals(artifact.getGroupId())
-          && parentArtifact.getVersion().equals(artifact.getVersion())) {
-        return project;
-      }
-    }
-    return null;
+    oldModules.removeAll(newModules);
+
+    return oldModules;
+  }
+
+  private List<String> findAddedModules(
+      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
+    List<String> newModules = mavenProject.getMavenProjectModules();
+    List<String> oldModules = oldMavenProject.getMavenProjectModules();
+
+    newModules.removeAll(oldModules);
+
+    return newModules;
   }
 
   private void notifyClient(String commandId, Object parameters) {
