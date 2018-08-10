@@ -73,7 +73,6 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
 
   private List<String> findRemovedModules(
       IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    mavenProject.getMavenProjectModules();
     List<String> newModules = mavenProject.getMavenProjectModules();
     List<String> oldModules = new ArrayList<>(oldMavenProject.getMavenProjectModules());
 
