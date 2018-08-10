@@ -11,6 +11,7 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.Commands;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateMavenModulesInfo;
@@ -72,8 +73,9 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
 
   private List<String> findRemovedModules(
       IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
+    mavenProject.getMavenProjectModules();
     List<String> newModules = mavenProject.getMavenProjectModules();
-    List<String> oldModules = oldMavenProject.getMavenProjectModules();
+    List<String> oldModules = new ArrayList<>(oldMavenProject.getMavenProjectModules());
 
     oldModules.removeAll(newModules);
 
@@ -82,7 +84,7 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
 
   private List<String> findAddedModules(
       IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    List<String> newModules = mavenProject.getMavenProjectModules();
+    List<String> newModules = new ArrayList<>(mavenProject.getMavenProjectModules());
     List<String> oldModules = oldMavenProject.getMavenProjectModules();
 
     newModules.removeAll(oldModules);
