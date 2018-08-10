@@ -29,6 +29,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExt
 import org.eclipse.che.jdt.ls.extension.core.internal.imports.OrganizeImportsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.navigation.FindImplementersHandler;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectCommand;
+import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetProjectSourceLocationsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.UpdateProjectClasspathCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.pom.EffectivePomHandler;
@@ -100,6 +101,8 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.VALIDATE_RENAMED_NAME_COMMAND, ValidateNewNameCommand::execute);
     commands.put(Commands.GET_LINKED_ELEMENTS_COMMAND, GetLinkedElementsCommand::execute);
     commands.put(Commands.GET_DESTINATIONS_COMMAND, GetDestinationsCommand::execute);
+    commands.put(
+        Commands.GET_PROJECT_SOURCE_LOCATIONS_COMMAND, GetProjectSourceLocationsCommand::execute);
     commands.put(Commands.MOVE_COMMAND, MoveCommand::execute);
     commands.put(Commands.VALIDATE_MOVE_COMMAND, ValidateMoveCommand::execute);
     commands.put(Commands.VERIFY_MOVE_DESTINATION_COMMAND, VerifyMoveDestinationCommand::execute);
