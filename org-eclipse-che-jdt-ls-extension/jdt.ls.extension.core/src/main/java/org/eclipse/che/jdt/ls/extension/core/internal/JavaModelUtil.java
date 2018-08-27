@@ -21,15 +21,24 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ILocalVariable;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.ISourceRange;
+import org.eclipse.jdt.core.ISourceReference;
+import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.SourceRange;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.DocumentSymbolHandler;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.SymbolKind;
 
@@ -83,6 +92,55 @@ public class JavaModelUtil {
       return SymbolKind.Method;
     }
     return DocumentSymbolHandler.mapKind(element);
+  }
+
+  /**
+   * Creates a location for a given java element. Element can be a {@link ICompilationUnit} or
+   * {@link IClassFile}
+   *
+   * @param element java element
+   * @return location or null
+   */
+  public static Location toLocation(IJavaElement element) throws JavaModelException {
+    ICompilationUnit unit = (ICompilationUnit) element.getAncestor(IJavaElement.COMPILATION_UNIT);
+    IClassFile cf = (IClassFile) element.getAncestor(IJavaElement.CLASS_FILE);
+    if (unit == null && cf == null) {
+      return null;
+    }
+    if (element instanceof ISourceReference) {
+      ISourceRange nameRange = getNameRange(element);
+      int offset = 0;
+      int length = 0;
+      if (SourceRange.isAvailable(nameRange)) {
+        offset = nameRange.getOffset();
+        length = nameRange.getLength();
+      }
+      if (cf != null) {
+        return JDTUtils.toLocation(cf, offset, length);
+      } else {
+        return JDTUtils.toLocation(unit, offset, length);
+      }
+    }
+    return null;
+  }
+
+  private static ISourceRange getNameRange(IJavaElement element) throws JavaModelException {
+    ISourceRange nameRange = null;
+    if (element instanceof IMember) {
+      IMember member = (IMember) element;
+      nameRange = member.getNameRange();
+      if ((!SourceRange.isAvailable(nameRange))) {
+        nameRange = member.getSourceRange();
+      }
+    } else if (element instanceof ITypeParameter || element instanceof ILocalVariable) {
+      nameRange = ((ISourceReference) element).getNameRange();
+    } else if (element instanceof ISourceReference) {
+      nameRange = ((ISourceReference) element).getSourceRange();
+    }
+    if (!SourceRange.isAvailable(nameRange) && element.getParent() != null) {
+      nameRange = getNameRange(element.getParent());
+    }
+    return nameRange;
   }
 
   public static IJavaElement getJavaElement(Position position, String uri, IProgressMonitor pm)

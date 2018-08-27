@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.dto.ImplementersResponse;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
+import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
@@ -95,8 +96,7 @@ public class FindImplementersHandler {
     IType[] implTypes = typeHierarchy.getAllSubtypes(type);
 
     for (IType implType : implTypes) {
-      SymbolInformation dto = convertToSymbolInformation(implType);
-      implementers.add(dto);
+      addImplementer(implType, implementers);
     }
   }
 
@@ -119,19 +119,26 @@ public class FindImplementersHandler {
       if (method == null) {
         continue;
       }
-      SymbolInformation openDeclaration = convertToSymbolInformation(method);
+      addImplementer(method, implementers);
+    }
+  }
+
+  private static void addImplementer(IJavaElement javaElement, List<SymbolInformation> implementers)
+      throws JavaModelException {
+    Location location = JavaModelUtil.toLocation(javaElement);
+    if (location != null) {
+      SymbolInformation openDeclaration = convertToSymbolInformation(javaElement, location);
       implementers.add(openDeclaration);
     }
   }
 
   @SuppressWarnings("restriction")
-  private static SymbolInformation convertToSymbolInformation(IJavaElement javaElement)
-      throws JavaModelException {
+  private static SymbolInformation convertToSymbolInformation(
+      IJavaElement javaElement, Location location) throws JavaModelException {
     SymbolInformation symbolInformation = new SymbolInformation();
     symbolInformation.setKind(DocumentSymbolHandler.mapKind(javaElement));
     symbolInformation.setName(
         JavaElementLabels.getElementLabel(javaElement, JavaElementLabels.ALL_DEFAULT));
-    Location location = JDTUtils.toLocation(javaElement);
     location.setUri(ResourceUtils.toClientUri(location.getUri()));
     symbolInformation.setLocation(location);
     return symbolInformation;
