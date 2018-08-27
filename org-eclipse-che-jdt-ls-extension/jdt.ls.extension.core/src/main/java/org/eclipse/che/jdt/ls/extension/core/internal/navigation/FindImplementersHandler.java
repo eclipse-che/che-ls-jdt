@@ -96,11 +96,7 @@ public class FindImplementersHandler {
     IType[] implTypes = typeHierarchy.getAllSubtypes(type);
 
     for (IType implType : implTypes) {
-      Location location = JavaModelUtil.toLocation(implType);
-      if (location != null) {
-        SymbolInformation dto = convertToSymbolInformation(implType, location);
-        implementers.add(dto);
-      }
+      addImplementer(implType, implementers);
     }
   }
 
@@ -123,11 +119,16 @@ public class FindImplementersHandler {
       if (method == null) {
         continue;
       }
-      Location location = JavaModelUtil.toLocation(method);
-      if (location != null) {
-        SymbolInformation openDeclaration = convertToSymbolInformation(method, location);
-        implementers.add(openDeclaration);
-      }
+      addImplementer(method, implementers);
+    }
+  }
+
+  private static void addImplementer(IJavaElement javaElement, List<SymbolInformation> implementers)
+      throws JavaModelException {
+    Location location = JavaModelUtil.toLocation(javaElement);
+    if (location != null) {
+      SymbolInformation openDeclaration = convertToSymbolInformation(javaElement, location);
+      implementers.add(openDeclaration);
     }
   }
 

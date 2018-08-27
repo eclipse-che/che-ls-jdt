@@ -115,10 +115,10 @@ public class JavaModelUtil {
         offset = nameRange.getOffset();
         length = nameRange.getLength();
       }
-      if (cf == null) {
-        return JDTUtils.toLocation(unit, offset, length);
-      } else {
+      if (cf != null) {
         return JDTUtils.toLocation(cf, offset, length);
+      } else {
+        return JDTUtils.toLocation(unit, offset, length);
       }
     }
     return null;
