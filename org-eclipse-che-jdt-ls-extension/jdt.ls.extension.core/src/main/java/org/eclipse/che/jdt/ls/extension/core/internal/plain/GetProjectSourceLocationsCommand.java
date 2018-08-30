@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
@@ -24,6 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 
 /**
  * The command to get all available source folder paths.
@@ -73,9 +75,10 @@ public class GetProjectSourceLocationsCommand {
     if (children != null) {
       for (IJavaElement child : children) {
         if (child instanceof IPackageFragment) {
-          result.add(
-              JavaModelUtil.getFolderLocation(
-                  ((IPackageFragment) child).getResource().getFullPath()));
+          IResource resource = child.getResource();
+          if (resource != null && resource.getLocationURI() != null) {
+            result.add(ResourceUtils.fixURI(resource.getLocationURI()));
+          }
         }
       }
     }
