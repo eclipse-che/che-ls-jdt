@@ -11,7 +11,6 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import static org.eclipse.che.jdt.ls.extension.api.Commands.CLIENT_UPDATE_PROJECTS_CLASSPATH;
 import static org.eclipse.jdt.core.IJavaElementDelta.F_ADDED_TO_CLASSPATH;
 import static org.eclipse.jdt.core.IJavaElementDelta.F_ARCHIVE_CONTENT_CHANGED;
 import static org.eclipse.jdt.core.IJavaElementDelta.F_CLASSPATH_CHANGED;
@@ -21,6 +20,7 @@ import static org.eclipse.jdt.core.IJavaElementDelta.F_RESOLVED_CLASSPATH_CHANGE
 
 import java.util.HashSet;
 import java.util.Set;
+import org.eclipse.che.jdt.ls.extension.api.Notifications;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
@@ -63,8 +63,8 @@ public class JavaModelEventProvider implements IElementChangedListener {
 
       JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
       ls.getClientConnection()
-          .executeClientCommand(
-              CLIENT_UPDATE_PROJECTS_CLASSPATH,
+          .sendNotification(
+              Notifications.UPDATE_PROJECTS_CLASSPATH,
               (Object[]) projectLocations.toArray(new String[projectLocations.size()]));
     } catch (Exception e) {
       // Ignore.

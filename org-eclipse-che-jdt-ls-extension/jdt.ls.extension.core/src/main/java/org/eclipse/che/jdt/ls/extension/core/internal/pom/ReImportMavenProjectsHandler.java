@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.che.jdt.ls.extension.api.Commands;
+import org.eclipse.che.jdt.ls.extension.api.Notifications;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.resources.IFile;
@@ -116,7 +116,7 @@ public class ReImportMavenProjectsHandler {
       }
       try {
         JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-        ls.getClientConnection().executeClientCommand(Commands.CLIENT_UPDATE_PROJECT, projectUri);
+        ls.getClientConnection().sendNotification(Notifications.UPDATE_PROJECT, projectUri);
       } catch (Exception e) {
         JavaLanguageServerPlugin.logException(
             "An exception occured while reporting project updating", e);

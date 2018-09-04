@@ -100,19 +100,5 @@ public class Commands {
   public static final String VERIFY_MOVE_DESTINATION_COMMAND =
       "che.jdt.ls.extension.refactoring.move.verify.destination";
 
-  // CLASSPATH updater
-  public static final String CLIENT_UPDATE_PROJECTS_CLASSPATH =
-      "che.jdt.ls.extension.workspace.clientUpdateProjectsClasspath";
-
-  // Project updater
-  public static final String CLIENT_UPDATE_PROJECT =
-      "che.jdt.ls.extension.workspace.clientUpdateProject";
-  public static final String CLIENT_UPDATE_ON_PROJECT_CLASSPATH_CHANGED =
-      "che.jdt.ls.extension.workspace.clientUpdateOnProjectClasspathChanged";
-  public static final String CLIENT_UPDATE_MAVEN_MODULE =
-      "che.jdt.ls.extension.workspace.clientUpdateMavenModule";
-  public static final String CLIENT_UPDATE_PROJECT_CONFIG =
-      "che.jdt.ls.extension.workspace.clientUpdateProjectConfig";
-
   private Commands() {}
 }
