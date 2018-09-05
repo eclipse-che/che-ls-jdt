@@ -63,6 +63,8 @@ public class Commands {
   public static final String UPDATE_PROJECT_CLASSPATH =
       "che.jdt.ls.extension.plain.updateClasspath";
   public static final String GET_SOURCE_FOLDERS = "che.jdt.ls.extension.plain.sourceFolders";
+  public static final String GET_PROJECT_SOURCE_LOCATIONS_COMMAND =
+      "che.jdt.ls.extension.plain.getProjectSourceLocations";
 
   // navigation commands
 
