@@ -13,7 +13,7 @@ package org.eclipse.che.jdt.ls.extension.core.internal;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.che.jdt.ls.extension.api.Commands;
+import org.eclipse.che.jdt.ls.extension.api.Notifications;
 import org.eclipse.che.jdt.ls.extension.api.dto.UpdateMavenModulesInfo;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
@@ -45,7 +45,7 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
     }
     if (isConfigurationUpdated(mavenProject, oldMavenProject)) {
       String projectUri = getNormalizedProjectPath(mavenProject);
-      notifyClient(Commands.CLIENT_UPDATE_PROJECT_CONFIG, projectUri);
+      notifyClient(Notifications.UPDATE_PROJECT_CONFIG, projectUri);
     } else if (!mavenProject
         .getMavenProjectModules()
         .equals(oldMavenProject.getMavenProjectModules())) {
@@ -68,7 +68,7 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
     updateInfo.setAdded(findAddedModules(mavenProject, oldMavenProject));
     updateInfo.setRemoved(findRemovedModules(mavenProject, oldMavenProject));
 
-    notifyClient(Commands.CLIENT_UPDATE_MAVEN_MODULE, updateInfo);
+    notifyClient(Notifications.UPDATE_MAVEN_MODULE, updateInfo);
   }
 
   private List<String> findRemovedModules(
@@ -94,7 +94,7 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   private void notifyClient(String commandId, Object parameters) {
     try {
       JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-      ls.getClientConnection().executeClientCommand(commandId, parameters);
+      ls.getClientConnection().sendNotification(commandId, parameters);
     } catch (Exception e) {
       JavaLanguageServerPlugin.logException(
           "An exception occurred while reporting project updating", e);
