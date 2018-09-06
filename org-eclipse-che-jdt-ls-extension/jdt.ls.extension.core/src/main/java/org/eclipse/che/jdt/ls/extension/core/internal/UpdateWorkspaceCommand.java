@@ -68,6 +68,12 @@ public class UpdateWorkspaceCommand {
 
     try {
       job.join(0L, pm);
+      // workaround for https://github.com/eclipse/eclipse.jdt.ls/issues/783
+      while (job.getState() == Job.WAITING || job.getState() == Job.SLEEPING) {
+        // this happens when the JobManager is suspended (a rare case). Wait a bit for it to resume.
+        Thread.sleep(100);
+        job.join(0L, pm);
+      }
     } catch (InterruptedException e) {
       JavaLanguageServerPlugin.logException(e.getMessage(), e);
       Thread.currentThread().interrupt();
