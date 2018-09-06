@@ -46,7 +46,7 @@ public class GetProjectSourceLocationsCommand {
     IJavaProject javaProject = JavaModelUtil.getJavaProject(projectUri);
 
     List<String> result = new ArrayList<>();
-    if (javaProject.exists()) {
+    if (javaProject != null && javaProject.exists()) {
       try {
         result.addAll(getAllPackageFragmentPaths(javaProject));
       } catch (CoreException e) {
