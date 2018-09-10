@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 
 /**
  * Adds all jars from library folder into project's classpath.
@@ -68,25 +69,23 @@ public class AddJarsCommand {
       throw new IllegalArgumentException(format("Folder for '%s' not found", libFolder));
     }
 
-    List<IClasspathEntry> resolvedClasspath = new ArrayList<>();
+    List<IClasspathEntry> classpath = new ArrayList<>();
     try {
-      addJars(jProject, lib, resolvedClasspath);
-      IClasspathEntry[] rawClasspath = jProject.getRawClasspath();
-      resolvedClasspath.addAll(Arrays.asList(rawClasspath));
+      classpath.addAll(findJars(jProject, lib));
+      classpath.addAll(Arrays.asList(jProject.getRawClasspath()));
       jProject.setRawClasspath(
-          resolvedClasspath.toArray(new IClasspathEntry[resolvedClasspath.size()]),
+          classpath.toArray(new IClasspathEntry[classpath.size()]),
           jProject.getOutputLocation(),
           pm);
     } catch (CoreException e) {
-      throw new IllegalArgumentException(
-          format("Can't read folder structure for: '%s'", libFolder));
+      JavaLanguageServerPlugin.log(e);
     }
     return projectUri;
   }
 
-  private static void addJars(
-      IJavaProject jProject, IFolder lib, List<IClasspathEntry> resolvedClasspath)
+  private static List<IClasspathEntry> findJars(IJavaProject jProject, IFolder lib)
       throws CoreException {
+    List<IClasspathEntry> jars = new ArrayList<>();
     lib.accept(
         proxy -> {
           if (IResource.FILE != proxy.getType()) {
@@ -102,11 +101,13 @@ public class AddJarsCommand {
               newLibraryEntry(proxy.requestResource().getLocation(), null, null);
 
           if (jProject.getClasspathEntryFor(libEntry.getPath()) == null) {
-            resolvedClasspath.add(libEntry);
+            jars.add(libEntry);
           }
 
           return false;
         },
         IContainer.INCLUDE_PHANTOMS);
+
+    return jars;
   }
 }
