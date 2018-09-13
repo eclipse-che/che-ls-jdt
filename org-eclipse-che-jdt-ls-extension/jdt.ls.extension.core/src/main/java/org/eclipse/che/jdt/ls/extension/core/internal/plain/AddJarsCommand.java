@@ -13,24 +13,21 @@ package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
 import static java.lang.String.format;
 import static org.eclipse.jdt.core.JavaCore.newLibraryEntry;
-import static org.eclipse.jdt.ls.core.internal.JDTUtils.PATH_SEPARATOR;
 
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
+import org.eclipse.jdt.core.JavaModelException;
 
 /**
  * Adds all jars from library folder into project's classpath.
@@ -52,61 +49,65 @@ public class AddJarsCommand {
     final String projectUri = (String) arguments.get(0);
     final String libFolder = (String) arguments.get(1);
 
-    String projectName = projectUri.substring(projectUri.lastIndexOf(PATH_SEPARATOR) + 1);
-
-    IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-    if (project == null || !project.exists()) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
-    }
-
     IJavaProject jProject = JavaModelUtil.getJavaProject(projectUri);
     if (jProject == null) {
       throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
     }
 
-    IFolder lib = project.getFolder(libFolder);
-    if (!lib.exists()) {
+    IResource lib = jProject.getProject().findMember(libFolder);
+    if (lib == null || !lib.exists() || lib.getType() != IResource.FOLDER) {
       throw new IllegalArgumentException(format("Folder for '%s' not found", libFolder));
     }
 
     List<IClasspathEntry> classpath = new ArrayList<>();
     try {
-      classpath.addAll(findJars(jProject, lib));
+      List<IClasspathEntry> jars = findJars((IFolder) lib);
+      List<IClasspathEntry> iClasspathEntries = collectNonExistent(jProject, jars);
+      classpath.addAll(iClasspathEntries);
       classpath.addAll(Arrays.asList(jProject.getRawClasspath()));
       jProject.setRawClasspath(
           classpath.toArray(new IClasspathEntry[classpath.size()]),
           jProject.getOutputLocation(),
           pm);
     } catch (CoreException e) {
-      JavaLanguageServerPlugin.log(e);
+      throw new IllegalArgumentException(format("Can't find libraries from '%s'", libFolder));
     }
     return projectUri;
   }
 
-  private static List<IClasspathEntry> findJars(IJavaProject jProject, IFolder lib)
-      throws CoreException {
+  private static List<IClasspathEntry> collectNonExistent(
+      IJavaProject jProject, List<IClasspathEntry> jars) {
+    return jars.stream()
+        .filter(
+            j -> {
+              try {
+                return jProject.getClasspathEntryFor(j.getPath()) == null;
+              } catch (JavaModelException e) {
+                return false;
+              }
+            })
+        .collect(Collectors.toList());
+  }
+
+  private static List<IClasspathEntry> findJars(IFolder lib) throws CoreException {
     List<IClasspathEntry> jars = new ArrayList<>();
     lib.accept(
-        proxy -> {
-          if (IResource.FILE != proxy.getType()) {
+        iResource -> {
+          if (IResource.FILE != iResource.getType()) {
             return true;
           }
 
-          IPath path = proxy.requestFullPath();
+          IPath path = iResource.getFullPath();
           if (!path.toString().endsWith(".jar")) {
             return false;
           }
 
-          IClasspathEntry libEntry =
-              newLibraryEntry(proxy.requestResource().getLocation(), null, null);
+          IClasspathEntry libEntry = newLibraryEntry(iResource.getLocation(), null, null);
 
-          if (jProject.getClasspathEntryFor(libEntry.getPath()) == null) {
-            jars.add(libEntry);
-          }
+          jars.add(libEntry);
 
           return false;
-        },
-        IContainer.INCLUDE_PHANTOMS);
+        });
 
     return jars;
   }
