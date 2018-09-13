@@ -103,9 +103,7 @@ public class AddJarsCommand {
           }
 
           IClasspathEntry libEntry = newLibraryEntry(iResource.getLocation(), null, null);
-
           jars.add(libEntry);
-
           return false;
         });
 
