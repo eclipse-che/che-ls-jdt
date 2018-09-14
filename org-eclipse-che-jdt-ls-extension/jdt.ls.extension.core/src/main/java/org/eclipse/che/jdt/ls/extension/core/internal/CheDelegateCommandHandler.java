@@ -28,6 +28,7 @@ import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.LibraryEnt
 import org.eclipse.che.jdt.ls.extension.core.internal.externallibrary.ProjectExternalLibraryCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.imports.OrganizeImportsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.navigation.FindImplementersHandler;
+import org.eclipse.che.jdt.ls.extension.core.internal.plain.AddJarsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.CreateSimpleProjectCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetProjectSourceLocationsCommand;
 import org.eclipse.che.jdt.ls.extension.core.internal.plain.GetSourceFoldersCommand;
@@ -87,6 +88,7 @@ public class CheDelegateCommandHandler implements IDelegateCommandHandler {
     commands.put(Commands.FIND_RESOURCES_BY_FQN, FqnDiscover::findResourcesByFqn);
     commands.put(Commands.UPDATE_WORKSPACE, UpdateWorkspaceCommand::execute);
     commands.put(Commands.CREATE_SIMPLE_PROJECT, CreateSimpleProjectCommand::execute);
+    commands.put(Commands.ADD_JARS_COMMAND, AddJarsCommand::execute);
     commands.put(Commands.UPDATE_PROJECT_CLASSPATH, UpdateProjectClasspathCommand::execute);
     commands.put(Commands.GET_SOURCE_FOLDERS, GetSourceFoldersCommand::execute);
     commands.put(Commands.FIND_IMPLEMENTERS_COMMAND, FindImplementersHandler::getImplementers);
