@@ -15,6 +15,7 @@ import static java.util.Collections.emptyList;
 import static org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil.getJavaProject;
 import static org.eclipse.che.jdt.ls.extension.core.internal.Utils.ensureNotCancelled;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -141,8 +142,15 @@ public class ResolveClassPathsHandler {
     ClasspathEntry entryDTO = new ClasspathEntry();
     entryDTO.setEntryKind(entry.getEntryKind());
     switch (entry.getEntryKind()) {
-      case IClasspathEntry.CPE_SOURCE:
       case IClasspathEntry.CPE_PROJECT:
+        URI projectUri =
+            ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getProject(entry.getPath().lastSegment())
+                .getLocationURI();
+        entryDTO.setPath(ResourceUtils.fixURI(projectUri));
+        break;
+      case IClasspathEntry.CPE_SOURCE:
         entryDTO.setPath(JavaModelUtil.getFolderLocation(entry.getPath()));
         break;
       case IClasspathEntry.CPE_LIBRARY:
