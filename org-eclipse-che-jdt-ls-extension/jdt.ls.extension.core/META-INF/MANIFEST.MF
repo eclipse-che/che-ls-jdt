@@ -7,8 +7,6 @@ Bundle-Activator: org.eclipse.che.jdt.ls.extension.core.internal.ExtensionActiva
 Import-Package: com.google.common.base;version="15.0.0",
  com.google.common.reflect;version="15.0.0",
  com.google.gson,
- org.apache.commons.io,
- org.apache.commons.lang3.tuple;version="3.1.0",
  org.eclipse.che.jdt.ls.extension.api,
  org.eclipse.che.jdt.ls.extension.api.dto,
  org.eclipse.core.internal.resources,
@@ -29,9 +27,9 @@ Import-Package: com.google.common.base;version="15.0.0",
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.core,
  org.eclipse.m2e.core,
+ org.eclipse.text;bundle-version="3.6.0",
  org.eclipse.m2e.maven.runtime,
  org.eclipse.jdt.ls.core,
- org.eclipse.jface.text,
  org.eclipse.jdt.core.manipulation
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

@@ -33,5 +33,4 @@ Require-Bundle: org.eclipse.jdt.junit4.runtime;bundle-version="1.1.0",
  org.eclipse.lsp4j,
  org.eclipse.lsp4j.jsonrpc,
  org.eclipse.xtend.lib,
- org.eclipse.xtext.xbase.lib,
  org.eclipse.jdt.launching

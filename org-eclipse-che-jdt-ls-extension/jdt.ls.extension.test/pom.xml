@@ -24,4 +24,11 @@
     <packaging>eclipse-test-plugin</packaging>
     <name>Che Ls Jdt :: Extension :: Test</name>
     <description>jdt.ls.extension Test Plugin</description>
+    <dependencies>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
+        </dependency>
+    </dependencies>
 </project>
