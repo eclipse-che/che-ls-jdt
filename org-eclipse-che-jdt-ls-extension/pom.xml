@@ -45,6 +45,7 @@
         <tycho.test.jvmArgs>-Xmx512m ${tycho.test.platformArgs}</tycho.test.jvmArgs>
         <tycho.test.platformArgs />
         <tycho.version>1.0.0</tycho.version>
+        <commons.io.version>2.5</commons.io.version>
     </properties>
     <repositories>
         <repository>
