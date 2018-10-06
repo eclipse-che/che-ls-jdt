@@ -31,6 +31,7 @@
         <module>jdt.ls.extension.product</module>
     </modules>
     <properties>
+        <commons.io.version>2.5</commons.io.version>
         <coverage.filter>org.eclipse.jdt.ls.*</coverage.filter>
         <jacoco.destFile>${project.build.directory}/jacoco.exec</jacoco.destFile>
         <!-- Code coverage -->
@@ -45,7 +46,6 @@
         <tycho.test.jvmArgs>-Xmx512m ${tycho.test.platformArgs}</tycho.test.jvmArgs>
         <tycho.test.platformArgs />
         <tycho.version>1.0.0</tycho.version>
-        <commons.io.version>2.5</commons.io.version>
     </properties>
     <repositories>
         <repository>
