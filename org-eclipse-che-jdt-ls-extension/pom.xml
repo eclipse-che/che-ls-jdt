@@ -80,6 +80,15 @@
                                 <skip>true</skip>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>check-java-compat</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
