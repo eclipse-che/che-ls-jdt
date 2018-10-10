@@ -143,7 +143,7 @@
                         <artifact>
                             <groupId>org.eclipse.jdt.ls</groupId>
                             <artifactId>org.eclipse.jdt.ls.tp</artifactId>
-                            <version>0.27.0-SNAPSHOT</version>
+                            <version>0.26.0.20181009132402</version>
                         </artifact>
                     </target>
                     <environments>
