@@ -17,19 +17,19 @@
     <parent>
         <artifactId>maven-parent-pom</artifactId>
         <groupId>org.eclipse.che.parent</groupId>
-        <version>6.13.0-SNAPSHOT</version>
+        <version>6.12.1</version>
     </parent>
     <groupId>org.eclipse.che.ls.jdt</groupId>
     <artifactId>che-ls-jdt-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Che Ls Jdt :: Parent</name>
     <modules>
         <module>org-eclipse-che-jdt-ls-extension</module>
     </modules>
     <scm>
-        <connection>scm:git@github.com:eclipse/che-ls-jdt.git</connection>
-        <developerConnection>scm:git@github.com:eclipse/che-ls-jdt.git</developerConnection>
+        <connection>scm:git:git@github.com:eclipse/che-ls-jdt.git</connection>
+        <developerConnection>scm:git:git@github.com:eclipse/che-ls-jdt.git</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/eclipse/che-ls-jdt</url>
     </scm>
@@ -45,15 +45,20 @@
             <name>jdt.ls SNAPSHOTS</name>
             <url>https://ci.eclipse.org/ls/job/jdt-ls-master/ws/repository/</url>
         </repository>
-         <repository>
+        <repository>
+            <id>jdt-ls-releases</id>
+            <name>jdt.ls RELEAES</name>
+            <url>https://repo.eclipse.org/content/repositories/jdtls-releases/</url>
+        </repository>
+        <repository>
             <releases>
                 <enabled>false</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-			<id>oss.sonatype.org</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 </project>
