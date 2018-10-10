@@ -50,15 +50,15 @@
             <name>jdt.ls RELEAES</name>
             <url>https://repo.eclipse.org/content/repositories/jdtls-releases/</url>
         </repository>
-         <repository>
+        <repository>
             <releases>
                 <enabled>false</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-                <id>oss.sonatype.org</id>
-                <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <id>oss.sonatype.org</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 </project>
