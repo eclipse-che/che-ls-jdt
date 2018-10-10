@@ -84,7 +84,7 @@
                 <plugin>
                     <groupId>org.eclipse.tycho</groupId>
                     <artifactId>tycho-packaging-plugin</artifactId>
-                    <version>${tycho.version}</version>
+                    <version>1.0.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>org.eclipse.tycho.extras</groupId>
@@ -102,7 +102,7 @@
                 <plugin>
                     <groupId>org.eclipse.tycho</groupId>
                     <artifactId>tycho-surefire-plugin</artifactId>
-                    <version>${tycho.version}</version>
+                    <version>1.0.0</version>
                     <configuration>
                         <useUIHarness>false</useUIHarness>
                         <argLine>${tycho.test.jvmArgs}</argLine>
@@ -116,13 +116,13 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-maven-plugin</artifactId>
-                <version>${tycho.version}</version>
+                <version>1.0.0</version>
                 <extensions>true</extensions>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-compiler-plugin</artifactId>
-                <version>${tycho.version}</version>
+                <version>1.0.0</version>
                 <configuration>
                     <useProjectSettings>false</useProjectSettings>
                     <compilerArgs>
@@ -137,7 +137,7 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
-                <version>1.2.0</version>
+                <version>1.0.0</version>
                 <configuration>
                     <resolver>p2</resolver>
                     <target>
@@ -197,7 +197,7 @@
                     <plugin>
                         <groupId>org.eclipse.tycho</groupId>
                         <artifactId>tycho-source-plugin</artifactId>
-                        <version>${tycho.version}</version>
+                        <version>1.0.0</version>
                         <executions>
                             <execution>
                                 <id>attach-source</id>
