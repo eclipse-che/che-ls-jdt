@@ -28,8 +28,8 @@
         <module>org-eclipse-che-jdt-ls-extension</module>
     </modules>
     <scm>
-        <connection>scm:git@github.com:eclipse/che-ls-jdt.git</connection>
-        <developerConnection>scm:git@github.com:eclipse/che-ls-jdt.git</developerConnection>
+        <connection>scm:git:git@github.com:eclipse/che-ls-jdt.git</connection>
+        <developerConnection>scm:git:git@github.com:eclipse/che-ls-jdt.git</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/eclipse/che-ls-jdt</url>
     </scm>
