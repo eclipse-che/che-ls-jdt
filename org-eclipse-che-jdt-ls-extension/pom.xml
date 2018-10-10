@@ -137,6 +137,7 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
+                <version>1.2.0</version>
                 <configuration>
                     <resolver>p2</resolver>
                     <target>
