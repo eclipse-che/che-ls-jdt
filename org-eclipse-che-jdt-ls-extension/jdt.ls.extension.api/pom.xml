@@ -20,7 +20,6 @@
         <version>0.0.2-SNAPSHOT</version>
     </parent>
     <artifactId>jdt.ls.extension.api</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
     <name>Che Ls Jdt :: Extension :: API</name>
     <build>
