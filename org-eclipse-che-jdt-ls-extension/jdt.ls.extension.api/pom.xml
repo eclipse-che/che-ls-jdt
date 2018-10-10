@@ -17,10 +17,10 @@
     <parent>
         <artifactId>org-eclipse-che-jdt-ls-extension</artifactId>
         <groupId>org.eclipse.che.ls.jdt</groupId>
-        <version>0.0.1</version>
+        <version>0.0.2-SNAPSHOT</version>
     </parent>
     <artifactId>jdt.ls.extension.api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
     <name>Che Ls Jdt :: Extension :: API</name>
     <build>

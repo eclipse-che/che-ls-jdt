@@ -21,7 +21,7 @@
     </parent>
     <groupId>org.eclipse.che.ls.jdt</groupId>
     <artifactId>che-ls-jdt-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Che Ls Jdt :: Parent</name>
     <modules>
@@ -30,7 +30,7 @@
     <scm>
         <connection>scm:git:git@github.com:eclipse/che-ls-jdt.git</connection>
         <developerConnection>scm:git:git@github.com:eclipse/che-ls-jdt.git</developerConnection>
-        <tag>0.0.1</tag>
+        <tag>HEAD</tag>
         <url>https://github.com/eclipse/che-ls-jdt</url>
     </scm>
     <repositories>
