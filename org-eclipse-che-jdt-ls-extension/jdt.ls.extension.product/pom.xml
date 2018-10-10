@@ -33,17 +33,17 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>${tycho.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-publisher-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>${tycho.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-repository-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>${tycho.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -61,7 +61,7 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-director-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>${tycho.version}</version>
                 <executions>
                     <execution>
                         <id>create-distributions</id>
@@ -253,7 +253,7 @@
                     <plugin>
                         <groupId>org.eclipse.tycho</groupId>
                         <artifactId>target-platform-configuration</artifactId>
-                        <version>1.0.0</version>
+                        <version>${tycho.version}</version>
                         <configuration>
                             <environments>
                                 <environment>
