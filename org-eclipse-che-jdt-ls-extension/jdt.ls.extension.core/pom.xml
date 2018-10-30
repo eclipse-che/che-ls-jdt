@@ -40,6 +40,32 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <?m2e execute onConfiguration?>
+                        <id>get-libs</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>false</skip>
+                    <outputDirectory>${basedir}/lib/</outputDirectory>
+                    <useBaseVersion>true</useBaseVersion>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>commons-io</groupId>
+                            <artifactId>commons-io</artifactId>
+                            <version>${commons.io.version}</version>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
