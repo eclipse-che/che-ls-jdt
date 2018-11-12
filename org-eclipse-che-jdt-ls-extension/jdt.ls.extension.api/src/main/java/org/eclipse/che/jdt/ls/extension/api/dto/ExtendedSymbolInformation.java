@@ -12,6 +12,7 @@
 package org.eclipse.che.jdt.ls.extension.api.dto;
 
 import java.util.List;
+import org.eclipse.che.jdt.ls.extension.api.Visibility;
 import org.eclipse.lsp4j.SymbolInformation;
 
 /**
@@ -22,12 +23,14 @@ import org.eclipse.lsp4j.SymbolInformation;
 public class ExtendedSymbolInformation {
   private SymbolInformation info;
   private List<ExtendedSymbolInformation> children;
+  private Visibility visiblity;
 
   public ExtendedSymbolInformation() {}
 
   public ExtendedSymbolInformation(
-      SymbolInformation info, List<ExtendedSymbolInformation> children) {
+      SymbolInformation info, Visibility visibility, List<ExtendedSymbolInformation> children) {
     this.info = info;
+    this.visiblity = visibility;
     this.children = children;
   }
 
@@ -37,6 +40,14 @@ public class ExtendedSymbolInformation {
 
   public void setInfo(SymbolInformation info) {
     this.info = info;
+  }
+
+  public Visibility getVisiblity() {
+    return visiblity;
+  }
+
+  public void setVisiblity(Visibility visiblity) {
+    this.visiblity = visiblity;
   }
 
   public List<ExtendedSymbolInformation> getChildren() {

@@ -17,11 +17,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.eclipse.che.jdt.ls.extension.api.Visibility;
 import org.eclipse.che.jdt.ls.extension.api.dto.ExtendedSymbolInformation;
 import org.eclipse.che.jdt.ls.extension.api.dto.FileStructureCommandParameters;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IParent;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
@@ -86,6 +89,21 @@ public class FileStructureCommand {
     ExtendedSymbolInformation result = new ExtendedSymbolInformation();
 
     Location location = JDTUtils.toLocation(element);
+    if (element instanceof IMember) {
+      int flags = ((IMember) element).getFlags();
+      if (Flags.isPrivate(flags)) {
+        result.setVisiblity(Visibility.PRIVATE);
+      }
+      if (Flags.isPackageDefault(flags)) {
+        result.setVisiblity(Visibility.PACKAGE);
+      }
+      if (Flags.isProtected(flags)) {
+        result.setVisiblity(Visibility.PROTECTED);
+      }
+      if (Flags.isPublic(flags)) {
+        result.setVisiblity(Visibility.PUBLIC);
+      }
+    }
     if (location != null) {
       SymbolInformation si = new SymbolInformation();
       si.setName(label);
