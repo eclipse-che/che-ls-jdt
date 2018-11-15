@@ -17,7 +17,7 @@
     <parent>
         <artifactId>maven-parent-pom</artifactId>
         <groupId>org.eclipse.che.parent</groupId>
-        <version>6.12.1</version>
+        <version>6.13.0</version>
     </parent>
     <groupId>org.eclipse.che.ls.jdt</groupId>
     <artifactId>che-ls-jdt-parent</artifactId>
@@ -34,21 +34,18 @@
         <url>https://github.com/eclipse/che-ls-jdt</url>
     </scm>
     <repositories>
-        <repository>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>jdt-ls-snapshots</id>
+        <!-- turn this repo on if you need to work against "latest" 
+        repository>
+             <id>jdt-ls-snapshots</id>
             <name>jdt.ls SNAPSHOTS</name>
-            <url>https://ci.eclipse.org/ls/job/jdt-ls-master/ws/repository/</url>
-        </repository>
+            <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+            <layout>p2</layout>
+        </repository-->
         <repository>
             <id>jdt-ls-releases</id>
-            <name>jdt.ls RELEAES</name>
-            <url>https://repo.eclipse.org/content/repositories/jdtls-releases/</url>
+            <name>jdt.ls RELEASES</name>
+            <url>http://download.eclipse.org/jdtls/milestones/0.27.0/repository</url>
+            <layout>p2</layout>
         </repository>
         <repository>
             <releases>
