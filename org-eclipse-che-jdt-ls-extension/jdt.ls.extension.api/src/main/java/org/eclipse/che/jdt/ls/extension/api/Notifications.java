@@ -21,12 +21,6 @@ public class Notifications {
   // CLASSPATH updater
   public static final String UPDATE_PROJECTS_CLASSPATH =
       "che.jdt.ls.extension.workspace.clientUpdateProjectsClasspath";
-  // Project updater
-  public static final String UPDATE_PROJECT = "che.jdt.ls.extension.workspace.clientUpdateProject";
-  public static final String UPDATE_ON_PROJECT_CLASSPATH_CHANGED =
-      "che.jdt.ls.extension.workspace.clientUpdateOnProjectClasspathChanged";
-  public static final String UPDATE_MAVEN_MODULE =
-      "che.jdt.ls.extension.workspace.clientUpdateMavenModule";
-  public static final String UPDATE_PROJECT_CONFIG =
-      "che.jdt.ls.extension.workspace.clientUpdateProjectConfig";
+  public static final String MAVEN_PROJECT_CREATED =
+      "che.jdt.ls.extension.workspace.projectCreated";
 }

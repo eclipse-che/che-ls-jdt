@@ -11,16 +11,13 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.eclipse.che.jdt.ls.extension.api.Notifications;
-import org.eclipse.che.jdt.ls.extension.api.dto.UpdateMavenModulesInfo;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
 import org.eclipse.jdt.ls.core.internal.ResourceUtils;
 import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
 import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
-import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 
 /**
@@ -37,76 +34,16 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   }
 
   private void mavenProjectChanged(MavenProjectChangedEvent event) {
-    IMavenProjectFacade mavenProject = event.getMavenProject();
-    IMavenProjectFacade oldMavenProject = event.getOldMavenProject();
-
-    if (mavenProject == null || oldMavenProject == null) {
-      return;
-    }
-    if (isConfigurationUpdated(mavenProject, oldMavenProject)) {
-      String projectUri = getNormalizedProjectPath(mavenProject);
-      notifyClient(Notifications.UPDATE_PROJECT_CONFIG, projectUri);
-    } else if (!mavenProject
-        .getMavenProjectModules()
-        .equals(oldMavenProject.getMavenProjectModules())) {
-      updateModules(mavenProject, oldMavenProject);
+    if (event.getKind() == MavenProjectChangedEvent.KIND_ADDED) {
+      IProject project = event.getMavenProject().getProject();
+      notifyClient(
+          Notifications.MAVEN_PROJECT_CREATED, ResourceUtils.fixURI(project.getLocationURI()));
     }
   }
 
-  private boolean isConfigurationUpdated(
-      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    return !mavenProject
-        .getArtifactKey()
-        .getArtifactId()
-        .equals(oldMavenProject.getArtifactKey().getArtifactId());
-  }
-
-  private void updateModules(
-      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    UpdateMavenModulesInfo updateInfo = new UpdateMavenModulesInfo();
-    updateInfo.setProjectUri(getNormalizedProjectPath(mavenProject));
-    updateInfo.setAdded(findAddedModules(mavenProject, oldMavenProject));
-    updateInfo.setRemoved(findRemovedModules(mavenProject, oldMavenProject));
-
-    notifyClient(Notifications.UPDATE_MAVEN_MODULE, updateInfo);
-  }
-
-  private List<String> findRemovedModules(
-      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    List<String> newModules = mavenProject.getMavenProjectModules();
-    List<String> oldModules = new ArrayList<>(oldMavenProject.getMavenProjectModules());
-
-    oldModules.removeAll(newModules);
-
-    return oldModules;
-  }
-
-  private List<String> findAddedModules(
-      IMavenProjectFacade mavenProject, IMavenProjectFacade oldMavenProject) {
-    List<String> newModules = new ArrayList<>(mavenProject.getMavenProjectModules());
-    List<String> oldModules = oldMavenProject.getMavenProjectModules();
-
-    newModules.removeAll(oldModules);
-
-    return newModules;
-  }
-
+  @SuppressWarnings("restriction")
   private void notifyClient(String commandId, Object parameters) {
-    try {
-      JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-      ls.getClientConnection().sendNotification(commandId, parameters);
-    } catch (Exception e) {
-      JavaLanguageServerPlugin.logException(
-          "An exception occurred while reporting project updating", e);
-    }
-  }
-
-  private String getNormalizedProjectPath(IMavenProjectFacade project) {
-    String projectUri = ResourceUtils.fixURI(project.getMavenProject().getBasedir().toURI());
-    if (projectUri.endsWith("/")) {
-      return projectUri.substring(0, projectUri.length() - 1);
-    }
-
-    return projectUri;
+    JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
+    ls.getClientConnection().sendNotification(commandId, parameters);
   }
 }
