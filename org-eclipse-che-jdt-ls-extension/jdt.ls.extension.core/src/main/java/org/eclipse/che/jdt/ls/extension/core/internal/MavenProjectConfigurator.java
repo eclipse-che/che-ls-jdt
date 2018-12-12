@@ -44,6 +44,9 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   @SuppressWarnings("restriction")
   private void notifyClient(String commandId, Object parameters) {
     JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-    ls.getClientConnection().sendNotification(commandId, parameters);
+    if (ls != null) {
+    	// workaround for tests 
+    	ls.getClientConnection().sendNotification(commandId, parameters);
+    }
   }
 }
