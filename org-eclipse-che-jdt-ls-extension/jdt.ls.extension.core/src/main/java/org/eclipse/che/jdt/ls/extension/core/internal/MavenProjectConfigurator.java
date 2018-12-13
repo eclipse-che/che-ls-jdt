@@ -45,8 +45,8 @@ public class MavenProjectConfigurator implements IMavenProjectChangedListener {
   private void notifyClient(String commandId, Object parameters) {
     JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
     if (ls != null) {
-    	// workaround for tests 
-    	ls.getClientConnection().sendNotification(commandId, parameters);
+      // workaround for tests
+      ls.getClientConnection().sendNotification(commandId, parameters);
     }
   }
 }
