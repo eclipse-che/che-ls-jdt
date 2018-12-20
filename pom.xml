@@ -44,7 +44,7 @@
         <repository>
             <id>jdt-ls-releases</id>
             <name>jdt.ls RELEASES</name>
-            <url>http://download.eclipse.org/jdtls/milestones/0.27.0/repository</url>
+            <url>http://download.eclipse.org/jdtls/milestones/0.30.0/repository</url>
             <layout>p2</layout>
         </repository>
         <repository>
