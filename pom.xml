@@ -38,13 +38,13 @@
         repository>
              <id>jdt-ls-snapshots</id>
             <name>jdt.ls SNAPSHOTS</name>
-            <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+            <url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
             <layout>p2</layout>
         </repository-->
         <repository>
             <id>jdt-ls-releases</id>
             <name>jdt.ls RELEASES</name>
-            <url>http://download.eclipse.org/jdtls/milestones/0.27.0/repository</url>
+            <url>https://download.eclipse.org/jdtls/milestones/0.27.0/repository</url>
             <layout>p2</layout>
         </repository>
         <repository>
