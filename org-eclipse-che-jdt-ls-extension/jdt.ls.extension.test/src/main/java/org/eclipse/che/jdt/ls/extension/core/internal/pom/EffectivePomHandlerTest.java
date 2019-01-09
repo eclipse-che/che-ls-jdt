@@ -45,7 +45,7 @@ public class EffectivePomHandlerTest extends AbstractProjectsManagerBasedTest {
 
     assertTrue(effectivePom.length() > 0);
     for (String checkpoint : CHECKPOINTS) {
-      assertTrue(effectivePom.contains(checkpoint));
+      assertTrue("Missing checkpoint: " + checkpoint, effectivePom.contains(checkpoint));
     }
   }
 
