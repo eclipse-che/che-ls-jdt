@@ -47,7 +47,7 @@
             <url>https://download.eclipse.org/jdtls/milestones/0.30.0/repository</url>
             <layout>p2</layout>
         </repository>
-        <!-- repository>
+         <repository>
             <releases>
                 <enabled>false</enabled>
             </releases>
@@ -56,6 +56,6 @@
             </snapshots>
             <id>oss.sonatype.org</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </repository-->
+        </repository>
     </repositories>
 </project>
