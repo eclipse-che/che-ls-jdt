@@ -33,6 +33,7 @@ import org.eclipse.jdt.ls.core.internal.corrections.InnovationContext;
 import org.eclipse.jdt.ls.core.internal.corrections.proposals.CUCorrectionProposal;
 import org.eclipse.jdt.ls.core.internal.corrections.proposals.IProposalRelevance;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.ltk.core.refactoring.TextChange;
 import org.eclipse.text.edits.TextEdit;
@@ -117,7 +118,12 @@ public class OrganizeImportsCommand {
     try {
       InnovationContext context = new InnovationContext(cu, 0, cu.getBuffer().getLength() - 1);
       CUCorrectionProposal proposal =
-          new CUCorrectionProposal("OrganizeImports", cu, IProposalRelevance.ORGANIZE_IMPORTS) {
+          new CUCorrectionProposal(
+              "OrganizeImports",
+              CodeActionKind.SourceOrganizeImports,
+              cu,
+              null,
+              IProposalRelevance.ORGANIZE_IMPORTS) {
             @Override
             protected void addEdits(IDocument document, TextEdit editRoot) throws CoreException {
               CompilationUnit astRoot = context.getASTRoot();
