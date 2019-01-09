@@ -5,7 +5,7 @@
 <artifactId>testproject</artifactId>
 <version>1.0-SNAPSHOT</version>
 <name>hello-app</name>
-<url>http://maven.apache.org</url>
+<url>https://maven.apache.org</url>
 <dependencies>
 <dependency>
 <groupId>junit</groupId>
