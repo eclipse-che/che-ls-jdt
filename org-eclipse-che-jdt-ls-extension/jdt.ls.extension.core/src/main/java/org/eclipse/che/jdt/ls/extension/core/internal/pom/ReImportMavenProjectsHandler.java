@@ -18,18 +18,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.eclipse.che.jdt.ls.extension.api.Notifications;
 import org.eclipse.che.jdt.ls.extension.api.dto.ReImportMavenProjectsCommandParameters;
 import org.eclipse.che.jdt.ls.extension.core.internal.GsonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.ls.core.internal.JDTUtils;
 import org.eclipse.jdt.ls.core.internal.JavaLanguageServerPlugin;
-import org.eclipse.jdt.ls.core.internal.handlers.JDTLanguageServer;
 
 /**
  * Command to update maven projects.
@@ -96,31 +92,8 @@ public class ReImportMavenProjectsHandler {
     for (String uri : projects.keySet()) {
       Job job =
           JavaLanguageServerPlugin.getProjectsManager().updateProject(projects.get(uri), true);
-      job.addJobChangeListener(new JobChangedListener(uri));
       updatedJobs.add(job);
     }
     return updatedJobs;
-  }
-
-  private static class JobChangedListener extends JobChangeAdapter {
-    private String projectUri;
-
-    JobChangedListener(String projectUri) {
-      this.projectUri = projectUri;
-    }
-
-    @Override
-    public void done(IJobChangeEvent event) {
-      if (!event.getResult().isOK()) {
-        return;
-      }
-      try {
-        JDTLanguageServer ls = JavaLanguageServerPlugin.getInstance().getProtocol();
-        ls.getClientConnection().sendNotification(Notifications.UPDATE_PROJECT, projectUri);
-      } catch (Exception e) {
-        JavaLanguageServerPlugin.logException(
-            "An exception occured while reporting project updating", e);
-      }
-    }
   }
 }

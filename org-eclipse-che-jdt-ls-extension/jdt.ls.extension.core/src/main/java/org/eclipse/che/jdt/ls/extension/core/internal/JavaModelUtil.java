@@ -69,6 +69,15 @@ public class JavaModelUtil {
         ResourcesPlugin.getWorkspace().getRoot().getFolder(folderPath).getLocationURI());
   }
 
+  public static String getResourceLocation(IPath folderPath) {
+    IResource member = ResourcesPlugin.getWorkspace().getRoot().findMember(folderPath);
+    if (member != null && member.exists()) {
+      return ResourceUtils.fixURI(member.getLocationURI());
+    } else {
+      return null;
+    }
+  }
+
   /**
    * Returns all user created java project which exist in current workspace. This method excludes
    * default {@code jdt.ls-java-project} project.

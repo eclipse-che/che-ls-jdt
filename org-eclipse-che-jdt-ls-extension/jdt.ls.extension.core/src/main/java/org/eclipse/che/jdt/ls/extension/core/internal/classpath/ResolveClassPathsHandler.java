@@ -142,8 +142,10 @@ public class ResolveClassPathsHandler {
     entryDTO.setEntryKind(entry.getEntryKind());
     switch (entry.getEntryKind()) {
       case IClasspathEntry.CPE_SOURCE:
-      case IClasspathEntry.CPE_PROJECT:
         entryDTO.setPath(JavaModelUtil.getFolderLocation(entry.getPath()));
+        break;
+      case IClasspathEntry.CPE_PROJECT:
+        entryDTO.setPath(JavaModelUtil.getResourceLocation(entry.getPath()));
         break;
       case IClasspathEntry.CPE_LIBRARY:
         entryDTO.setPath(ResourceUtils.fixURI(entry.getPath().toFile().toURI()));

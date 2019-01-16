@@ -11,11 +11,11 @@
  */
 package org.eclipse.che.jdt.ls.extension.core.internal.plain;
 
-import static java.lang.String.format;
 import static org.eclipse.jdt.core.IClasspathEntry.CPE_SOURCE;
 
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.eclipse.che.jdt.ls.extension.core.internal.JavaModelUtil;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,7 +44,8 @@ public class GetSourceFoldersCommand {
     IJavaProject jProject = JavaModelUtil.getJavaProject(projectUri);
 
     if (jProject == null) {
-      throw new IllegalArgumentException(format("Project for '%s' not found", projectUri));
+      // the java project might not have been created yet.
+      return Collections.emptyList();
     }
 
     List<String> sourceFolders = new ArrayList<>();
