@@ -17,7 +17,7 @@
     <parent>
         <artifactId>che-ls-jdt-parent</artifactId>
         <groupId>org.eclipse.che.ls.jdt</groupId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>0.0.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>org-eclipse-che-jdt-ls-extension</artifactId>
